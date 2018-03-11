@@ -1,0 +1,253 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>SVG</title>
+</head>
+<body>
+    <svg id="svg" width="801" height="481" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <pattern id="smallGrid" width="8" height="8" patternUnits="userSpaceOnUse">
+                <path id="smallGridPath" d="M 8 0 H 0 V 8" fill="none" stroke="gray" stroke-width="0.5" />
+            </pattern>
+            <pattern id="largeGrid" width="80" height="80" patternUnits="userSpaceOnUse">
+                <rect id="largeGridRect"width="80" height="80" fill="url(#smallGrid)" />
+                <!-- draw from upper right to upper left, then down to lower left -->
+                <!-- This creates the appearance of an 80x80 grid when stacked -->
+                <path id="largeGridPath" d="M 80 0 H 0 V 80" fill="none" stroke="gray" stroke-width="2" />
+            </pattern>
+        </defs>
+
+        <!-- A trick from sprite animations is to extend the scrolling region beyond the viewport 
+            and use mod W/H to reset the position to simulate a virtual space. -->
+        <!-- Creating a group is structural only.  One would think that elements could 
+            be added to the group and they would be moved as the group is transformed.
+            This is true, but when the mod operator resets the translation to (0, 0), any elements
+            in this group will be reset to it's starting position as well. -->
+        <g id="surface" transform="translate(0, 0)" x="-80" y="-80" width="961" height="641" >
+            <rect id="grid" x="-80" y="-80" width="961" height="641" fill="url(#largeGrid)" />
+        </g>        
+        <!-- Instead, create a group just for the objects and transform this group without any 
+            modulus operation on the (x,y) position. -->
+        <g id="objects" transform="translate(0, 0)">
+            <circle id="circle1" cx="150" cy="100" r="40" stroke="black" stroke-width="1" fill="#FFC0C0" />
+            <circle id="circle2" cx="175" cy="125" r="40" stroke="black" stroke-width="1" fill="#C0FFC0" />
+        </g>
+    </svg>
+</body>
+</html>
+<script type="text/javascript">
+    "use strict";
+    class SvgObject {
+        constructor() {
+            this.events = [];
+            this.mouseDown = false;
+            this.mouseDownX = 0;
+            this.mouseDownY = 0;
+            this.X = 0;
+            this.Y = 0;
+        }
+
+        registerEvent(element, eventName, callbackRef) {
+            this.events.push({ element: element, eventName: eventName, callbackRef: callbackRef });
+        }
+
+        destroy() {
+            this.unhookEvents();
+        }
+
+        registerEventListener(element, eventName, callback) {
+            var ref;
+            element.addEventListener(eventName, ref = callback.bind(this));
+            this.registerEvent(element, eventName, ref);
+        }
+
+        unhookEvents() {
+            for (var i = 0; i < this.events.length; i++) {
+                var event = this.events[i];
+                event.element.removeEventListener(event.eventName, event.callbackRef);
+            }
+        }
+
+        onMouseDown(evt) {
+            evt.preventDefault();
+            this.mouseDown = true;
+            this.mouseDownX = evt.clientX;
+            this.mouseDownY = evt.clientY;
+        }
+
+        onMouseMove(evt) {
+            evt.preventDefault();
+            var mouseX = evt.clientX;
+            var mouseY = evt.clientY;
+            var mouseDX = mouseX - this.mouseDownX;
+            var mouseDY = mouseY - this.mouseDownY;
+            this.X += mouseDX;
+            this.Y += mouseDY;
+            this.mouseDownX = mouseX;
+            this.mouseDownY = mouseY;
+        }
+
+        onMouseUp(evt) {
+            evt.preventDefault();
+            this.mouseDown = false;
+        }
+
+        onMouseLeave(evt) {
+            evt.preventDefault();
+            this.mouseDown = false;
+        }
+    }
+
+    class SvgElement extends SvgObject {
+        constructor(svgElement) {
+            super();
+            this.element = svgElement;
+            this.registerEventListener(this.element, "mousedown", this.onMouseDown);
+            this.registerEventListener(this.element, "mouseup", this.onMouseUp);
+            this.registerEventListener(this.element, "mousemove", this.onMouseMove);
+            // Don't wire up the mouseleave event because the user can easily move the mouse beyond
+            // the edges of the element.  Instead, we want the element to catch up to the mouse.
+            // Annoyingly, this doesn't solve the problem of the user moving the mouse too quickly.
+            // Even worse, with this event disabled, when that happens the object is still in "mousedown"
+            // state and will start moving again when the moves the mouse back over that shape.
+            // this.registerEventListener(this.element, "mouseleave", evt => this.onMouseLeave(evt));
+        }
+
+        onMouseMove(evt) {
+            if (this.mouseDown) {
+                super.onMouseMove(evt);
+                this.element.setAttribute("transform", "translate(" + this.X + "," + this.Y + ")");
+            }
+        }
+    }
+
+    class Circle extends SvgElement {
+        constructor(svgElement) {
+            super(svgElement);
+        }
+    }
+
+    class Surface extends SvgObject {
+        constructor(svgSurface, svgObjects) {
+            super();
+            this.svgSurface = svgSurface;
+            this.svgObjects = svgObjects;
+            this.gridCellW = 80;
+            this.gridCellH = 80;
+
+            this.wireUpEvents();
+        }
+
+        // Special handler because we're only wiring up the surface events.
+        wireUpEvents() {
+            this.registerEventListener(this.svgSurface, "mousedown", this.onMouseDown);
+            this.registerEventListener(this.svgSurface, "mouseup", this.onMouseUp);
+            this.registerEventListener(this.svgSurface, "mousemove", this.onMouseMove);
+            this.registerEventListener(this.svgSurface, "mouseleave", this.onMouseLeave);
+        }
+
+        onMouseMove(evt) {
+            if (this.mouseDown) {
+                super.onMouseMove(evt);
+                var dx = this.X % this.gridCellW;
+                var dy = this.Y % this.gridCellH;
+                this.scrollSurface(dx, dy, this.X, this.Y);
+            }
+        }
+
+        scrollSurface(dx, dy, x, y) {
+            this.svgSurface.setAttribute("transform", "translate(" + dx + "," + dy + ")");
+            this.svgObjects.setAttribute("transform", "translate(" + x + "," + y + ")");
+        }
+
+        // Programmatically change the grid spacing for the larger grid cells and smaller grid cells.
+        resizeGrid(lx, ly, sx, sy) {
+            this.gridCellW = lx;
+            this.gridCellH = ly;
+
+            document.getElementById("largeGridRect").setAttribute("width", lx);
+            document.getElementById("largeGridRect").setAttribute("height", ly);
+
+            document.getElementById("largeGridPath").setAttribute("d", "M " + lx + " 0 H 0 V " + ly);
+            document.getElementById("largeGrid").setAttribute("width", lx);
+            document.getElementById("largeGrid").setAttribute("height", ly);
+
+            document.getElementById("smallGridPath").setAttribute("d", "M " + sx + " 0 H 0 V " + sy);
+            document.getElementById("smallGrid").setAttribute("width", sx);
+            document.getElementById("smallGrid").setAttribute("height", sy);
+
+            this.svgSurface.setAttribute("x", -this.gridCellW);
+            this.svgSurface.setAttribute("y", -this.gridCellH);
+
+            var svgW = document.getElementById("svg").getAttribute("width");
+            var svgH = document.getElementById("svg").getAttribute("height");
+
+            this.svgSurface.setAttribute("width", svgW + this.gridCellW * 2);
+            this.svgSurface.setAttribute("height", svgH + this.gridCellH * 2);
+
+            document.getElementById("grid").setAttribute("x", -this.gridCellW);
+            document.getElementById("grid").setAttribute("y", -this.gridCellH);
+
+            this.svgSurface.setAttribute("width", svgW + this.gridCellW * 2);
+            this.svgSurface.setAttribute("height", svgH + this.gridCellH * 2);
+        }
+    }
+
+
+    function gridHandler() {
+        var svgSurface = document.getElementById("surface");
+        var svgObjects = document.getElementById("objects");
+        var surface = new Surface(svgSurface, svgObjects);
+        surface.resizeGrid(100, 100, 20, 20);
+        new Circle(document.getElementById("circle1"));
+        new Circle(document.getElementById("circle2"));
+    }; 
+    /*
+    // We create an event listener with a closure in which we can pass the element
+    // that triggered the event.  We'll expand on this later when we implement
+    // objects that actually handle event.
+    function createEventListener(element, eventName, handler, that) {
+        // element.addEventListener(eventName, evt => that.handler(element, evt));
+        // element.addEventListener(eventName, evt => that.handler(element, evt));
+        element.addEventListener(eventName, (function (that) {
+            return function (evt) {
+                handler(evt, that);
+            }
+        })(that), false);
+    }
+    */
+
+    gridHandler();
+    // resizeGrid(gridCellW, gridCellH, 20, 20);
+
+</script>
+<!--
+    mousedown example:
+    https://stackoverflow.com/questions/2753732/how-to-access-svg-elements-with-javascript
+
+    why preventDefault()
+    https://stackoverflow.com/questions/12624745/svg-mousemove-events-stop-firing-in-firefox-after-a-few-mousedowns
+
+    transform -> translate
+    https://stackoverflow.com/questions/13281586/svg-animate-rectangle-along-path-center-of-rect-always-on-the-path
+
+    SVG Paths:
+    https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths
+
+    Transforms:
+    https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/transform
+
+    Working with defs programmatically:
+    https://stackoverflow.com/questions/17776641/fill-rect-with-pattern
+
+    // The same thing:
+    <path d="M 8 0 L 0 0 0 8" />
+    <path d="M 8 0 H 0 V 8" />
+
+    Event listeners inside a class:
+    https://stackoverflow.com/questions/43727516/javascript-how-adding-event-handler-inside-a-class-with-a-class-method-as-the-c
+    https://stackoverflow.com/questions/20279484/how-to-access-the-correct-this-inside-a-callback
+
+-->

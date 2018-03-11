@@ -1,0 +1,108 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>SVG</title>
+</head>
+<body>
+    <svg id="svg" width="801" height="481" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+            <pattern id="smallGrid" width="8" height="8" patternUnits="userSpaceOnUse">
+<!--                <path d="M 8 0 L 0 0 0 8" fill="none" stroke="gray" stroke-width="0.5" />-->
+                <path d="M 8 0 H 0 V 8" fill="none" stroke="gray" stroke-width="0.5" />
+            </pattern>
+            <pattern id="grid" width="80" height="80" patternUnits="userSpaceOnUse">
+                <rect width="80" height="80" fill="url(#smallGrid)" />
+                <!--<path d="M 80 0 L 0 0 0 80" fill="none" stroke="gray" stroke-width="1" />-->
+                <!-- draw from upper right to upper left, then down to lower left -->
+                <!-- This creates the appearance of an 80x80 grid when stacked -->
+                <path d="M 80 0 H 0 V 80" fill="none" stroke="gray" stroke-width="2" />
+            </pattern>
+        </defs>
+
+        <!-- a trick from sprite animations is to extend the scrolling region beyond the viewport 
+            and use mod 80 to reset the position to simulate a virtual space. -->
+        <rect transform="translate(0, 0)" id="surface" x="-80" y="-80" width="961" height="641" fill="url(#grid)" />
+    </svg>
+</body>
+</html>
+<script type="text/javascript">
+    const LEFT_MOUSE_BUTTON = 0;
+    var mouseDown = false;
+    var mouseDownX = 0;
+    var mouseDownY = 0;
+    var gridX = 0;
+    var gridY = 0;
+
+    function initializeSurface() {
+        // var svg = document.getElementById("svg");
+        var surface = document.getElementById("surface");
+        surface.addEventListener("mousedown", onMouseDown, false);
+        surface.addEventListener("mouseup", onMouseUp, false);
+        surface.addEventListener("mousemove", onMouseMove, false);
+        surface.addEventListener("mouseleave", onMouseLeave, false);
+    } 
+
+    initializeSurface();
+
+    function onMouseDown(evt) {
+        if (evt.button == LEFT_MOUSE_BUTTON) {
+            evt.preventDefault();
+            mouseDown = true;
+            mouseDownX = evt.clientX;
+            mouseDownY = evt.clientY;
+        }
+    }
+
+    function onMouseUp(evt) {
+        if (evt.button == LEFT_MOUSE_BUTTON) {
+            evt.preventDefault();
+            mouseDown = false;
+        }
+    }
+
+    // If the mouse moves out of the surface area, the mouse up event will not trigger,
+    // so we clear the mouseDown flag so that scrolling does not resume "by itself" 
+    // when the user moves the mouse back onto the surface, which would otherwise 
+    // require the user to click to clear the mouseDown flag.
+    function onMouseLeave(evt) {
+        evt.preventDefault();
+        mouseDown = false;
+    }
+
+    function onMouseMove(evt) {
+        if (mouseDown) {
+            evt.preventDefault();
+            var mouseX = evt.clientX;
+            var mouseY = evt.clientY;
+            var mouseDX = mouseX - mouseDownX;
+            var mouseDY = mouseY - mouseDownY;
+            gridX += mouseDX;
+            gridY += mouseDY;
+            mouseDownX = mouseX;
+            mouseDownY = mouseY;
+            var svg = document.getElementById("svg");
+            var surface = svg.getElementById("surface");
+            var dx = gridX % 80;
+            var dy = gridY % 80;
+            surface.setAttribute("transform", "translate(" + dx + "," + dy + ")");
+        }
+    }
+</script>
+<!--
+    mousedown example:
+    https://stackoverflow.com/questions/2753732/how-to-access-svg-elements-with-javascript
+
+    why preventDefault()
+    https://stackoverflow.com/questions/12624745/svg-mousemove-events-stop-firing-in-firefox-after-a-few-mousedowns
+
+    transform -> translate
+    https://stackoverflow.com/questions/13281586/svg-animate-rectangle-along-path-center-of-rect-always-on-the-path
+
+    SVG Paths:
+    https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths
+
+    Transforms:
+    https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/transform
+-->

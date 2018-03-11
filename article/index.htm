@@ -1,0 +1,647 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Language" content="en-us">
+<meta http-equiv="Content-Type" content="text/html; charset=windows-1252">
+<title>Build a Simple Shape Drawing App</title>
+</head>
+
+<body>
+
+<p>Build a Simple Shape Drawing App with SVG and Javascript</p>
+<h2>Introduction</h2>
+<p>I've been wanting to learn about SVG for a while now, and there are certainly 
+any number of helpful websites on creating SVG drawings and animations.&nbsp; 
+But I didn't want to learn how to create static (or even animated) SVG drawings, 
+I wanted to learn how to use SVG dynamically:</p>
+<ul>
+	<li>Create, modify, and remove SVG elements dynamically.</li>
+	<li>Hook events for moving elements around, changing their attributes, etc.</li>
+	<li>Save and restore a drawing.</li>
+	<li>Discover quirks and how to work around them.</li>
+</ul>
+<p>That's what this article is about -- it will only teach you SVG and 
+Javascript in so far as to achieve the goals outlined above.&nbsp; However, what 
+it will teach you is how to create dynamic SVG drawings, and what better way to 
+do this than to actually create a simple drawing program.&nbsp; </p>
+<h3>draw.io</h3>
+<p>One of the best online SVG drawing programs is <a href="https://www.draw.io/">
+draw.io</a> and I'm not going to attempt to recreate it.&nbsp; However, like 
+many things, it is often useful to &quot;roll your own&quot; to understand how the 
+technologies is used.&nbsp; The online program draw.io is a nice front end for
+<a href="http://jgraph.github.io/mxgraph/">mxgraph</a>, which has excellent 
+documentation at <a href="https://jgraph.github.io/mxgraph/docs/manual.html">
+https://jgraph.github.io/mxgraph/docs/manual.html</a>.&nbsp; Also see their API 
+specifications which supports PHP, .NET, Java, and Javascript.&nbsp; If you're 
+looking for a polished drawing program, similar to Visio, look at draw.io.&nbsp; 
+If you want to<i> learn</i> about how 
+this stuff is done, that's what this article is for.<i>&nbsp; </i></p>
+<h2>Step 1: Creating a Scrollable Grid</h2>
+<p><img border="0" src="grid1.png" width="276" height="200"></p>
+<p>The first thing I wanted to learn how to do was create a grid that scrolls.&nbsp; 
+It was easy enough to find an example on the Internet which I used as a starting 
+point:</p>
+<pre>&lt;svg id=&quot;svg&quot; width=&quot;801&quot; height=&quot;481&quot; xmlns=&quot;http://www.w3.org/2000/svg&quot;&gt;
+  &lt;defs&gt;
+    &lt;pattern id=&quot;smallGrid&quot; width=&quot;8&quot; height=&quot;8&quot; patternUnits=&quot;userSpaceOnUse&quot;&gt;
+      &lt;path d=&quot;M 8 0 H 0 V 8&quot; fill=&quot;none&quot; stroke=&quot;gray&quot; stroke-width=&quot;0.5&quot; /&gt;
+    &lt;/pattern&gt;
+    &lt;pattern id=&quot;grid&quot; width=&quot;80&quot; height=&quot;80&quot; patternUnits=&quot;userSpaceOnUse&quot;&gt;
+      &lt;rect width=&quot;80&quot; height=&quot;80&quot; fill=&quot;url(#smallGrid)&quot; /&gt;
+      &lt;!-- draw from upper right to upper left, then down to lower left --&gt;
+      &lt;!-- This creates the appearance of an 80x80 grid when stacked --&gt;
+      &lt;path d=&quot;M 80 0 H 0 V 80&quot; fill=&quot;none&quot; stroke=&quot;gray&quot; stroke-width=&quot;2&quot; /&gt;
+    &lt;/pattern&gt;
+  &lt;/defs&gt;
+
+  &lt;!-- a trick from my old Commodore 64 days is to extend the scrolling region beyond the viewport 
+  and use mod 80 to reset the position to simulate a virtual space. --&gt;
+  &lt;rect transform=&quot;translate(0, 0)&quot; id=&quot;surface&quot; x=&quot;-80&quot; y=&quot;-80&quot; width=&quot;961&quot; height=&quot;641&quot; fill=&quot;url(#grid)&quot; /&gt;
+&lt;/svg&gt;</pre>
+<p>As I mentioned, I'm not going to go into the details of SVG but I will point 
+out the core features:</p>
+<ul>
+	<li>There are two grids -- an outer grid every 80 pixels and an inner grid 
+	every 8 pixels.</li>
+	<li>The &quot;grid&quot; is actually created by drawing only two lines: the top line 
+	(from right to left) and the left edge, from upper left to bottom left.&nbsp; 
+	That's what the &quot;M 80 0 H 0 V 80&quot; does -- it creates a path starting at (80, 
+	0), draws a horizontal line to (0, 0) and then a vertical line to (0, 80).</li>
+	<li>The initial transform is a placeholder -- &quot;translate(0, 0)&quot; doesn't 
+	actually do anything.</li>
+</ul>
+<h3>Simulating a Virtual Surface</h3>
+<p><img border="0" src="bufferzone.png" width="217" height="163"></p>
+<p>Notice that the rectangle is drawn with an off-screen buffer zone of (-80, 
+-80) and (width + 80*2, height + 80*2).&nbsp; This is an old trick from which I 
+used to program scrolling games on the Commodore 64 -- you would render the 
+viewing area to include an off-screen buffer zone so that scrolling could be 
+done simply by performing a translate (or on the C64, changing the screen memory 
+pointer.)&nbsp; When scrolling a repeating pattern, one &quot;translates&quot; the 
+viewable area +/- 80 mod 80 (the width and height of the grid) and it appears to 
+the user as if there is an infinite virtual surface.</p>
+<h3>Scrolling the Grid - Mouse Events</h3>
+<p>The user scrolls the grid with a &quot;drag&quot; operation:</p>
+<ul>
+	<li>Mouse down to start.</li>
+<li>Move mouse, which scrolls the grid.</li>
+<li>Mouse up when done.</li>
+</ul>
+<p>We'll keep track of the following variables:</p>
+<pre>var mouseDown = false;
+var mouseDownX = 0;
+var mouseDownY = 0;
+var gridX = 0;
+var gridY = 0;</pre>
+<h4>Wiring up the Mouse Events</h4>
+<p>This is very simple (but we'll see later that it gets more complicated 
+because for actual shapes that may be removed from the drawing, we will want to 
+unhook the event handlers):</p>
+<pre>function initializeSurface() {
+  var svg = document.getElementById(&quot;svg&quot;);
+  var surface = svg.getElementById(&quot;surface&quot;);
+  surface.addEventListener(&quot;mousedown&quot;, onMouseDown, false);
+  surface.addEventListener(&quot;mouseup&quot;, onMouseUp, false);
+  surface.addEventListener(&quot;mousemove&quot;, onMouseMove, false);
+  surface.addEventListener(&quot;mouseleave&quot;, onMouseLeave, false);
+} 
+
+initializeSurface();</pre>
+<h4>Best Practice</h4>
+<p>Technically, we could just get the surface element directly from the 
+document:</p>
+<pre>var svgSurface = document.getElementById(&quot;surface&quot;);</pre>
+<p>but I suppose using the <code>svg</code> element helps to prevent the 
+possibility that the HTML has an element of the same name, particularly since we 
+don't know how the programmer might create additional HTML.</p>
+<h4>The Event Handlers</h4>
+<p>Here we handle the <code>mousedown</code>, <code>mouseup</code>, and <code>mousemove</code> events:</p>
+<pre>const LEFT_MOUSE_BUTTON = 0;
+
+function onMouseDown(evt) {
+  if (evt.button == LEFT_MOUSE_BUTTON) {
+    evt.preventDefault();
+    mouseDown = true;
+    mouseDownX = evt.clientX;
+    mouseDownY = evt.clientY;
+  }
+}
+
+function onMouseUp(evt) {
+  if (evt.button == LEFT_MOUSE_BUTTON) {
+    evt.preventDefault();
+    mouseDown = false;
+  }
+}
+
+function onMouseMove(evt) {
+  if (mouseDown) {
+    evt.preventDefault();
+    var mouseX = evt.clientX;
+    var mouseY = evt.clientY;
+    var mouseDX = mouseX - mouseDownX;
+    var mouseDY = mouseY - mouseDownY;
+    gridX += mouseDX;
+    gridY += mouseDY;
+    mouseDownX = mouseX;
+    mouseDownY = mouseY;
+    var svg = document.getElementById(&quot;svg&quot;);
+    var surface = svg.getElementById(&quot;surface&quot;);
+    var dx = gridX % 80;
+    var dy = gridY % 80;
+    surface.setAttribute(&quot;transform&quot;, &quot;translate(&quot; + dx + &quot;,&quot; + dy + &quot;)&quot;);
+  }
+}</pre>
+<p>A few things to note:</p>
+<ul>
+	<li>Apparently, some browsers such as Firefox has default drag/drop handling 
+	so we call <code>evt.preventDefault()</code> to, well, prevent the default handling of 
+	the event.</li>
+	<li>The variables <code>gridX</code> and <code>gridY</code> track the absolute offset grid.</li>
+	<li>The grid is translated by this absolute offset modulus 80 so we don't 
+	exceed the boundaries of the buffer zone.</li>
+	<li>Apparently there used to be some confusing between the W3C standard 
+	(left button == 0) and Microsoft's concept, (left button == 1) but that seems 
+	to be very old information -- testing on Chrome and Edge, the left button 
+	value (as well as right and middle values) are consistent across these two 
+	browsers.</li>
+</ul>
+<h4>Handling Moving the Mouse off the Grid</h4>
+<p>There is no concept of &quot;mouse capture,&quot; so when the user drags the surface 
+and the mouse moves outside of the SVG element, events, such as <code>mouseup</code>, are no 
+longer received.&nbsp; If the user stops dragging <i>outside of the SVG element</i> 
+by releasing the mouse button, the code is still in the dragging state because
+the <code>mouseup</code> event didn't fire.&nbsp; So instead, when the mouse 
+cursor leaves the element, we simulate a <code>mouseup</code> event by handling the <code>mouseleave</code> 
+event.</p>
+<pre>surface.addEventListener(&quot;mouseleave&quot;, onMouseLeave, false);
+
+// If the mouse moves out of the surface area, the mouse up event will not trigger,
+// so we clear the mouseDown flag so that scrolling does not resume &quot;by itself&quot; 
+// when the user moves the mouse back onto the surface, which would otherwise 
+// require the user to click to clear the mouseDown flag.
+function onMouseLeave(evt) {
+  evt.preventDefault();
+  mouseDown = false;
+}</pre>
+<h2>Step 2: Resizing the Grid - Our First Dynamic SVG</h2>
+<p><img border="0" src="grid2.png" width="363" height="248"></p>
+<p>Of course, all the code above is hard-coded for a grid of dimensions 80x80 
+with inner grid spacing of 8x8.&nbsp; We would like this to actually be user 
+configurable.&nbsp; To do this, it's useful to rename some ID's and add 
+additional ID's to the pattern 
+definitions:</p>
+<pre>&lt;defs&gt;
+  &lt;pattern id=&quot;smallGrid&quot; width=&quot;8&quot; height=&quot;8&quot; patternUnits=&quot;userSpaceOnUse&quot;&gt;
+    &lt;path id=&quot;smallGridPath&quot; d=&quot;M 8 0 H 0 V 8&quot; fill=&quot;none&quot; stroke=&quot;gray&quot; stroke-width=&quot;0.5&quot; /&gt;
+  &lt;/pattern&gt;
+  &lt;pattern id=&quot;largeGrid&quot; width=&quot;80&quot; height=&quot;80&quot; patternUnits=&quot;userSpaceOnUse&quot;&gt;
+    &lt;rect id=&quot;largeGridRect&quot;width=&quot;80&quot; height=&quot;80&quot; fill=&quot;url(#smallGrid)&quot; /&gt;
+    &lt;!-- draw from upper right to upper left, then down to lower left --&gt;
+    &lt;!-- This creates the appearance of an 80x80 grid when stacked --&gt;
+    &lt;path id=&quot;largeGridPath&quot; d=&quot;M 80 0 H 0 V 80&quot; fill=&quot;none&quot; stroke=&quot;gray&quot; stroke-width=&quot;2&quot; /&gt;
+  &lt;/pattern&gt;
+&lt;/defs&gt;</pre>
+<p>For reasons that will become clear in the next section, I've also added a 
+group around the rectangle that represents the grid:</p>
+<pre>&lt;g id=&quot;surface&quot; transform=&quot;translate(0, 0)&quot; x=&quot;-80&quot; y=&quot;-80&quot; width=&quot;961&quot; height=&quot;641&quot; &gt;
+  &lt;rect id=&quot;grid&quot; x=&quot;-80&quot; y=&quot;-80&quot; width=&quot;961&quot; height=&quot;641&quot; fill=&quot;url(#largeGrid)&quot; /&gt;
+&lt;/g&gt; </pre>
+<p>We need to track the width and height setting of the larger rectangles 
+for modulus operator:</p>
+<pre>// The default:
+var gridCellW = 80;
+var gridCellH = 80;</pre>
+<p>and is used in the mousemove handler:</p>
+<pre>var dx = gridX % gridCellW;
+var dy = gridY % gridCellH;</pre>
+<p>Given this function which changes the grid spacing to the screenshot at the 
+start of this section, large grid is 100x100, small grid is 20x20:</p>
+<pre>resizeGrid(100, 100, 20, 20);</pre>
+<p>Here's the implementation:</p>
+<pre> // Programmatically change the grid spacing for the larger grid cells and smaller grid cells.
+function resizeGrid(lw, lh, sw, sh) {
+  gridCellW = lw;
+  gridCellH = lh;
+  var elLargeGridRect = document.getElementById(&quot;largeGridRect&quot;);
+  var elLargeGridPath = document.getElementById(&quot;largeGridPath&quot;);
+  var elLargeGrid = document.getElementById(&quot;largeGrid&quot;);
+
+  var elSmallGridPath = document.getElementById(&quot;smallGridPath&quot;);
+  var elSmallGrid = document.getElementById(&quot;smallGrid&quot;);
+
+  var elSvg = document.getElementById(&quot;svg&quot;);
+  var elSurface = document.getElementById(&quot;surface&quot;);
+  var elGrid = document.getElementById(&quot;grid&quot;);
+
+  elLargeGridRect.setAttribute(&quot;width&quot;, lw);
+  elLargeGridRect.setAttribute(&quot;height&quot;, lh);
+
+  elLargeGridPath.setAttribute(&quot;d&quot;, &quot;M &quot; + lw + &quot; 0 H 0 V &quot; + lh);
+  elLargeGrid.setAttribute(&quot;width&quot;, lw);
+  elLargeGrid.setAttribute(&quot;height&quot;, lh);
+
+  elSmallGridPath.setAttribute(&quot;d&quot;, &quot;M &quot; + sw + &quot; 0 H 0 V &quot; + sh);
+  elSmallGrid.setAttribute(&quot;width&quot;, sw);
+  elSmallGrid.setAttribute(&quot;height&quot;, sh);
+
+  elGrid.setAttribute(&quot;x&quot;, -lw);
+  elGrid.setAttribute(&quot;y&quot;, -lh);
+
+  var svgW = elSvg.getAttribute(&quot;width&quot;);
+  var svgH = elSvg.getAttribute(&quot;height&quot;);
+
+  elSurface.setAttribute(&quot;width&quot;, svgW + lw * 2);
+  elSurface.setAttribute(&quot;height&quot;, svgH + lh * 2);
+
+  elSurface.setAttribute(&quot;x&quot;, -lw);
+  elSurface.setAttribute(&quot;y&quot;, -lh);
+
+  elSurface.setAttribute(&quot;width&quot;, svgW + lw * 2);
+  elSurface.setAttribute(&quot;height&quot;, svgH + lh * 2);
+}</pre>
+<p>That's a lot of manipulation of the DOM elements.&nbsp; What we're doing is:</p>
+<ul>
+	<li>Resetting the width and height of the outer grid rectangle and the 
+	pattern dimensions.</li>
+	<li>Resetting the width and height of the inner grid pattern dimensions.</li>
+	<li>Changing the path of the out and inner grids to reflect the new 
+	dimensions.</li>
+	<li>Resizing the buffer zone and surface dimensions.</li>
+</ul>
+<h2>Step 3: Adding Some Static Shapes</h2>
+<p><img border="0" src="grid3.png" width="326" height="227"></p>
+<p>Remember the group that I added around the grid rectangle?&nbsp; We'll now 
+add another group that is used for shapes, and we'll put a couple static shapes 
+in that group:</p>
+<pre>&lt;g id=&quot;objects&quot; transform=&quot;translate(0, 0)&quot;&gt;
+  &lt;circle cx=&quot;150&quot; cy=&quot;100&quot; r=&quot;40&quot; stroke=&quot;black&quot; stroke-width=&quot;1&quot; fill=&quot;#FFC0C0&quot; /&gt;
+  &lt;circle cx=&quot;175&quot; cy=&quot;125&quot; r=&quot;40&quot; stroke=&quot;black&quot; stroke-width=&quot;1&quot; fill=&quot;#C0FFC0&quot; /&gt;
+&lt;/g&gt;</pre>
+<p>Now, with a simple addition to the <code>mousemove</code> event, we can translate all the 
+elements in the &quot;objects&quot; group as well so that they move as the surface is 
+scrolled:</p>
+<pre>function onMouseMove(evt) {
+  if (mouseDown) {
+    evt.preventDefault();
+    var mouseX = evt.clientX;
+    var mouseY = evt.clientY;
+    var mouseDX = mouseX - mouseDownX;
+    var mouseDY = mouseY - mouseDownY;
+    gridX += mouseDX;
+    gridY += mouseDY;
+    mouseDownX = mouseX;
+    mouseDownY = mouseY;
+    var surface = document.getElementById(&quot;surface&quot;);
+
+    var dx = gridX % gridCellW;
+    var dy = gridY % gridCellH;
+    surface.setAttribute(&quot;transform&quot;, &quot;translate(&quot; + dx + &quot;,&quot; + dy + &quot;)&quot;);
+
+    var objects = document.getElementById(&quot;objects&quot;);
+    objects.setAttribute(&quot;transform&quot;, &quot;translate(&quot; + gridX + &quot;,&quot; + gridY + &quot;)&quot;);
+  }
+}</pre>
+<p>The reason we use two separate groups is:</p>
+<ul>
+	<li>The surface is always translated modulus the large grid size</li>
+<li>The objects <i>on the surface</i> must be translated by the absolute scroll 
+offset.</li>
+</ul>
+<p>If we don't keep the two regions separate, we get the strange effect that the 
+shapes return to their original positions as a result of the modulus operation.&nbsp; 
+Obviously we don't want that.</p>
+<h2>Step 4:&nbsp; Moving Shapes Around</h2>
+<p>At this point, we have to start getting more sophisticated about how mouse 
+events are captured -- each shape (including the surface) must handle its own 
+mouse events.&nbsp; However, what the event does is not always the same -- for 
+example, scrolling the surface grid is different than moving a shape in the 
+&quot;objects&quot; group.&nbsp; Later on, even more complicated mouse move activities 
+will require tracking the state of the operation -- are we moving the shape, 
+resizing it, rotating it, etc.?</p>
+<p>It's a big leap, but it really is of benefit to create an actual 
+<code>MouseController</code> class and to create a class model for the specialized behaviors of the 
+different shapes.&nbsp; If we do this now, it becomes a lot easier to continue 
+expanding the capabilities of what so far has just been a playground to test 
+things out.</p>
+<h3>The Mouse Controller</h3>
+<p>The <code>MouseController</code> class does a few things for us:</p>
+<ul>
+	<li>It tracks the shape being dragged.&nbsp; This is important because the 
+	user can move the mouse in a larger increment than the size of the shape.&nbsp; 
+	When this happens, the mouse &quot;escapes&quot; the shape and it no longer receives 
+	<code>mousemove</code> events.&nbsp; So once a shape (including the surface 
+	grid) is &quot;captured&quot; by <code>mousedown</code> event, the <code>mousemove</code> events are passed 
+	along to the controller responsible for that shape.</li>
+	<li>It maps shape ID's to shape controllers.&nbsp; This allows the mouse 
+	controller to route mouse events to the controller associated with the 
+	shape.</li>
+	<li>It implements some basic behavioral features such as where the user 
+	clicked and the basic logic of mouse down -&gt; drag -&gt; mouse up operations.&nbsp; 
+	Later on additional states can be added besides dragging -- states such as 
+	resizing.</li>
+</ul>
+<p>The implementation is rather basic right now, building on what we did before:</p>
+<pre>const LEFT_MOUSE_BUTTON = 0;
+
+class MouseController {
+  constructor() {
+    this.mouseDown = false;
+    this.controllers = {};
+    this.activeController = null;
+  }
+
+  // Create a map between then SVG element (by it's ID, so ID's must be unique) and its controller.
+  register(svgElement, controller) {
+    var id = svgElement.getAttribute(&quot;id&quot;);
+    this.controllers[id] = controller;
+  }
+
+  unregister(svgElement) {
+    var id = svgElement.getAttribute(&quot;id&quot;);
+    delete this.activeController[id];
+  }
+
+  // Get the controller associated with the event and remember where the user clicked.
+  onMouseDown(evt) {
+    if (evt.button == LEFT_MOUSE_BUTTON) {
+      evt.preventDefault();
+      var id = evt.currentTarget.getAttribute(&quot;id&quot;);
+      this.activeController = this.controllers[id];
+      this.mouseDown = true;
+      this.mouseDownX = evt.clientX;
+      this.mouseDownY = evt.clientY;
+    }
+  }
+
+  // If the user is dragging, call the controller's onDrag function.
+  onMouseMove(evt) {
+    evt.preventDefault();
+
+    if (this.mouseDown &amp;&amp; this.activeController != null) {
+      this.activeController.onDrag(evt);
+    }
+  }
+
+  // Any dragging is now done.
+  onMouseUp(evt) {
+    if (evt.button == LEFT_MOUSE_BUTTON) {
+      evt.preventDefault();
+      this.clearSelectedObject();
+    }
+  }
+
+  // Any dragging is now done.
+  onMouseLeave(evt) {
+    evt.preventDefault();
+    if (this.mouseDown &amp;&amp; this.activeController != null) {
+      this.activeController.onMouseLeave();
+    }
+  }
+
+  clearSelectedObject() {
+    this.mouseDown = false;
+    this.activeController = null;
+  }
+}</pre>
+<h3>The Shape Object Model</h3>
+<p><img border="0" src="svgmodel.png" width="539" height="226"></p>
+<p>The diagram above illustrates the shape object model I've put together.</p>
+<h4>The SvgObject Class</h4>
+<p>This is the root class which keeps track of:</p>
+<ul>
+	<li>The mouse controller (a shared object between all shapes).</li>
+<li>The shape's translation (it's offset from origin).&nbsp; I've seen various 
+techniques for this by using attributes directly in the elements tag rather than 
+parsing the <code>transform=&quot;translate(x, y)&quot;</code> string in order to update the 
+translation, but I'd rather keep this as variables in the shape's class 
+instance.</li>
+	<li>An event registration method so that when the shape is removed, all its 
+	associated event handlers can be unhooked.</li>
+	<li>Default implementations for the basic drag operation math and other 
+	events.</li>
+	<li>Binding the event handler to &quot;this&quot; as the default class instance or to 
+	a specified class instance (usually the mouse controller.)</li>
+</ul>
+<pre>class SvgObject {
+  constructor(mouseController, svgElement) {
+    this.mouseController = mouseController;
+    this.events = [];
+    this.X = 0;
+    this.Y = 0;
+    this.mouseController.register(svgElement, this);
+  }
+
+  // Register the event so that when we destroy the object, we can unwire the event listeners.
+  registerEvent(element, eventName, callbackRef) {
+    this.events.push({ element: element, eventName: eventName, callbackRef: callbackRef });
+  }
+
+  destroy() {
+    this.unhookEvents();
+  }
+
+  registerEventListener(element, eventName, callback, self) {
+    var ref;
+
+    if (self == null) {
+      self = this;
+    }
+
+    element.addEventListener(eventName, ref = callback.bind(self));
+    this.registerEvent(element, eventName, ref);
+  }
+
+  unhookEvents() {
+    for (var i = 0; i &lt; this.events.length; i++) {
+      var event = this.events[i];
+      event.element.removeEventListener(event.eventName, event.callbackRef);
+    }
+  }
+
+  onDrag(evt) {
+    var mouseX = evt.clientX;
+    var mouseY = evt.clientY;
+    var mouseDX = mouseX - this.mouseController.mouseDownX;
+    var mouseDY = mouseY - this.mouseController.mouseDownY;
+    this.X += mouseDX;
+    this.Y += mouseDY;
+    this.mouseController.mouseDownX = mouseX;
+    this.mouseController.mouseDownY = mouseY;
+  }
+
+  onMouseLeave(evt) { }
+}</pre>
+<h4>The SvgElement Class</h4>
+<p>This class extends the <code>SvgObject</code> class, providing default mouse event 
+registration and shape drag implementation:</p>
+<pre>class SvgElement extends SvgObject {
+  constructor(mouseController, svgElement) {
+    super(mouseController, svgElement);
+    this.element = svgElement;
+    this.registerEventListener(this.element, &quot;mousedown&quot;, mouseController.onMouseDown, mouseController);
+    this.registerEventListener(this.element, &quot;mouseup&quot;, mouseController.onMouseUp, mouseController);
+    this.registerEventListener(this.element, &quot;mousemove&quot;, mouseController.onMouseMove, mouseController);
+  }
+
+  onDrag(evt) {
+    super.onDrag(evt);
+    this.element.setAttribute(&quot;transform&quot;, &quot;translate(&quot; + this.X + &quot;,&quot; + this.Y + &quot;)&quot;);
+  }
+}</pre>
+<p>Most of the time the &quot;this&quot; that is used to bind the event callback to the 
+handling class instance will be the mouse controller, but the functionality has 
+been provided to use the class instance registering the event (this is the 
+default behavior) or some other class instance to which we want to bind the 
+handler.</p>
+<h4>The Circle Class</h4>
+<p>The <code>Circle</code> class demonstrates the most basic of elements in which all the 
+default behaviors can be utilized.&nbsp; It merely extends the <code>SvgElement</code> class.</p>
+<pre>class Circle extends SvgElement {
+  constructor(mouseController, svgElement) {
+    super(mouseController, svgElement);
+  }
+}</pre>
+<h4>The Surface Class</h4>
+<p>This class is much more complicated as it has to handle all the things we 
+talked about before regarding scrolling the grid and objects on the grid.&nbsp; 
+Note how it extends the <code>mouseleave</code> event.&nbsp; We want this to 
+pass through the mouse controller's test to ensure that a drag operation is 
+occurring when the mouse &quot;leaves&quot; the shape.&nbsp; Depending on the selected 
+shape (the active controller) the behavior is different:</p>
+<ul>
+	<li>in case of leaving the surface, the surface class is implemented such 
+	that the drag operation is cleared.</li>
+<li>In the case of leaving a shape, nothing happens as we want the shape to 
+catch up to mouse position.</li>
+</ul>
+<pre>class Surface extends SvgElement {
+  constructor(mouseController, svgSurface, svgObjects) {
+    super(mouseController, svgSurface);
+    this.svgSurface = svgSurface;
+    this.svgObjects = svgObjects;
+    this.gridCellW = 80;
+    this.gridCellH = 80;
+
+    this.registerEventListener(this.svgSurface, &quot;mouseleave&quot;, mouseController.onMouseLeave, mouseController);
+  }
+
+  onDrag(evt) {
+    super.onDrag(evt);
+    var dx = this.X % this.gridCellW;
+    var dy = this.Y % this.gridCellH;
+    this.scrollSurface(dx, dy, this.X, this.Y);
+  }
+
+  onMouseLeave() {
+    this.mouseController.clearSelectedObject();
+  }
+
+  scrollSurface(dx, dy, x, y) {
+    this.svgSurface.setAttribute(&quot;transform&quot;, &quot;translate(&quot; + dx + &quot;,&quot; + dy + &quot;)&quot;);
+    this.svgObjects.setAttribute(&quot;transform&quot;, &quot;translate(&quot; + x + &quot;,&quot; + y + &quot;)&quot;);
+  }
+
+ function resizeGrid(lw, lh, sw, sh) {
+    this.gridCellW = lw;
+    this.gridCellH = lh;
+    var elLargeGridRect = document.getElementById(&quot;largeGridRect&quot;);
+    var elLargeGridPath = document.getElementById(&quot;largeGridPath&quot;);
+    var elLargeGrid = document.getElementById(&quot;largeGrid&quot;);
+
+    var elSmallGridPath = document.getElementById(&quot;smallGridPath&quot;);
+    var elSmallGrid = document.getElementById(&quot;smallGrid&quot;);
+
+    var elSvg = document.getElementById(&quot;svg&quot;);
+    var elSurface = document.getElementById(&quot;surface&quot;);
+    var elGrid = document.getElementById(&quot;grid&quot;);
+
+    elLargeGridRect.setAttribute(&quot;width&quot;, lw);
+    elLargeGridRect.setAttribute(&quot;height&quot;, lh);
+
+    elLargeGridPath.setAttribute(&quot;d&quot;, &quot;M &quot; + lw + &quot; 0 H 0 V &quot; + lh);
+    elLargeGrid.setAttribute(&quot;width&quot;, lw);
+    elLargeGrid.setAttribute(&quot;height&quot;, lh);
+
+    elSmallGridPath.setAttribute(&quot;d&quot;, &quot;M &quot; + sw + &quot; 0 H 0 V &quot; + sh);
+    elSmallGrid.setAttribute(&quot;width&quot;, sw);
+    elSmallGrid.setAttribute(&quot;height&quot;, sh);
+
+    elGrid.setAttribute(&quot;x&quot;, -lw);
+    elGrid.setAttribute(&quot;y&quot;, -lh);
+
+    var svgW = elSvg.getAttribute(&quot;width&quot;);
+    var svgH = elSvg.getAttribute(&quot;height&quot;);
+
+    elSurface.setAttribute(&quot;width&quot;, svgW + lw * 2);
+    elSurface.setAttribute(&quot;height&quot;, svgH + lh * 2);
+    
+    elSurface.setAttribute(&quot;x&quot;, -lw);
+    elSurface.setAttribute(&quot;y&quot;, -lh);
+
+    elSurface.setAttribute(&quot;width&quot;, svgW + lw * 2);
+    elSurface.setAttribute(&quot;height&quot;, svgH + lh * 2);
+  }
+}</pre>
+<h3>Wrapping Up Moving Shapes</h3>
+<p><img border="0" src="grid4.png" width="263" height="195"></p>
+<p>To get this all to work, we need to add ID's to the two static circles in the 
+&quot;objects&quot; group:</p>
+<pre>&lt;g id=&quot;objects&quot; transform=&quot;translate(0, 0)&quot;&gt;
+  &lt;circle id=&quot;circle1&quot; cx=&quot;150&quot; cy=&quot;100&quot; r=&quot;40&quot; stroke=&quot;black&quot; stroke-width=&quot;1&quot; fill=&quot;#FFC0C0&quot; /&gt;
+  &lt;circle id=&quot;circle2&quot; cx=&quot;175&quot; cy=&quot;125&quot; r=&quot;40&quot; stroke=&quot;black&quot; stroke-width=&quot;1&quot; fill=&quot;#C0FFC0&quot; /&gt;
+&lt;/g&gt;</pre>
+<p>We then create the class instances and in the constructor pass in the mouse 
+controller instance and shape element:</p>
+<pre>(function initialize() {
+  var mouseController = new MouseController();
+  var svgSurface = document.getElementById(&quot;surface&quot;);
+  var svgObjects = document.getElementById(&quot;objects&quot;);
+  var svgCircle1 = document.getElementById(&quot;circle1&quot;);
+  var svgCircle2 = document.getElementById(&quot;circle2&quot;);
+  var surface = new Surface(mouseController, svgSurface, svgObjects);
+  surface.resizeGrid(100, 100, 20, 20);
+  new Circle(mouseController, svgCircle1);
+  new Circle(mouseController, svgCircle2);
+})();</pre>
+<p>That's it!&nbsp; But where are we actually dragging the shapes?&nbsp; This 
+may have escaped the casual reader--it is happening in the SvgElement class!</p>
+<pre>onDrag(evt) {
+  super.onDrag(evt);
+  this.element.setAttribute(&quot;transform&quot;, &quot;translate(&quot; + this.X + &quot;,&quot; + this.Y + &quot;)&quot;);
+}</pre>
+<p>Any shape that derives from <code>SvgElement</code> inherits the ability to be dragged 
+around the surface.&nbsp; For example, we'll add a rectangle:</p>
+<pre>&lt;rect id=&quot;nose&quot; x=&quot;200&quot; y=&quot;150&quot; width=&quot;40&quot; height=&quot;60&quot; stroke=&quot;black&quot; stroke-width=&quot;1&quot; fill=&quot;#C0C0FF&quot; /&gt;</pre>
+<p>Define the class <code>Rectangle</code>, which doesn't override anything yet, just like <code>Circle</code>:</p>
+<pre>class Rectangle extends SvgElement {
+  constructor(mouseController, svgElement) {
+    super(mouseController, svgElement);
+  }
+}</pre>
+<p>and instantiate the shape with the associated SVG element:</p>
+<pre>new Rectangle(mouseController, document.getElementById(&quot;nose&quot;));</pre>
+<p>and we get (after moving the shapes around):</p>
+<p><img border="0" src="grid5.png" width="256" height="209"></p>
+<h2>Step 5: A Toolbox and Dynamic Shape Creation</h2>
+<p>Let's make what we're doing more useful by adding a toolbox so we can drag 
+and drop new shapes on the surface.&nbsp; The toolbox will be the third group, 
+making it the topmost group so that everything else (grid and objects) are 
+always rendered <i>behind</i> the toolbox:</p>
+<pre>&lt;g id=&quot;toolboxGroup&quot; x=&quot;0&quot; y=&quot;0&quot; width=&quot;200&quot; height=&quot;480&quot;&gt;
+  &lt;rect id=&quot;toolbox&quot; x=&quot;0&quot; y=&quot;0&quot; width=&quot;200&quot; height=&quot;480&quot; fill=&quot;#FFFFFF&quot; stroke=&quot;black&quot; stroke-width=&quot;0.5&quot; /&gt;
+&lt;/g&gt;</pre>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<h2>Step 6: Saving and Restoring the Drawing Locally</h2>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+
+</body>
+
+</html>
