@@ -1,4 +1,5 @@
 const LEFT_MOUSE_BUTTON = 0;
+const TOOLBOX_DRAG_MIN_MOVE = 3;
 
 class MouseController {
     constructor() {

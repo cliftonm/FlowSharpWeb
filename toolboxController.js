@@ -23,7 +23,8 @@ class ToolboxController extends MouseController {
         var endDownX = evt.clientX;
         var endDownY = evt.clientY;
 
-        if (Math.abs(this.startDownX - endDownX) < 5 && Math.abs(this.startDownY - endDownY) < 5) {
+        if (Math.abs(this.startDownX - endDownX) < TOOLBOX_DRAG_MIN_MOVE &&
+            Math.abs(this.startDownY - endDownY) < TOOLBOX_DRAG_MIN_MOVE) {
             // Treat this as a click.
             this.activeController.createElement();
         }
@@ -34,5 +35,18 @@ class ToolboxController extends MouseController {
     dropShapeOnSurface(svgElement, shapeController) {
         document.getElementById("objects").appendChild(svgElement);
         this.mouseController.attach(svgElement, shapeController);
+    }
+
+    onMouseMove(evt) {
+        if (this.mouseDown) {
+            evt.preventDefault();
+            var endDownX = evt.clientX;
+            var endDownY = evt.clientY;
+
+            if (Math.abs(this.startDownX - endDownX) >= TOOLBOX_DRAG_MIN_MOVE &&
+                Math.abs(this.startDownY - endDownY) >= TOOLBOX_DRAG_MIN_MOVE) {
+                console.log("drag toolbox shape");
+            }
+        }
     }
 }
