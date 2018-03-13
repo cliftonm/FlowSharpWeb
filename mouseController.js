@@ -27,6 +27,8 @@ class MouseController {
             this.mouseDown = true;
             this.mouseDownX = evt.clientX;
             this.mouseDownY = evt.clientY;
+            this.startDownX = evt.clientX;
+            this.startDownY = evt.clientY;
         }
     }
 

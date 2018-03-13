@@ -20,6 +20,19 @@ class ToolboxController extends MouseController {
     // If this is the end of a drag operation, place the shape on the surface at
     // the current mouse position.
     onMouseUp(evt) {
+        var endDownX = evt.clientX;
+        var endDownY = evt.clientY;
+
+        if (Math.abs(this.startDownX - endDownX) < 5 && Math.abs(this.startDownY - endDownY) < 5) {
+            // Treat this as a click.
+            this.activeController.createElement();
+        }
+
         super.onMouseUp(evt);
+    }
+
+    dropShapeOnSurface(svgElement, shapeController) {
+        document.getElementById("objects").appendChild(svgElement);
+        this.mouseController.attach(svgElement, shapeController);
     }
 }
