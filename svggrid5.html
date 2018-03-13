@@ -78,9 +78,9 @@
         // events when the user moves the mouse > shape dimensions, which ends up causing the
         // toolboxSurface to receive the move event instead.
 
-        new ToolboxRectangle(toolboxController, mouseController, getElement("toolboxRectangle"));
-        new ToolboxCircle(toolboxController, mouseController, getElement("toolboxCircle"));
-        new ToolboxDiamond(toolboxController, mouseController, getElement("toolboxDiamond"));
+        new ToolboxRectangle(toolboxController, getElement("toolboxRectangle"));
+        new ToolboxCircle(toolboxController, getElement("toolboxCircle"));
+        new ToolboxDiamond(toolboxController, getElement("toolboxDiamond"));
     })();
 
 </script>
