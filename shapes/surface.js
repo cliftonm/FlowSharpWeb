@@ -1,12 +1,11 @@
 class Surface extends SvgElement {
     constructor(mouseController, svgSurface, svgObjects) {
         super(mouseController, svgSurface);
-        this.svgSurface = svgSurface;
         this.svgObjects = svgObjects;
         this.gridCellW = 80;
         this.gridCellH = 80;
 
-        this.registerEventListener(this.svgSurface, "mouseleave", mouseController.onMouseLeave, mouseController);
+        this.registerEventListener(svgSurface, "mouseleave", mouseController.onMouseLeave, mouseController);
     }
 
     onDrag(evt) {
@@ -21,7 +20,8 @@ class Surface extends SvgElement {
     }
 
     scrollSurface(dx, dy, x, y) {
-        this.svgSurface.setAttribute("transform", "translate(" + dx + "," + dy + ")");
+        // svgElement is the surface.
+        this.svgElement.setAttribute("transform", "translate(" + dx + "," + dy + ")");
         this.svgObjects.setAttribute("transform", "translate(" + x + "," + y + ")");
     }
 

@@ -1,10 +1,11 @@
 class SvgObject {
     constructor(mouseController, svgElement) {
         this.mouseController = mouseController;
+        this.svgElement = svgElement;
         this.events = [];
         this.X = 0;
         this.Y = 0;
-        this.mouseController.register(svgElement, this);
+        this.mouseController.attach(svgElement, this);
     }
 
     // Register the event so that when we destroy the object, we can unwire the event listeners.
@@ -13,6 +14,7 @@ class SvgObject {
     }
 
     destroy() {
+        this.mouseController.detach(this.svgElement, this);
         this.unhookEvents();
     }
 

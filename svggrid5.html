@@ -1,15 +1,20 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="utf-8" />
     <title>SVG</title>
     <script type="text/javascript" src="mouseController.js"></script>
+    <script type="text/javascript" src="toolboxController.js"></script>
     <script type="text/javascript" src="svgObject.js"></script>
     <script type="text/javascript" src="svgElement.js"></script>
+    <script type="text/javascript" src="svgToolboxElement.js"></script>
     <script type="text/javascript" src="shapes/surface.js"></script>
     <script type="text/javascript" src="shapes/circle.js"></script>
     <script type="text/javascript" src="shapes/rectangle.js"></script>
+    <script type="text/javascript" src="shapes/toolboxRectangle.js"></script>
+    <script type="text/javascript" src="shapes/toolboxCircle.js"></script>
+    <script type="text/javascript" src="shapes/toolboxDiamond.js"></script>
 </head>
 <body>
     <svg id="svg" width="801" height="481" xmlns="http://www.w3.org/2000/svg">
@@ -42,12 +47,19 @@
             <rect id="nose" x="200" y="150" width="40" height="60" stroke="black" stroke-width="1" fill="#C0C0FF" />
         </g>
         <g id="toolboxGroup" x="0" y="0" width="200" height="480">
-            <rect id="toolbox" x="0" y="0" width="200" height="480" fill="#FFFFFF" stroke="black" stroke-width="0.5" />
+            <rect id="toolboxSurface" x="0" y="0" width="200" height="480" fill="#FFFFFF" stroke="black" stroke-width="0.5" />
+            <rect id="toolboxRectangle" x="10" y="10" width="40" height="40" stroke="black" stroke-width="1" fill="#FFFFFF" />
+            <circle id="toolboxCircle" cx="85" cy="29" r="21" stroke="black" stroke-width="1" fill="#FFFFFF" />
+            <path id="toolboxDiamond" d="M 140 10 L 115 30 L 140 50 L 165 30 Z" stroke="black" stroke-width="1" fill="#FFFFFF" />
         </g>
     </svg>
 </body>
 </html>
 <script type="text/javascript">
+    function getElement(id) {
+        return document.getElementById(id);
+    }
+
     (function initialize() {
         var mouseController = new MouseController();
         var svgSurface = document.getElementById("surface");
@@ -59,6 +71,16 @@
         new Circle(mouseController, svgCircle1);
         new Circle(mouseController, svgCircle2);
         new Rectangle(mouseController, document.getElementById("nose"));
+
+        var toolboxController = new ToolboxController(mouseController);
+
+        // TODO: We need to wire up the toolboxSurface as well so we can continue processing mouse
+        // events when the user moves the mouse > shape dimensions, which ends up causing the
+        // toolboxSurface to receive the move event instead.
+
+        new ToolboxRectangle(toolboxController, mouseController, getElement("toolboxRectangle"));
+        new ToolboxCircle(toolboxController, mouseController, getElement("toolboxCircle"));
+        new ToolboxDiamond(toolboxController, mouseController, getElement("toolboxDiamond"));
     })();
 
 </script>

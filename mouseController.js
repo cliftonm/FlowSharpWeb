@@ -8,12 +8,12 @@ class MouseController {
     }
 
     // Create a map between then SVG element (by it's ID, so ID's must be unique) and its controller.
-    register(svgElement, controller) {
+    attach(svgElement, controller) {
         var id = svgElement.getAttribute("id");
         this.controllers[id] = controller;
     }
 
-    unregister(svgElement) {
+    detach(svgElement) {
         var id = svgElement.getAttribute("id");
         delete this.activeController[id];
     }
