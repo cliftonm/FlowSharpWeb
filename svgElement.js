@@ -10,4 +10,10 @@ class SvgElement extends SvgObject {
         super.onDrag(evt);
         this.svgElement.setAttribute("transform", "translate(" + this.X + "," + this.Y + ")");
     }
+
+    translate(x, y) {
+        this.X += x;
+        this.Y += y;
+        this.svgElement.setAttribute("transform", "translate(" + this.X + "," + this.Y + ")");
+    }
 }

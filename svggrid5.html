@@ -81,6 +81,13 @@
         // So we can handle mouse drag operations when the mouse moves onto the toolbox surface...
         var toolboxSurface = new ToolboxSurface(toolboxController, svgToolboxSurface);
 
+        // The surface mouse controller needs to know the toolbox controller to finish
+        // a toolbox drag & drop operation.
+        mouseController.setToolboxController(toolboxController);
+        // To compensate for translations when doing a toolbox drag&drop
+        mouseController.setSurfaceShape(surface);
+        toolboxController.setSurfaceShape(surface);
+
         new ToolboxRectangle(toolboxController, getElement("toolboxRectangle"));
         new ToolboxCircle(toolboxController, getElement("toolboxCircle"));
         new ToolboxDiamond(toolboxController, getElement("toolboxDiamond"));

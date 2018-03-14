@@ -19,6 +19,16 @@ class MouseController {
         delete this.activeController[id];
     }
 
+    // The surface mouse controller needs to know the toolbox controller to finish
+    // a toolbox drag & drop operation.
+    setToolboxController(toolboxController) {
+        this.toolboxController = toolboxController;
+    }
+
+    setSurfaceShape(surfaceShape) {
+        this.surfaceShape = surfaceShape;
+    }
+
     // Get the controller associated with the event and remember where the user clicked.
     onMouseDown(evt) {
         if (evt.button == LEFT_MOUSE_BUTTON) {
@@ -44,8 +54,10 @@ class MouseController {
 
     // Any dragging is now done.
     onMouseUp(evt) {
-        if (evt.button == LEFT_MOUSE_BUTTON) {
+        if (evt.button == LEFT_MOUSE_BUTTON && this.activeController != null) {
             evt.preventDefault();
+            // Allows the toolbox controller to finish the drag & drop operation.
+            this.toolboxController.mouseUp();
             this.clearSelectedObject();
         }
     }
