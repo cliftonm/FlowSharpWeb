@@ -3,10 +3,23 @@ class ToolboxDiamond extends SvgToolboxElement {
         super(toolboxController, svgElement);
     }
 
-
+    // For click and drop
     createElement() {
-        var el = super.createElement('path', { d: "M 240 100 L 200 140 L 240 180 L 280 140 Z", stroke: "black", "stroke-width": 1, fill: "#FFFFFF" });
-        // Use the mouse controller associated with the surface.
-        this.toolboxController.dropShapeOnSurface(el, new Rectangle(this.toolboxController.mouseController, el));
+        var el = super.createElement('path', { d: "M 240 100 L 210 130 L 240 160 L 270 130 Z", stroke: "black", "stroke-width": 1, fill: "#FFFFFF" });
+
+        return el;
+    }
+
+    // For drag and drop
+    createElementAt(x, y) {
+        var el = super.createElement('path', { d: "M 240 100 L 210 130 L 240 160 L 270 130 Z", stroke: "black", "stroke-width": 1, fill: "#FFFFFF" });
+
+        return el;
+    }
+
+    createShape(mouseController, el) {
+        var shape = new Diamond(mouseController, el);
+
+        return shape;
     }
 }

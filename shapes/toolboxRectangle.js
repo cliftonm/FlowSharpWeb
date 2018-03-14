@@ -3,9 +3,23 @@ class ToolboxRectangle extends SvgToolboxElement {
         super(toolboxController, svgElement);
     }
 
+    // For click and drop
     createElement() {
-        var el = super.createElement('rect', { x: 240, y: 100, width: 80, height: 80, fill: "#FFFFFF", stroke: "black", "stroke-width": 1 });
-        // Use the mouse controller associated with the surface.
-        this.toolboxController.dropShapeOnSurface(el, new Rectangle(this.toolboxController.mouseController, el));
+        var el = super.createElement('rect', { x: 240, y: 100, width: 60, height: 60, fill: "#FFFFFF", stroke: "black", "stroke-width": 1 });
+
+        return el;
+    }
+
+    // For drag and drop
+    createElementAt(x, y) {
+        var el = super.createElement('rect', { x: x-30, y: y-30, width: 60, height: 60, fill: "#FFFFFF", stroke: "black", "stroke-width": 1 });
+
+        return el;
+    }
+
+    createShape(mouseController, el) {
+        var shape = new Rectangle(mouseController, el);
+
+        return shape;
     }
 }
