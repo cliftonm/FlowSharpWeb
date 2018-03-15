@@ -44,9 +44,9 @@
         <!-- Instead, create a group just for the objects and transform this group without any
             modulus operation on the (x,y) position. -->
         <g id="objects" transform="translate(0, 0)">
-            <circle id="circle1" cx="150" cy="100" r="40" stroke="black" stroke-width="1" fill="#FFC0C0" />
+            <!--<circle id="circle1" cx="150" cy="100" r="40" stroke="black" stroke-width="1" fill="#FFC0C0" />
             <circle id="circle2" cx="175" cy="125" r="40" stroke="black" stroke-width="1" fill="#C0FFC0" />
-            <rect id="nose" x="200" y="150" width="40" height="60" stroke="black" stroke-width="1" fill="#C0C0FF" />
+            <rect id="nose" x="200" y="150" width="40" height="60" stroke="black" stroke-width="1" fill="#C0C0FF" />-->
         </g>
         <g id="toolbox" x="0" y="0" width="200" height="480">
             <rect id="toolboxSurface" x="0" y="0" width="200" height="480" fill="#FFFFFF" stroke="black" stroke-width="0.5" />
@@ -58,23 +58,27 @@
 </body>
 </html>
 <script type="text/javascript">
+    const SVG_ELEMENT_ID = "svg";
+    const SVG_SURFACE_ID = "surface";
+    const SVG_TOOLBOX_SURFACE_ID = "toolboxSurface";
+    const SVG_OBJECTS_ID = "objects";
+    const SVG_TOOLBOX_ID = "toolbox";
+
     function getElement(id) {
-        return document.getElementById(id);
+        var svg = document.getElementById(SVG_ELEMENT_ID);
+        var el = svg.getElementById(id);
+
+        return el;
     }
 
     (function initialize() {
         var mouseController = new MouseController();
-        var svgSurface = document.getElementById("surface");
-        var svgToolboxSurface = document.getElementById("toolboxSurface");
-        var svgObjects = document.getElementById("objects");
-        var svgCircle1 = document.getElementById("circle1");
-        var svgCircle2 = document.getElementById("circle2");
+        var svgSurface = getElement(SVG_SURFACE_ID);
+        var svgToolboxSurface = getElement(SVG_TOOLBOX_SURFACE_ID);
+        var svgObjects = getElement(SVG_OBJECTS_ID);
 
         var surface = new Surface(mouseController, svgSurface, svgObjects);
         surface.resizeGrid(100, 100, 20, 20);
-        new Circle(mouseController, svgCircle1);
-        new Circle(mouseController, svgCircle2);
-        new Rectangle(mouseController, document.getElementById("nose"));
 
         var toolboxController = new ToolboxController(mouseController);
 

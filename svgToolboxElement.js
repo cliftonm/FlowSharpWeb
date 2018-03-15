@@ -17,10 +17,7 @@ class SvgToolboxElement extends SvgObject {
         el.setAttributeNS(null, "id", this.uuidv4())
 
         // Add the attributes to the element.
-        for (var key in attributes) {
-            var val = attributes[key];
-            el.setAttributeNS(null, key, val);
-        }
+        Object.entries(attributes).map(([key, val]) => el.setAttributeNS(null, key, val));
 
         return el;
     }

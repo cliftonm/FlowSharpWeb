@@ -631,6 +631,352 @@ always rendered <i>behind</i> the toolbox:</p>
 <pre>&lt;g id=&quot;toolboxGroup&quot; x=&quot;0&quot; y=&quot;0&quot; width=&quot;200&quot; height=&quot;480&quot;&gt;
   &lt;rect id=&quot;toolbox&quot; x=&quot;0&quot; y=&quot;0&quot; width=&quot;200&quot; height=&quot;480&quot; fill=&quot;#FFFFFF&quot; stroke=&quot;black&quot; stroke-width=&quot;0.5&quot; /&gt;
 &lt;/g&gt;</pre>
+<h2>Step 5: A Toolbox and Dynamic Shape Creation</h2>
+<p>Let's make what we're doing more useful by adding a toolbox so we can drag 
+and drop new shapes on the surface.&nbsp; The toolbox will be the third group, 
+making it the topmost group so that everything else (grid and objects) are 
+always rendered <i>behind</i> the toolbox:</p>
+<pre>&lt;g id=&quot;toolboxGroup&quot; x=&quot;0&quot; y=&quot;0&quot; width=&quot;200&quot; height=&quot;480&quot;&gt;
+  &lt;rect id=&quot;toolbox&quot; x=&quot;0&quot; y=&quot;0&quot; width=&quot;200&quot; height=&quot;480&quot; fill=&quot;#FFFFFF&quot; stroke=&quot;black&quot; stroke-width=&quot;0.5&quot; /&gt;
+  &lt;rect id=&quot;toolboxRectangle&quot; x=&quot;10&quot; y=&quot;10&quot; width=&quot;40&quot; height=&quot;40&quot; stroke=&quot;black&quot; stroke-width=&quot;1&quot; fill=&quot;#FFFFFF&quot; /&gt;
+  &lt;circle id=&quot;toolboxCircle&quot; cx=&quot;85&quot; cy=&quot;29&quot; r=&quot;21&quot; stroke=&quot;black&quot; stroke-width=&quot;1&quot; fill=&quot;#FFFFFF&quot; /&gt;
+  &lt;path id=&quot;toolboxDiamond&quot; d=&quot;M 140 10 L 115 30 L 140 50 L 165 30 Z&quot; stroke=&quot;black&quot; stroke-width=&quot;1&quot; fill=&quot;#FFFFFF&quot; /&gt;
+&lt;/g&gt;</pre>
+<p><img border="0" src="toolbox1.png" width="446" height="217"></p>
+<h3>Supporting Classes</h3>
+<p>We're going to need a some additional classes (indicated with the red text):</p>
+<p><img border="0" src="toolbox2.png" width="709" height="331"></p>
+<h3>Initialization</h3>
+<p>Here's the entire initialization code (I've removed the static shapes we had 
+previously):</p>
+<pre>const SVG_ELEMENT_ID = &quot;svg&quot;;
+const SVG_SURFACE_ID = &quot;surface&quot;;
+const SVG_TOOLBOX_SURFACE_ID = &quot;toolboxSurface&quot;;
+const SVG_OBJECTS_ID = &quot;objects&quot;;
+
+(function initialize() {
+  var mouseController = new MouseController();
+  var svgSurface = getElement(SVG_SURFACE_ID);
+  var svgToolboxSurface = getElementBy(SVG_TOOLBOX_SURFACE_ID);
+  var svgObjects = getElement(SVG_OBJECTS_ID);
+
+  var surface = new Surface(mouseController, svgSurface, svgObjects);
+  surface.resizeGrid(100, 100, 20, 20);
+
+  var toolboxController = new ToolboxController(mouseController);
+
+  // So we can handle mouse drag operations when the mouse moves onto the toolbox surface...
+  var toolboxSurface = new ToolboxSurface(toolboxController, svgToolboxSurface);
+
+  // The surface mouse controller needs to know the toolbox controller to finish
+  // a toolbox drag &amp; drop operation.
+  mouseController.setToolboxController(toolboxController);
+  // To compensate for translations when doing a toolbox drag&amp;drop
+  mouseController.setSurfaceShape(surface);
+  toolboxController.setSurfaceShape(surface);
+
+  new ToolboxRectangle(toolboxController, getElement(&quot;toolboxRectangle&quot;));
+  new ToolboxCircle(toolboxController, getElement(&quot;toolboxCircle&quot;));
+  new ToolboxDiamond(toolboxController, getElement(&quot;toolboxDiamond&quot;));
+})();</pre>
+<p>Notice some changes (will be explained next):</p>
+<ul>
+	<li>There are setter methods to tell the mouse controller (which handles the 
+	surface) about the toolbox controller and surface &quot;shape.&quot;&nbsp; This will 
+	be explained shortly.</li>
+	<li>The toolbox controller is derived from the mouse controller, as it is a 
+	specialized mouse controller for handling drag &amp; drop as well as &quot;click and 
+	drop&quot; operations.</li>
+	<li>The toolbox controller needs to know about the surface &quot;shape.&quot;</li>
+	<li>Lastly, we initialize the objects backing the toolbox shapes.</li>
+</ul>
+<p>I also added a simple helper method that, granted, I'm not using everywhere, 
+but is less typing:</p>
+<pre>function getElement(id) {
+  var svg = document.getElementById(SVG_ELEMENT_ID);
+  var el = svg.getElementById(id);
+
+  return el;
+}</pre>
+<p>Also, the better practice here is that the we're looking for element ID's in 
+the &quot;svg&quot; element, not the document.</p>
+<h3>The Toolbox Shapes</h3>
+<p>The toolbox shapes all implement the following functions:</p>
+<ul>
+	<li>createElement - this creates an element with a starting location to 
+	place it on the surface next to the toolbox.&nbsp; This is used for &quot;click 
+	and drop&quot; operations.</li>
+	<li>createElementAt - this creates an element at the specified location.&nbsp; 
+	This is used for &quot;drag and drop&quot; operations.</li>
+	<li>createShape - instantiates the associated non-toolbox shape.</li>
+</ul>
+<p>So, for example (choosing the diamond because it's a bit more complex):</p>
+<pre>class ToolboxDiamond extends SvgToolboxElement {
+  constructor(toolboxController, svgElement) {
+    super(toolboxController, svgElement);
+  }
+
+  // For click and drop
+  createElement() {
+    var el = super.createElement('path', 
+      { d: &quot;M 240 100 L 210 130 L 240 160 L 270 130 Z&quot;, stroke: &quot;black&quot;, &quot;stroke-width&quot;: 1, fill: &quot;#FFFFFF&quot; });
+
+    return el;
+  }
+
+  // For drag and drop
+  createElementAt(x, y) {
+    var points = [
+      { cmd: &quot;M&quot;, x: x-15, y: y-30 }, 
+      { cmd: &quot;L&quot;, x: x - 45, y: y }, 
+      { cmd: &quot;L&quot;, x: x-15, y: y + 30 }, 
+      { cmd: &quot;L&quot;, x: x + 15, y: y }];
+
+    var path = points.reduce((acc, val) =&gt; acc = acc + val.cmd + &quot; &quot; + val.x + &quot; &quot; + val.y, &quot;&quot;);
+    path = path + &quot; Z&quot;;
+    var el = super.createElement('path', { d: path, stroke: &quot;black&quot;, &quot;stroke-width&quot;: 1, fill: &quot;#FFFFFF&quot; });
+
+    return el;
+  }
+
+  createShape(mouseController, el) {
+    var shape = new Diamond(mouseController, el);
+
+    return shape;
+  }
+}</pre>
+<p>All the toolbox shapes follow the above template.</p>
+<h3>The SvgToolboxElement Class</h3>
+<p>The base class for all toolbox elements wires up the mouse events for toolbox 
+shape elements to the <i>toolboxController</i>.&nbsp; It also provides a common 
+method for creating an element and setting its attributes, including creating a 
+unique ID for the element:</p>
+<pre>class SvgToolboxElement extends SvgObject {
+  constructor(toolboxController, svgElement) {
+    super(toolboxController, svgElement);
+    this.toolboxController = toolboxController;
+    this.registerEventListener(svgElement, &quot;mousedown&quot;, toolboxController.onMouseDown, toolboxController);
+    this.registerEventListener(svgElement, &quot;mouseup&quot;, toolboxController.onMouseUp, toolboxController);
+    this.registerEventListener(svgElement, &quot;mousemove&quot;, toolboxController.onMouseMove, toolboxController);
+    this.svgns = &quot;<a href="http://www.w3.org/2000/svg">http://www.w3.org/2000/svg</a>&quot;;
+  }
+
+  // Create the specified element with the attributes provided in a key-value dictionary.
+  createElement(elementName, attributes) {
+    var el = document.createElementNS(this.svgns, elementName);
+
+    // Create a unique ID for the element so we can acquire the correct shape controller
+    // when the user drags the shape.
+    el.setAttributeNS(null, &quot;id&quot;, this.uuidv4())
+
+    // Add the attributes to the element.
+    Object.entries(attributes).map(([key, val]) =&gt; el.setAttributeNS(null, key, val));
+
+    return el;
+  }
+
+  // From SO: <a href="https://stackoverflow.com/questions/105034/create-guid-uuid-in-javascript">https://stackoverflow.com/questions/105034/create-guid-uuid-in-javascript</a>
+  uuidv4() {
+    return ([1e7] + -1e3 + -4e3 + -8e3 + -1e11).replace(/[018]/g, c =&gt; 
+      (c ^ crypto.getRandomValues(new Uint8Array(1))[0] &amp; 15 &gt;&gt; c / 4).toString(16))
+  }
+}</pre>
+<h3>The ToolboxController Class</h3>
+<p>Most of how the &quot;click and drop&quot; and &quot;drag and drop&quot; behavior is handled 
+here.&nbsp; Remember that this class derives from MouseController, however it 
+also needs to be initialized with the <i>surface</i> mouse controller -- it gets 
+interesting (or perhaps confusing) to have two mouse controllers in this class!</p>
+<h4>Constructor</h4>
+<pre>class ToolboxController extends MouseController {
+  // We pass in the mouse controller that the surface is using so we can 
+  // pass control over to the surface mouse controller when dragging a shape.
+  constructor(mouseController) {
+    super();
+    this.mouseController = mouseController;
+    this.draggingShape = false;
+  }</pre>
+<p>As the comments state, we need the <i>surface</i> mouse controller so that 
+for drag &amp; drop operations, we can pass off the shape dragging to the <i>surface</i> 
+mouse controller.&nbsp; When dragging, a non-toolbox shape is created.&nbsp; 
+This shape wires up the mouse events using the <i>surface</i> mouse controller, 
+which is why we need to pass control over to that controller.&nbsp; The 
+alternative would be to tell the shape how to route the mouse events, and once 
+the shape is dropped onto the surface, the events would have to be detached from 
+the toolbox controller and attached to the surface mouse controller.&nbsp; So it 
+merely shoves the problem around.&nbsp; Still, there might be a better way to do 
+this.</p>
+<h4>Toolbox Controller onMouseDown</h4>
+<pre>onMouseDown(evt) {
+  super.onMouseDown(evt);
+}</pre>
+<p>We let the base class handle this behavior.&nbsp; The event is wired up to 
+the toolbox controller.</p>
+<h4>Determining a Click Event</h4>
+<pre>isClick(evt) {
+  var endDownX = evt.clientX;
+  var endDownY = evt.clientY;
+
+  var isClick = Math.abs(this.startDownX - endDownX) &lt; TOOLBOX_DRAG_MIN_MOVE &amp;&amp;
+                Math.abs(this.startDownY - endDownY) &lt; TOOLBOX_DRAG_MIN_MOVE;
+
+  return isClick;
+}</pre>
+<p>While we could use the &quot;onclick&quot; event, I want finer grained control and I 
+don't want to deal with whether the click event fires after a mouse up &quot;click 
+and drag&quot; vs. a mouse up &quot;drag and drop.&quot;&nbsp; OK, I still have to worry about 
+that, but it makes more sense (to me at least) to just handle this in the mouse 
+up event.</p>
+<h4>Toolbox Controller onMouseUp</h4>
+<pre>// If this is a &quot;click&quot;, create the shape in a fixed location on the surface.
+// If this is the end of a drag operation, place the shape on the surface at
+// the current mouse position.
+onMouseUp(evt) {
+  if (this.isClick(evt)) {
+    // Treat this as a click.
+    var el = this.activeController.createElement();
+
+    // The new shape is attached to the grid surface's mouse controller.
+    var shape = this.activeController.createShape(this.mouseController, el);
+
+    // Account for surface translation (scrolling)
+    shape.translate(-this.surfaceShape.X, -this.surfaceShape.Y);
+
+    // Use the mouse controller associated with the surface.
+    this.dropShapeOnSurface(SVG_OBJECTS_ID, el, shape);
+    this.mouseDown = false;
+  }
+}</pre>
+<p>This is the heart of the &quot;click &amp; drag&quot; behavior.&nbsp; A click is determined 
+by a mouse up event occurring within a motion &quot;window.&quot;&nbsp; After that:</p>
+<ul>
+	<li>The &quot;real&quot; shape is created.</li>
+	<li>Translated to account for surface translation.</li>
+	<li>Dropped onto the surface.</li>
+	<li>Cleanup.</li>
+</ul>
+<p>Dropping the shape onto the surface involves appending the shape to the 
+&quot;objects&quot; group and telling the surface mouse controller about the shape:</p>
+<pre>dropShapeOnSurface(groupName, svgElement, shapeController) {
+  getElement(groupName).appendChild(svgElement);
+  this.mouseController.attach(svgElement, shapeController);
+}</pre>
+<h4>Toolbox Controller onMouseMove</h4>
+<pre>// If the user is dragging, we create a new shape that can be dragged onto
+// the surface. When the drag operation ends, the shape is transferred to the surface.
+onMouseMove(evt) {
+  if (this.mouseDown) {
+    evt.preventDefault();
+    if (this.draggingShape) {
+      // Our toolbox surface picked up the event instead of the shape. Handle
+      // as if the shape got the event.
+      super.onMouseMove(evt);
+    } else {
+      // Make sure a shape has been selected rather than dragging the toolbox surface.
+      if (!(this.activeController instanceof ToolboxSurface)) {
+        if (!this.isClick(evt)) {
+          var endDownX = evt.clientX;
+          var endDownY = evt.clientY;
+          var el = this.activeController.createElementAt(endDownX, endDownY);
+          // Here, because we're dragging, the shape needs to be attached to both the toolbox controller and the surface's mouse controller
+          // so that if the user moves the shape too quickly, either the toolbox controller or the surface controller will pick it up.
+          var shape = this.activeController.createShape(this.mouseController, el);
+          shape.mouseController.mouseDownX = endDownX;
+          shape.mouseController.mouseDownY = endDownY;
+          this.createShapeForDragging(el, shape);
+          this.draggingShape = true;
+        }
+      }
+    }
+  }
+}</pre>
+<p>This is the most complicated piece.&nbsp; The above code handles:</p>
+<ul>
+	<li>If the user moves the shape quickly, the toolbox surface might get the 
+	event, so we handle the default behavior which is to update the shape's 
+	translation.&nbsp; 
+	<ul>
+		<li>One caveat -- if the mouse is moving within the click window, the 
+		surface mouse controller doesn't have the active shape yet, so nothing 
+		happens.</li>
+	</ul>
+	</li>
+	<li>We also don't want the user dragging the toolbox surface itself.&nbsp; 
+	At least not yet.&nbsp; Maybe this will scroll the shapes in the toolbox 
+	later.</li>
+	<li>A drag operation begins only when the user has moved the mouse enough to 
+	not be considered a click event.</li>
+	<li>The shape is handed off to the <i>surface</i> mouse controller at this 
+	point.</li>
+</ul>
+<p>When the shape is created for dragging, it is actually appended to the <i>
+toolbox</i> SVG group, so it stay in the foreground while the user moves the 
+shape over to the grid.&nbsp; Later we have to move the shape to the <i>object</i>s<i> 
+SVG </i>group<i>.</i></p>
+<pre>// Place the shape into the toolbox group so it's topmost, and attach the shape to mouse our toolbox mouse controller
+// and the surface mouse controller so off-shape mouse events are handled correctly.
+createShapeForDragging(el, shape) {
+  // The shape is now under the control of the surface mouse controller even though we added it to our toolbox group.
+  // This is because the shape wires up the surface mouse controller events.
+  // The only thing the toolbox controller will see is the onMouseMove when the user moves the mouse too fast and the
+  // mouse events end up being handled by the toolbox controller (or, if over the surface, the surface controller.)
+  this.dropShapeOnSurface(SVG_TOOLBOX_ID, el, shape);
+
+  // We need to know what shape is being moved, in case we (the tookbox controller) start to receive mouse move events.
+  this.attach(el, shape);
+  this.activeController = shape;
+
+  // The surface mouse controller also needs to know what shape is active and that we are in the &quot;mouse down&quot; state.
+  this.mouseController.activeController = shape;
+  this.mouseController.mouseDown = true;
+}</pre>
+<p>At this point, the surface mouse controller has control!</p>
+<h4>Mouse Controller onMouseUp</h4>
+<pre>// Any dragging is now done.
+onMouseUp(evt) {
+  if (evt.button == LEFT_MOUSE_BUTTON &amp;&amp; this.activeController != null) {
+    evt.preventDefault();
+    // Allows the toolbox controller to finish the drag &amp; drop operation.
+    this.toolboxController.mouseUp();
+    this.clearSelectedObject();
+  }
+}</pre>
+<p>As stated above, the <i>surface</i> mouse controller has control of the shape 
+when the drag operation begins.&nbsp; When <i>it</i> receives a mouse up event, 
+it gives the toolbox controller the opportunity to finish any toolbox drag &amp; 
+drop operation:</p>
+<pre>// Handles end of drag &amp; drop operation, otherwise, does nothing -- toolbox item was clicked.
+mouseUp() {
+  if (this.draggingShape) {
+    // Account for surface translation (scrolling)
+    this.activeController.translate(-this.surfaceShape.X, -this.surfaceShape.Y);
+
+    var el = this.activeController.svgElement;
+
+    // Move element out of the toolbox group and into the objects group.
+    getElement(SVG_TOOLBOX_ID).removeChild(el);
+    getElement(SVG_OBJECTS_ID).appendChild(el);
+    this.dragComplete(el);
+  }
+}</pre>
+<p>Here the element is moved from the topmost foreground position (in the 
+toolbox SVG group) to the objects SVG group.&nbsp; We also have to account for 
+any surface translation so the shape is appears exactly where it is when the 
+user concludes the drag operation.&nbsp; Lastly, we clean up the toolbox 
+controller's state:</p>
+<pre>dragComplete(el) {
+  this.draggingShape = false;
+  this.detach(el);
+  this.mouseDown = false;
+  this.activeController = null;
+}</pre>
+<pre><img border="0" src="toolbox3.png" width="532" height="363"></pre>
+<p>Phew!&nbsp; All done!&nbsp; (Except maybe getting the shapes to click &amp; drop 
+at more uniform location.)</p>
+<h2>Step 6: Saving and Restoring the Drawing Locally</h2>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>

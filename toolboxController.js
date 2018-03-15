@@ -11,39 +11,38 @@ class ToolboxController extends MouseController {
         super.onMouseDown(evt);
     }
 
+    isClick(evt) {
+        var endDownX = evt.clientX;
+        var endDownY = evt.clientY;
+
+        var isClick = Math.abs(this.startDownX - endDownX) < TOOLBOX_DRAG_MIN_MOVE &&
+                      Math.abs(this.startDownY - endDownY) < TOOLBOX_DRAG_MIN_MOVE;
+
+        return isClick;
+    }
+
     // If this is a "click", create the shape in a fixed location on the surface.
     // If this is the end of a drag operation, place the shape on the surface at
     // the current mouse position.
     onMouseUp(evt) {
-        if (!(this.activeController instanceof ToolboxSurface)) {
-            var endDownX = evt.clientX;
-            var endDownY = evt.clientY;
+        if (this.isClick(evt)) {
+            // Treat this as a click.
+            var el = this.activeController.createElement();
 
-            if (Math.abs(this.startDownX - endDownX) < TOOLBOX_DRAG_MIN_MOVE &&
-                Math.abs(this.startDownY - endDownY) < TOOLBOX_DRAG_MIN_MOVE) {
-                // Treat this as a click.
-                var el = this.activeController.createElement();
+            // The new shape is attached to the grid surface's mouse controller.
+            var shape = this.activeController.createShape(this.mouseController, el);
 
-                // The new shape is attached to the grid surface's mouse controller.
-                var shape = this.activeController.createShape(this.mouseController, el);
+            // Account for surface translation (scrolling)
+            shape.translate(-this.surfaceShape.X, -this.surfaceShape.Y);
 
-                // Account for surface translation (scrolling)
-                shape.translate(-this.surfaceShape.X, -this.surfaceShape.Y);
-
-                // Use the mouse controller associated with the surface.
-                this.dropShapeOnSurface("objects", el, shape);
-                this.mouseDown = false;
-            }
-
-            // We will never get this event when dragging the shape because it's handled by the surface mouse controller.
-            // So testing for whether we're dragging a shape here is useless.
-
-            this.mouseUp();
+            // Use the mouse controller associated with the surface.
+            this.dropShapeOnSurface(SVG_OBJECTS_ID, el, shape);
+            this.mouseDown = false;
         }
     }
 
     dropShapeOnSurface(groupName, svgElement, shapeController) {
-        document.getElementById(groupName).appendChild(svgElement);
+        getElement(groupName).appendChild(svgElement);
         this.mouseController.attach(svgElement, shapeController);
     }
 
@@ -56,8 +55,8 @@ class ToolboxController extends MouseController {
             var el = this.activeController.svgElement;
 
             // Move element out of the toolbox group and into the objects group.
-            document.getElementById("toolbox").removeChild(el);
-            document.getElementById("objects").appendChild(el);
+            getElement(SVG_TOOLBOX_ID).removeChild(el);
+            getElement(SVG_OBJECTS_ID).appendChild(el);
             this.dragComplete(el);
         }
     }
@@ -74,11 +73,9 @@ class ToolboxController extends MouseController {
             } else {
                 // Make sure a shape has been selected rather than dragging the toolbox surface.
                 if (!(this.activeController instanceof ToolboxSurface)) {
-                    var endDownX = evt.clientX;
-                    var endDownY = evt.clientY;
-
-                    if (Math.abs(this.startDownX - endDownX) >= TOOLBOX_DRAG_MIN_MOVE &&
-                        Math.abs(this.startDownY - endDownY) >= TOOLBOX_DRAG_MIN_MOVE) {
+                    if (!this.isClick(evt)) {
+                        var endDownX = evt.clientX;
+                        var endDownY = evt.clientY;
                         var el = this.activeController.createElementAt(endDownX, endDownY);
                         // Here, because we're dragging, the shape needs to be attached to both the toolbox controller and the surface's mouse controller
                         // so that if the user moves the shape too quickly, either the toolbox controller or the surface controller will pick it up.
@@ -107,7 +104,7 @@ class ToolboxController extends MouseController {
         // This is because the shape wires up the surface mouse controller events.
         // The only thing the toolbox controller will see is the onMouseMove when the user moves the mouse too fast and the
         // mouse events end up being handled by the toolbox controller (or, if over the surface, the surface controller.)
-        this.dropShapeOnSurface("toolbox", el, shape);
+        this.dropShapeOnSurface(SVG_TOOLBOX_ID, el, shape);
 
         // We need to know what shape is being moved, in case we (the tookbox controller) start to receive mouse move events.
         this.attach(el, shape);
