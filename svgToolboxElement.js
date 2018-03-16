@@ -14,7 +14,11 @@ class SvgToolboxElement extends SvgObject {
 
         // Create a unique ID for the element so we can acquire the correct shape controller
         // when the user drags the shape.
-        el.setAttributeNS(null, "id", this.uuidv4())
+        el.setAttributeNS(null, "id", this.uuidv4());
+
+        // Create a class common to all shapes so that, on file load, we can get them all and re-attach them
+        // to the mouse controller.
+        el.setAttributeNS(null, "class", SHAPE_CLASS_NAME);
 
         // Add the attributes to the element.
         Object.entries(attributes).map(([key, val]) => el.setAttributeNS(null, key, val));

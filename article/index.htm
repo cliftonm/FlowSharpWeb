@@ -23,7 +23,8 @@ I wanted to learn how to use SVG dynamically:</p>
 <p>That's what this article is about -- it will only teach you SVG and 
 Javascript in so far as to achieve the goals outlined above.&nbsp; However, what 
 it will teach you is how to create dynamic SVG drawings, and what better way to 
-do this than to actually create a simple drawing program.&nbsp; </p>
+do this than to actually create a simple drawing program.&nbsp; Then again, I 
+learned a lot about both SVG and Javascript writing this article.</p>
 <h3>draw.io</h3>
 <p>One of the best online SVG drawing programs is <a href="https://www.draw.io/">
 draw.io</a> and I'm not going to attempt to recreate it.&nbsp; However, like 
@@ -352,14 +353,14 @@ class MouseController {
   }
 
   // Create a map between then SVG element (by it's ID, so ID's must be unique) and its controller.
-  register(svgElement, controller) {
+  attach(svgElement, controller) {
     var id = svgElement.getAttribute(&quot;id&quot;);
     this.controllers[id] = controller;
   }
 
-  unregister(svgElement) {
+  detach(svgElement) {
     var id = svgElement.getAttribute(&quot;id&quot;);
-    delete this.activeController[id];
+    delete this.controllers[id];
   }
 
   // Get the controller associated with the event and remember where the user clicked.
@@ -429,7 +430,7 @@ instance.</li>
     this.events = [];
     this.X = 0;
     this.Y = 0;
-    this.mouseController.register(svgElement, this);
+    this.mouseController.attach(svgElement, this);
   }
 
   // Register the event so that when we destroy the object, we can unwire the event listeners.
@@ -457,6 +458,8 @@ instance.</li>
       var event = this.events[i];
       event.element.removeEventListener(event.eventName, event.callbackRef);
     }
+
+    this.events = [];
   }
 
   onDrag(evt) {
@@ -767,7 +770,11 @@ unique ID for the element:</p>
 
     // Create a unique ID for the element so we can acquire the correct shape controller
     // when the user drags the shape.
-    el.setAttributeNS(null, &quot;id&quot;, this.uuidv4())
+    el.setAttributeNS(null, &quot;id&quot;, this.uuidv4());
+
+    // Create a class common to all shapes so that, on file load, we can get them all and re-attach them
+    // to the mouse controller.
+    el.setAttributeNS(null, &quot;class&quot;, SHAPE_CLASS_NAME);
 
     // Add the attributes to the element.
     Object.entries(attributes).map(([key, val]) =&gt; el.setAttributeNS(null, key, val));
@@ -880,8 +887,10 @@ onMouseMove(evt) {
           // Here, because we're dragging, the shape needs to be attached to both the toolbox controller and the surface's mouse controller
           // so that if the user moves the shape too quickly, either the toolbox controller or the surface controller will pick it up.
           var shape = this.activeController.createShape(this.mouseController, el);
+          // set the shape name so we can map shape names to shape constructors when loading a diagram.
+          el.setAttributeNS(null, &quot;shapeName&quot;, shape.constructor.name);
           shape.mouseController.mouseDownX = endDownX;
-          shape.mouseController.mouseDownY = endDownY;
+          shape.mouseController.mouseDownY = endDownY + 30; // Offset so shape is drawn under mouse.
           this.createShapeForDragging(el, shape);
           this.draggingShape = true;
         }
@@ -973,6 +982,19 @@ controller's state:</p>
 <p>Phew!&nbsp; All done!&nbsp; (Except maybe getting the shapes to click &amp; drop 
 at more uniform location.)</p>
 <h2>Step 6: Saving and Restoring the Drawing Locally</h2>
+<p>We have enough happening now that before doing anything else, I think it's a 
+good idea to look at how shapes are saved and loaded locally.&nbsp; The 
+implementation I present here is very rudimentary -- it automatically initiates 
+a download which will go into the Downloads folder, and in Chrome, any existing 
+file causes the filename to be appended with (n) where n is an incrementing 
+number.&nbsp; At some point I will enhance this functionality using the HTML5 
+FileSystem API (<a href="https://www.html5rocks.com/en/tutorials/file/filesystem/">https://www.html5rocks.com/en/tutorials/file/filesystem/</a> 
+and <a href="https://dev.w3.org/2009/dap/file-system/pub/FileSystem/">
+https://dev.w3.org/2009/dap/file-system/pub/FileSystem/</a>) but for now, it 
+writes &quot;data.svg&quot; and on load, let's you select the directory and file.</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
@@ -986,6 +1008,7 @@ at more uniform location.)</p>
 <h2>Step 6: Saving and Restoring the Drawing Locally</h2>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
+<p>Conclusion</p>
 <p>&nbsp;</p>
 
 </body>

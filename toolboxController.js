@@ -80,8 +80,11 @@ class ToolboxController extends MouseController {
                         // Here, because we're dragging, the shape needs to be attached to both the toolbox controller and the surface's mouse controller
                         // so that if the user moves the shape too quickly, either the toolbox controller or the surface controller will pick it up.
                         var shape = this.activeController.createShape(this.mouseController, el);
+                        // set the shape name so we can map shape names to shape constructors when loading a diagram.
+                        // https://stackoverflow.com/questions/1249531/how-to-get-a-javascript-objects-class
+                        el.setAttributeNS(null, "shapeName", shape.constructor.name);
                         shape.mouseController.mouseDownX = endDownX;
-                        shape.mouseController.mouseDownY = endDownY;
+                        shape.mouseController.mouseDownY = endDownY + 30;   // Offset so shape is drawn under mouse.
                         this.createShapeForDragging(el, shape);
                         this.draggingShape = true;
                     }

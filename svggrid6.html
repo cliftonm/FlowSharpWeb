@@ -1,0 +1,252 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>SVG</title>
+    <script type="text/javascript" src="fileSaver.js"></script>
+    <script type="text/javascript" src="mouseController.js"></script>
+    <script type="text/javascript" src="toolboxController.js"></script>
+    <script type="text/javascript" src="svgObject.js"></script>
+    <script type="text/javascript" src="svgElement.js"></script>
+    <script type="text/javascript" src="svgToolboxElement.js"></script>
+    <script type="text/javascript" src="shapes/surface.js"></script>
+    <script type="text/javascript" src="shapes/toolboxSurface.js"></script>
+    <script type="text/javascript" src="shapes/circle.js"></script>
+    <script type="text/javascript" src="shapes/rectangle.js"></script>
+    <script type="text/javascript" src="shapes/diamond.js"></script>
+    <script type="text/javascript" src="shapes/toolboxRectangle.js"></script>
+    <script type="text/javascript" src="shapes/toolboxCircle.js"></script>
+    <script type="text/javascript" src="shapes/toolboxDiamond.js"></script>
+</head>
+<body>
+    <div>
+        <!-- https://stackoverflow.com/questions/1944267/how-to-change-the-button-text-of-input-type-file -->
+        <!-- creates a hidden file input on routes the button to clicking on that tag -->
+        <button onclick="saveSvg()">Save</button>
+        <button onclick="document.getElementById('file-input').click();">Load</button>
+        <input type="file" id="file-input" style="display:none;"/>
+    </div>
+    <div>
+        <svg id="svg" width="801" height="481" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <pattern id="smallGrid" width="8" height="8" patternUnits="userSpaceOnUse">
+                    <path id="smallGridPath" d="M 8 0 H 0 V 8" fill="none" stroke="gray" stroke-width="0.5" />
+                </pattern>
+                <pattern id="largeGrid" width="80" height="80" patternUnits="userSpaceOnUse">
+                    <rect id="largeGridRect" width="80" height="80" fill="url(#smallGrid)" />
+                    <!-- draw from upper right to upper left, then down to lower left -->
+                    <!-- This creates the appearance of an 80x80 grid when stacked -->
+                    <path id="largeGridPath" d="M 80 0 H 0 V 80" fill="none" stroke="gray" stroke-width="2" />
+                </pattern>
+            </defs>
+
+            <!-- A trick from sprite animations is to extend the scrolling region beyond the viewport
+                and use mod W/H to reset the position to simulate a virtual space. -->
+            <!-- Creating a group is structural only.  One would think that elements could
+                be added to the group and they would be moved as the group is transformed.
+                This is true, but when the mod operator resets the translation to (0, 0), any elements
+                in this group will be reset to it's starting position as well. -->
+            <g id="surface" transform="translate(0, 0)" x="-80" y="-80" width="961" height="641">
+                <rect id="grid" x="-80" y="-80" width="961" height="641" fill="url(#largeGrid)" />
+            </g>
+            <!-- Instead, create a group just for the objects and transform this group without any
+                modulus operation on the (x,y) position. -->
+            <!-- Also, we create an outer group so that on file load, we can remove
+                the "objectGroup" and replace it with what got loaded. -->
+            <g id="objectGroup">
+                <g id="objects" transform="translate(0, 0)"></g>
+            </g>
+            <g id="toolbox" x="0" y="0" width="200" height="480">
+                <rect id="toolboxSurface" x="0" y="0" width="200" height="480" fill="#FFFFFF" stroke="black" stroke-width="0.5" />
+                <rect id="toolboxRectangle" x="10" y="10" width="40" height="40" stroke="black" stroke-width="1" fill="#FFFFFF" />
+                <circle id="toolboxCircle" cx="85" cy="29" r="21" stroke="black" stroke-width="1" fill="#FFFFFF" />
+                <path id="toolboxDiamond" d="M 140 10 L 115 30 L 140 50 L 165 30 Z" stroke="black" stroke-width="1" fill="#FFFFFF" />
+            </g>
+        </svg>
+    </div>
+</body>
+</html>
+<script type="text/javascript">
+    const SVG_ELEMENT_ID = "svg";
+    const SVG_SURFACE_ID = "surface";
+    const SVG_TOOLBOX_SURFACE_ID = "toolboxSurface";
+    const SVG_OBJECTS_ID = "objects";
+    const SVG_TOOLBOX_ID = "toolbox";
+    const SHAPE_CLASS_NAME = "svgShape";
+
+    // Must be "global" so file load can re-attach shapes to the mouse controller.
+    var mouseController;
+
+    // Must be global so we can wire up the event listeners for the surface after objects
+    // gets loaded from a file load.
+    var surface;
+
+    var elementNameShapeMap = {
+        Rectangle: (mouseController, svgElement) => new Rectangle(mouseController, svgElement),
+        Circle: (mouseController, svgElement) => new Circle(mouseController, svgElement),
+        Diamond: (mouseController, svgElement) => new Diamond(mouseController, svgElement)
+    };
+
+    document.getElementById('file-input').addEventListener('change', readSingleFile, false);
+
+    // https://w3c.github.io/FileAPI/
+    // https://stackoverflow.com/questions/3582671/how-to-open-a-local-disk-file-with-javascript
+    // Loading the file after it has been loaded doesn't trigger this event again because it's
+    // hooked up to "change", and the filename hasn't changed!
+    function readSingleFile(e) {
+        var file = e.target.files[0];
+        var reader = new FileReader();
+        reader.onload = loadComplete;
+        reader.readAsText(file);
+        // Clears the last filename(s) so loading the same file will work again.
+        document.getElementById("file-input").value = "";
+    }
+
+    function loadComplete(e) {
+        var contents = e.target.result;
+        replaceObjects(contents);
+    }
+
+    // Replace "objects" with the contents of what got loaded.
+    function replaceObjects(contents) {
+        mouseController.destroyAllButSurface();
+        var objectGroup = getElement("objectGroup");
+        var objects = getElement(SVG_OBJECTS_ID);
+        objectGroup.removeChild(objects);
+        // https://stackoverflow.com/questions/38985998/insert-svg-string-element-into-an-existing-svg-tag
+        objectGroup.innerHTML = contents;
+        createShapeModels();
+        // re-acquire the objects element after adding the contents.
+        var objects = getElement(SVG_OBJECTS_ID);
+        surface.svgObjects = objects;
+
+        // Other things to do:
+        // save/restore the grid w/h
+        // Save/restore the surface translation
+    }
+
+    // https://stackoverflow.com/questions/17824145/parse-svg-transform-attribute-with-javascript
+    function parseTransform(transform) {
+        var transforms = {};
+        for (var i in a = transform.match(/(\w+\((\-?\d+\.?\d*e?\-?\d*,?)+\))+/g)) {
+            var c = a[i].match(/[\w\.\-]+/g);
+            transforms[c.shift()] = c;
+        }
+        return transforms;
+    }
+
+    // The difficult part -- creating the shape model based on the element's shapeName attribute to the shape controller class counterpart.
+    function createShapeModels() {
+        var els = getElements(SHAPE_CLASS_NAME);
+        for (let el of els) {       // note usage "of" - ES6.  note usage "let" : scope limited to block.
+            // muse be lowercase "shapename" - "shapeName", as set in the toolbox controller, doesn't preserve case when serialized!
+            let shapeName = el.getAttribute("shapename");
+            let creator = elementNameShapeMap[shapeName];
+            let shape = creator(mouseController, el);
+            // Annoyingly, we DO have to parse the translation to set the X and Y properties of the shape!
+            let transform = el.getAttribute("transform");
+            let transforms = parseTransform(transform);
+            let translate = transforms["translate"];
+            // We assume integers?
+            shape.X = parseInt(translate[0]);
+            shape.Y = parseInt(translate[1]);
+        }
+    }
+
+    // https://stackoverflow.com/questions/23582101/generating-viewing-and-saving-svg-client-side-in-browser
+    function saveSvg() {
+        var svg = document.getElementById("objects");
+        var serializer = new XMLSerializer();
+        var blob = new Blob([serializer.serializeToString(svg)],
+            { 'type': "image/svg+xml" });
+
+        // We're using https://github.com/eligrey/FileSaver.js/
+        // but with the "export" (a require node.js thing) removed.
+        // There are several forks of this, not sure if there's any improvements in the forks.
+        saveAs(blob, "data.svg");
+    }
+
+    function getElement(id) {
+        var svg = document.getElementById(SVG_ELEMENT_ID);
+        var el = svg.getElementById(id);
+
+        return el;
+    }
+
+    function getElements(className) {
+        var svg = document.getElementById(SVG_ELEMENT_ID);
+        var els = svg.getElementsByClassName(className);
+
+        return els;
+    }
+
+    (function initialize() {
+        mouseController = new MouseController();
+        var svgSurface = getElement(SVG_SURFACE_ID);
+        var svgToolboxSurface = getElement(SVG_TOOLBOX_SURFACE_ID);
+        var svgObjects = getElement(SVG_OBJECTS_ID);
+
+        surface = new Surface(mouseController, svgSurface, svgObjects);
+        surface.resizeGrid(100, 100, 20, 20);
+
+        var toolboxController = new ToolboxController(mouseController);
+
+        // So we can handle mouse drag operations when the mouse moves onto the toolbox surface...
+        var toolboxSurface = new ToolboxSurface(toolboxController, svgToolboxSurface);
+
+        // The surface mouse controller needs to know the toolbox controller to finish
+        // a toolbox drag & drop operation.
+        mouseController.setToolboxController(toolboxController);
+        // To compensate for translations when doing a toolbox drag&drop
+        mouseController.setSurfaceShape(surface);
+        toolboxController.setSurfaceShape(surface);
+
+        new ToolboxRectangle(toolboxController, getElement("toolboxRectangle"));
+        new ToolboxCircle(toolboxController, getElement("toolboxCircle"));
+        new ToolboxDiamond(toolboxController, getElement("toolboxDiamond"));
+    })();
+
+</script>
+<!--
+    mousedown example:
+    https://stackoverflow.com/questions/2753732/how-to-access-svg-elements-with-javascript
+
+    why preventDefault()
+    https://stackoverflow.com/questions/12624745/svg-mousemove-events-stop-firing-in-firefox-after-a-few-mousedowns
+
+    transform -> translate
+    https://stackoverflow.com/questions/13281586/svg-animate-rectangle-along-path-center-of-rect-always-on-the-path
+
+    SVG Paths:
+    https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths
+
+    Transforms:
+    https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/transform
+
+    Working with defs programmatically:
+    https://stackoverflow.com/questions/17776641/fill-rect-with-pattern
+
+    // The same thing:
+    <path d="M 8 0 L 0 0 0 8" />
+    <path d="M 8 0 H 0 V 8" />
+
+    Event listeners inside a class:
+    https://stackoverflow.com/questions/43727516/javascript-how-adding-event-handler-inside-a-class-with-a-class-method-as-the-c
+    https://stackoverflow.com/questions/20279484/how-to-access-the-correct-this-inside-a-callback
+
+    // Lightweight library for manipulating svg:
+    http://svgjs.com/ 
+
+    // Download doesn't work in edge
+    // See StephenKitely's response.
+    // This is insane, and registry paths aren't there on W10
+    // https://answers.microsoft.com/en-us/ie/forum/ie11-iewindows_10/microsoft-edge-wont-download-any-files/82fafcf9-4264-4593-bc7b-33bd569a276f
+    // And more insanity
+    // https://www.tenforums.com/browsers-email/57077-edge-wont-save-anything-i-broke.html
+
+    // Saving files locally, but doesn't work in Edge:
+    https://stackoverflow.com/questions/21012580/is-it-possible-to-write-data-to-file-using-only-javascript
+
+
+-->

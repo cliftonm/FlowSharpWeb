@@ -34,9 +34,11 @@ class SvgObject {
             var event = this.events[i];
             event.element.removeEventListener(event.eventName, event.callbackRef);
         }
+
+        this.events = [];
     }
 
-    onDrag(evt) {
+    updatePosition(evt) {
         var mouseX = evt.clientX;
         var mouseY = evt.clientY;
         var mouseDX = mouseX - this.mouseController.mouseDownX;

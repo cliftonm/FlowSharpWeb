@@ -8,8 +8,13 @@ class Surface extends SvgElement {
         this.registerEventListener(svgSurface, "mouseleave", mouseController.onMouseLeave, mouseController);
     }
 
+    //wireUpObjects(objectsContainer) {
+    //    this.svgObjects = objectsContainer;
+    //    this.wireUpEvents(objectsContainer);
+    //}
+
     onDrag(evt) {
-        super.onDrag(evt);
+        this.updatePosition(evt);
         var dx = this.X % this.gridCellW;
         var dy = this.Y % this.gridCellH;
         this.scrollSurface(dx, dy, this.X, this.Y);
