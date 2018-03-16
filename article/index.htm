@@ -1109,8 +1109,56 @@ deserialize(xml) {
   this.resizeGrid(this.gridCellW, this.gridCellH, this.cellW, this.cellH);
   this.svgElement.setAttribute(&quot;transform&quot;, &quot;translate(&quot; + dx + &quot;,&quot; + dy + &quot;)&quot;);
 }</pre>
+<p>The deserializer xmlToJson was found at the link in the comments.&nbsp; I 
+made a minor tweak to the code described in that link:</p>
+<pre>function stringToXml(xmlStr) {
+  // <a href="https://stackoverflow.com/a/3054210/2276361">https://stackoverflow.com/a/3054210/2276361</a>
+  return (new window.DOMParser()).parseFromString(xmlStr, &quot;text/xml&quot;);
+}
+
+// https://davidwalsh.name/convert-xml-json
+function xmlToJson(xml) {
+  var obj = {};
+
+  if (xml.nodeType == 1) { // element
+  // do attributes
+    if (xml.attributes.length &gt; 0) {
+      obj[&quot;attributes&quot;] = {};
+
+      for (var j = 0; j &lt; xml.attributes.length; j++) {
+        var attribute = xml.attributes.item(j);
+        obj[&quot;attributes&quot;][attribute.nodeName] = attribute.nodeValue;
+      }
+   }
+  } else if (xml.nodeType == 3) { // text
+    obj = xml.nodeValue;
+  }
+
+  // do children
+  if (xml.hasChildNodes()) {
+    for(var i = 0; i &lt; xml.childNodes.length; i++) {
+      var item = xml.childNodes.item(i);
+      var nodeName = item.nodeName;
+
+      if (typeof(obj[nodeName]) == &quot;undefined&quot;) {
+        obj[nodeName] = xmlToJson(item);
+      } else {
+        if (typeof(obj[nodeName].push) == &quot;undefined&quot;) {
+          var old = obj[nodeName];
+          obj[nodeName] = [];
+          obj[nodeName].push(old);
+        }
+
+      obj[nodeName].push(xmlToJson(item));
+      }
+    }
+  }
+
+  return obj;
+};</pre>
 <p>Next, the &quot;objects&quot; element is replaced.&nbsp; To do this, I wrapped the 
-&quot;objects&quot; element in an group:</p>
+&quot;objects&quot; element in an group so that the child element of the wrapping group 
+can be manipulated.</p>
 <pre>&lt;!-- Also, we create an outer group so that on file load, we can remove
      the &quot;objectGroup&quot; and replace it with what got loaded. --&gt;
 &lt;g id=&quot;objectGroup&quot;&gt;
@@ -1225,7 +1273,9 @@ new shapes are added, only the <code>elementNameShapeMap</code> needs to be upda
 simple lines that can connect shapes.&nbsp; Easier said than done, as this means 
 we will need some additional diagram state information so that we know what 
 lines are attached to what shapes so that when the shape moves, the line is 
-updated as well.</p>
+updated as well.&nbsp; I'm not even going to deal with
+<a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Arrow_functions">
+arrows</a> yet!</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
