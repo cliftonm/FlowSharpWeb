@@ -118,17 +118,13 @@
 
     function loadComplete(e) {
         var contents = e.target.result;
-        fixupSurfaceGrid(contents);
-        replaceObjects(svgData);
-    }
-
-    // Deserialize the diagram's surface XML element to restore grid spacing and grid translation.
-    function fixupSurfaceGrid(contents) {
         var endOfDiagramData = contents.indexOf(END_OF_DIAGRAM_TAG);
         var strDiagram = contents.substr(0, endOfDiagramData).substr(START_OF_DIAGRAM_TAG.length);
         var xmlDiagram = stringToXml(strDiagram);
+        // Deserialize the diagram's surface XML element to restore grid spacing and grid translation.
         surface.deserialize(xmlDiagram);
         var svgData = contents.substr(endOfDiagramData + END_OF_DIAGRAM_TAG.length)
+        replaceObjects(contents);
     }
 
     // Replace "objects" with the contents of what got loaded.
@@ -152,12 +148,14 @@
             var c = a[i].match(/[\w\.\-]+/g);
             transforms[c.shift()] = c;
         }
+           
         return transforms;
     }
 
     // The difficult part -- creating the shape model based on the element's shapeName attribute to the shape controller class counterpart.
     function createShapeModels() {
         var els = getElements(SHAPE_CLASS_NAME);
+
         for (let el of els) {       // note usage "of" - ES6.  note usage "let" : scope limited to block.
             let shapeName = el.getAttribute(SHAPE_NAME_ATTR);
             let creator = elementNameShapeMap[shapeName];
@@ -180,8 +178,7 @@
         var xml = serializer.serializeToString(svg);
         // Prepend the xml with other things we want to save, like the surface translation and grid spacing.
         xml = "<diagram>" + surface.serialize() + "</diagram>" + xml;
-        var blob = new Blob([xml],
-            { 'type': "image/svg+xml" });
+        var blob = new Blob([xml], { 'type': "image/svg+xml" });
 
         // We're using https://github.com/eligrey/FileSaver.js/
         // but with the "export" (a require node.js thing) removed.

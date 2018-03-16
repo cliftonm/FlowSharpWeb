@@ -24,15 +24,11 @@ class MouseController {
     }
 
     destroyAllButSurface() {
-        var shapesToDetach = [];
         Object.entries(this.controllers).map(([key, val]) => {
             if (!(val instanceof Surface)) {
-                shapesToDetach.push(val);
+                val.destroy();
             }
         });
-
-        // Detaches from mouse controller and unhooks events.
-        shapesToDetach.map(shape => shape.destroy());
     }
 
     // The surface mouse controller needs to know the toolbox controller to finish

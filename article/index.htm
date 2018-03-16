@@ -8,7 +8,7 @@
 
 <body>
 
-<p>Build a Simple Shape Drawing App with SVG and Javascript</p>
+<p>Build a Simple Shape Diagramming App with SVG and Javascript</p>
 <h2>Introduction</h2>
 <p>I've been wanting to learn about SVG for a while now, and there are certainly 
 any number of helpful websites on creating SVG drawings and animations.&nbsp; 
@@ -24,7 +24,7 @@ I wanted to learn how to use SVG dynamically:</p>
 Javascript in so far as to achieve the goals outlined above.&nbsp; However, what 
 it will teach you is how to create dynamic SVG drawings, and what better way to 
 do this than to actually create a simple drawing program.&nbsp; Then again, I 
-learned a lot about both SVG and Javascript writing this article.</p>
+learned a lot about both SVG and modern Javascript writing this article.</p>
 <h3>draw.io</h3>
 <p>One of the best online SVG drawing programs is <a href="https://www.draw.io/">
 draw.io</a> and I'm not going to attempt to recreate it.&nbsp; However, like 
@@ -981,7 +981,7 @@ controller's state:</p>
 <pre><img border="0" src="toolbox3.png" width="532" height="363"></pre>
 <p>Phew!&nbsp; All done!&nbsp; (Except maybe getting the shapes to click &amp; drop 
 at more uniform location.)</p>
-<h2>Step 6: Saving and Restoring the Drawing Locally</h2>
+<h2>Step 6: Saving and Restoring the Diagram Locally</h2>
 <p>We have enough happening now that before doing anything else, I think it's a 
 good idea to look at how shapes are saved and loaded locally.&nbsp; The 
 implementation I present here is very rudimentary -- it automatically initiates 
@@ -990,22 +990,243 @@ file causes the filename to be appended with (n) where n is an incrementing
 number.&nbsp; At some point I will enhance this functionality using the HTML5 
 FileSystem API (<a href="https://www.html5rocks.com/en/tutorials/file/filesystem/">https://www.html5rocks.com/en/tutorials/file/filesystem/</a> 
 and <a href="https://dev.w3.org/2009/dap/file-system/pub/FileSystem/">
-https://dev.w3.org/2009/dap/file-system/pub/FileSystem/</a>) but for now, it 
-writes &quot;data.svg&quot; and on load, let's you select the directory and file.</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
+https://dev.w3.org/2009/dap/file-system/pub/FileSystem/</a>), part of the
+<a href="https://developer.mozilla.org/en-US/docs/WebAPI">WebAPI</a>.&nbsp; But for now, it 
+writes &quot;data.svg&quot; and on load, let's you select the directory and file.&nbsp; 
+Rather than focusing on the UI for saving/loading diagrams, the point here is to 
+focus on the mechanics of actually saving and loading the diagram itself.&nbsp; 
+Between figuring out how to write the Javascript, working with the SVG DOM, and 
+fixing bugs, this took two days!</p>
+<p><img border="0" src="saveload1.png" width="422" height="182"></p>
+<p>To begin with, I added Save and Load buttons at the top of the page:</p>
+<pre>&lt;div&gt;
+  &lt;!-- <a href="https://stackoverflow.com/questions/1944267/how-to-change-the-button-text-of-input-type-file%20--">https://stackoverflow.com/questions/1944267/how-to-change-the-button-text-of-input-type-file --</a>&gt;
+  &lt;!-- creates a hidden file input on routes the button to clicking on that tag --&gt;
+  &lt;button onclick=&quot;saveSvg()&quot;&gt;Save&lt;/button&gt;
+  &lt;button onclick=&quot;document.getElementById('fileInput').click();&quot;&gt;Load&lt;/button&gt;
+  &lt;input type=&quot;file&quot; id=&quot;fileInput&quot; style=&quot;display:none;&quot;/&gt;
+&lt;/div&gt;</pre>
+<p>The trick here, to avoid the default behavior of a file input element, was to 
+hide the input element, as to SO link showed me.</p>
+<h3>Saving the Diagram</h3>
+<p>Saving the SVG <i>locally</i> took some research and resulted n this code:</p>
+<pre>document.getElementById(FILE_INPUT).addEventListener('change', readSingleFile, false);</pre>
+<pre>// https://stackoverflow.com/questions/23582101/generating-viewing-and-saving-svg-client-side-in-browser
+function saveSvg() {
+  var svg = getElement(SVG_OBJECTS_ID);
+  // <a href="https://developer.mozilla.org/en-US/docs/Web/API/XMLSerializer">https://developer.mozilla.org/en-US/docs/Web/API/XMLSerializer</a>
+  var serializer = new XMLSerializer();
+  var xml = serializer.serializeToString(svg);
+  // Prepend the xml with other things we want to save, like the surface translation and grid spacing.
+  xml = &quot;&lt;diagram&gt;&quot; + surface.serialize() + &quot;&lt;/diagram&gt;&quot; + xml;
+  var blob = new Blob([xml], { 'type': &quot;image/svg+xml&quot; });
 
+  // We're using <a href="https://github.com/eligrey/FileSaver.js/">https://github.com/eligrey/FileSaver.js/</a>
+  // but with the &quot;export&quot; (a require node.js thing) removed.
+  // There are several forks of this, not sure if there's any improvements in the forks.
+  saveAs(blob, FILENAME);
+}</pre>
+<p>As the comments point out, I'm using FileSaver.js, written by &quot;eligrey.&quot;&nbsp; 
+Thank goodness for open source -- this works in Chrome and Edge (the two 
+browsers I tested) and has support for other browser's nuances as well.&nbsp; Of 
+particular note here:</p>
+<ul>
+	<li>We're giving the surface (and maybe other objects later on) the 
+	opportunity to save their state.&nbsp; The surface needs to save:<ul>
+		<li>It's translation.</li>
+		<li>The grid spacing.</li>
+	</ul>
+</li>
+	<li>This data, as an XML string, is prepended to the SVG data.</li>
+</ul>
+<p>In the surface class, this is implemented as:</p>
+<pre>// Create an XML fragment for things we want to save here.
+serialize() {
+  var el = document.createElement(&quot;surface&quot;);
+  // DOM adds elements as lowercase, so let's just start with lowercase keys.
+  var attributes = {x : this.X, y : this.Y, gridcellw : this.gridCellW, gridcellh : this.gridCellH, 
+                    cellw : this.cellW, cellh : this.cellH}
+  Object.entries(attributes).map(([key, val]) =&gt; el.setAttribute(key, val));
+  var serializer = new XMLSerializer();
+  var xml = serializer.serializeToString(el);
+
+  return xml;
+}</pre>
+<p>That was the easy part -- the file is <i>downloaded</i> into the browser's 
+default download location.</p>
+<h3>Loading the Diagram</h3>
+<p>The first step is to actually read the file data locally:</p>
+<pre>// https://w3c.github.io/FileAPI/
+// https://stackoverflow.com/questions/3582671/how-to-open-a-local-disk-file-with-javascript
+// Loading the file after it has been loaded doesn't trigger this event again because it's
+// hooked up to &quot;change&quot;, and the filename hasn't changed!
+function readSingleFile(e) {
+  var file = e.target.files[0];
+  var reader = new FileReader();
+  reader.onload = loadComplete;
+  reader.readAsText(file);
+  // Clears the last filename(s) so loading the same file will work again.
+  document.getElementById(FILE_INPUT).value = &quot;&quot;;
+}</pre>
+<p>This function uses the WebAPI's <code>FileReader</code> class.&nbsp; The most 
+interesting thing here is clearing the filename from the input element.&nbsp; As 
+the comment points out, if we don't do this, we can't re-load the diagram if it 
+has the same filename.&nbsp; Very annoying for testing.</p>
+<p>When the load completes (I didn't implement any error checking / validation 
+that the file is actually a diagram file):</p>
+<pre>function loadComplete(e) {
+  var contents = e.target.result;
+  var endOfDiagramData = contents.indexOf(END_OF_DIAGRAM_TAG);
+  var strDiagram = contents.substr(0, endOfDiagramData).substr(START_OF_DIAGRAM_TAG.length);
+  var xmlDiagram = stringToXml(strDiagram);
+  // Deserialize the diagram's surface XML element to restore grid spacing and grid translation.
+  surface.deserialize(xmlDiagram);
+  var svgData = contents.substr(endOfDiagramData + END_OF_DIAGRAM_TAG.length)
+  replaceObjects(contents);
+}</pre>
+<p>Several things happen:</p>
+<ul>
+	<li>The data (as a string) is separated out into the diagram &quot;state&quot; 
+	information -- currently just the surface state -- and the SVG data.</li>
+<li>The surface state is restored.</li>
+	<li>The &quot;objects&quot; element is replaced.</li>
+</ul>
+<p>The surface state is deserialized and restored:</p>
+<pre>// Deserialize the xml fragment that contains the surface translation and grid dimensions on a file load.
+deserialize(xml) {
+  var obj = xmlToJson(xml);
+  var attributes = obj.surface.attributes;
+  // Note the attributes, because they were serialized by the DOM, are all lowercase.
+  // OK to assume all ints?
+  this.X = parseInt(attributes.x);
+  this.Y = parseInt(attributes.y);
+  this.gridCellW = parseInt(attributes.gridcellw);
+  this.gridCellH = parseInt(attributes.gridcellh);
+  this.cellW = parseInt(attributes.cellw);
+  this.cellH = parseInt(attributes.cellh);
+  var dx = this.X % this.gridCellW;
+  var dy = this.Y % this.gridCellH;
+  this.resizeGrid(this.gridCellW, this.gridCellH, this.cellW, this.cellH);
+  this.svgElement.setAttribute(&quot;transform&quot;, &quot;translate(&quot; + dx + &quot;,&quot; + dy + &quot;)&quot;);
+}</pre>
+<p>Next, the &quot;objects&quot; element is replaced.&nbsp; To do this, I wrapped the 
+&quot;objects&quot; element in an group:</p>
+<pre>&lt;!-- Also, we create an outer group so that on file load, we can remove
+     the &quot;objectGroup&quot; and replace it with what got loaded. --&gt;
+&lt;g id=&quot;objectGroup&quot;&gt;
+  &lt;g id=&quot;objects&quot; transform=&quot;translate(0, 0)&quot;&gt;&lt;/g&gt;
+&lt;/g&gt;</pre>
+<p>The Javascript code:</p>
+<pre>// Replace &quot;objects&quot; with the contents of what got loaded.
+function replaceObjects(contents) {
+  mouseController.destroyAllButSurface();
+  var objectGroup = getElement(OBJECT_GROUP_ID);
+  var objects = getElement(SVG_OBJECTS_ID);
+  objectGroup.removeChild(objects);
+  // <a href="https://stackoverflow.com/questions/38985998/insert-svg-string-element-into-an-existing-svg-tag">https://stackoverflow.com/questions/38985998/insert-svg-string-element-into-an-existing-svg-tag</a>
+  objectGroup.innerHTML = contents;
+  createShapeModels();
+  // re-acquire the objects element after adding the contents.
+  var objects = getElement(SVG_OBJECTS_ID);
+  surface.svgObjects = objects;
+}</pre>
+<p>Several things happen in order to replace the &quot;objects&quot; element:</p>
+<ul>
+	<li>All objects except the &quot;surface&quot; currently on the surface are &quot;destroyed.&quot;&nbsp; This means 
+	that:<ul>
+		<li>Their events are unwired.</li>
+		<li>They are detached from the mouse controller.</li>
+	</ul>
+	</li>
+	<li>The child &quot;objects&quot; element is removed.</li>
+	<li>The outer group's inner HTML is replaced with the SVG data that was 
+	loaded from the file.</li>
+	<li>Next, the backing shape classes (the &quot;models&quot; if you will) need to be 
+	instantiated.&nbsp; This means:<ul>
+		<li>Wiring up their events.</li>
+		<li>Attaching them to the mouse controller.</li>
+		<li>Fixing up their position so the object knows how they've been 
+		translated.</li>
+	</ul>
+	</li>
+	<li>Lastly:<ul>
+		<li>The new &quot;objects&quot; element is acquired.</li>
+		<li>The surface controller is told about the new &quot;objects&quot; element.</li>
+	</ul>
+</li>
+</ul>
+<p>Why are we destroying all SVG elements except the &quot;surface&quot; element?&nbsp; 
+The surface element is effectively our placeholder element for the grid and 
+handles the scrolling of the surface.&nbsp; We don't need to replace that 
+element, so we ignore it:</p>
+<pre>destroyAllButSurface() {
+  Object.entries(this.controllers).map(([key, val]) =&gt; {
+    if (!(val instanceof Surface)) {
+      val.destroy();
+    }
+  });
+}</pre>
+<p>Creating the shape models is done with a lookup to map the <code>shapename</code> 
+attribute to the function that instantiates the correct shape model:</p>
+<pre>var elementNameShapeMap = {
+  Rectangle: (mouseController, svgElement) =&gt; new Rectangle(mouseController, svgElement),
+  Circle: (mouseController, svgElement) =&gt; new Circle(mouseController, svgElement),
+  Diamond: (mouseController, svgElement) =&gt; new Diamond(mouseController, svgElement)
+};
+</pre>
+<p>As an aside, where did the <code>shapename</code> attribute come from?&nbsp; 
+This is created when the shape is dropped from a click or drag operation by the 
+toolbox.&nbsp; In the SvgToolboxElement class:</p>
+<pre>// set the shape name so we can map shape names to shape constructors when loading a diagram.
+// https://stackoverflow.com/questions/1249531/how-to-get-a-javascript-objects-class
+el.setAttributeNS(null, SHAPE_NAME_ATTR, this.constructor.name);
+</pre>
+<p>Also, in the same class, we add a class attribute that makes it easy to get 
+all the SVG elements in the &quot;objects&quot; group:</p>
+<pre>// Create a class common to all shapes so that, on file load, we can get them all and re-attach them
+// to the mouse controller.
+el.setAttributeNS(null, &quot;class&quot;, SHAPE_CLASS_NAME);</pre>
+<p>Javascript for creating the shape models:</p>
+<pre>// The difficult part -- creating the shape model based on the element's shapeName attribute to the shape controller class counterpart.
+function createShapeModels() {
+  var els = getElements(SHAPE_CLASS_NAME);
+
+  for (let el of els) { // note usage &quot;of&quot; - ES6. note usage &quot;let&quot; : scope limited to block.
+    let shapeName = el.getAttribute(SHAPE_NAME_ATTR);
+    let creator = elementNameShapeMap[shapeName];
+    let shape = creator(mouseController, el);
+    // Annoyingly, we DO have to parse the translation to set the X and Y properties of the shape!
+    let transform = el.getAttribute(&quot;transform&quot;);
+    let transforms = parseTransform(transform);
+    let translate = transforms[&quot;translate&quot;];
+    // We assume integers?
+    shape.X = parseInt(translate[0]);
+    shape.Y = parseInt(translate[1]);
+  }
+}</pre>
+<p>Annoyingly, we have to actually parse the transform because I don't add 
+attributes to the SVG element for the model.&nbsp; This is done using some code 
+I found on SO:</p>
+<pre>// https://stackoverflow.com/questions/17824145/parse-svg-transform-attribute-with-javascript
+function parseTransform(transform) {
+  var transforms = {};
+  for (var i in a = transform.match(/(\w+\((\-?\d+\.?\d*e?\-?\d*,?)+\))+/g)) {
+    var c = a[i].match(/[\w\.\-]+/g);
+    transforms[c.shift()] = c;
+  }
+
+  return transforms;
+}</pre>
+<p>We now have a simple mechanism for saving and loading a diagram.&nbsp; When 
+new shapes are added, only the <code>elementNameShapeMap</code> needs to be updated.</p>
+
+<h2>Step 7: Lines and Anchor Points</h2>
+<p>The last thing I want to create for this article is the ability to draw 
+simple lines that can connect shapes.&nbsp; Easier said than done, as this means 
+we will need some additional diagram state information so that we know what 
+lines are attached to what shapes so that when the shape moves, the line is 
+updated as well.</p>
 <p>&nbsp;</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<h2>Step 6: Saving and Restoring the Drawing Locally</h2>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <p>Conclusion</p>

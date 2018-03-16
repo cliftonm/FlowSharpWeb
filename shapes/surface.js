@@ -45,9 +45,9 @@ class Surface extends SvgElement {
         this.gridCellH = parseInt(attributes.gridcellh);
         this.cellW = parseInt(attributes.cellw);
         this.cellH = parseInt(attributes.cellh);
-        this.resizeGrid(this.gridCellW, this.gridCellH, this.cellW, this.cellH);
         var dx = this.X % this.gridCellW;
         var dy = this.Y % this.gridCellH;
+        this.resizeGrid(this.gridCellW, this.gridCellH, this.cellW, this.cellH);
         this.svgElement.setAttribute("transform", "translate(" + dx + "," + dy + ")");
     }
 
