@@ -82,7 +82,7 @@ class ToolboxController extends MouseController {
                         var shape = this.activeController.createShape(this.mouseController, el);
                         // set the shape name so we can map shape names to shape constructors when loading a diagram.
                         // https://stackoverflow.com/questions/1249531/how-to-get-a-javascript-objects-class
-                        el.setAttributeNS(null, "shapeName", shape.constructor.name);
+                        el.setAttributeNS(null, SHAPE_NAME_ATTR, shape.constructor.name);
                         shape.mouseController.mouseDownX = endDownX;
                         shape.mouseController.mouseDownY = endDownY + 30;   // Offset so shape is drawn under mouse.
                         this.createShapeForDragging(el, shape);

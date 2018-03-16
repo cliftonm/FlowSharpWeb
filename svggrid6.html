@@ -5,6 +5,7 @@
     <meta charset="utf-8" />
     <title>SVG</title>
     <script type="text/javascript" src="fileSaver.js"></script>
+    <script type="text/javascript" src="xmlToJson.js"></script>
     <script type="text/javascript" src="mouseController.js"></script>
     <script type="text/javascript" src="toolboxController.js"></script>
     <script type="text/javascript" src="svgObject.js"></script>
@@ -24,8 +25,8 @@
         <!-- https://stackoverflow.com/questions/1944267/how-to-change-the-button-text-of-input-type-file -->
         <!-- creates a hidden file input on routes the button to clicking on that tag -->
         <button onclick="saveSvg()">Save</button>
-        <button onclick="document.getElementById('file-input').click();">Load</button>
-        <input type="file" id="file-input" style="display:none;"/>
+        <button onclick="document.getElementById('fileInput').click();">Load</button>
+        <input type="file" id="fileInput" style="display:none;"/>
     </div>
     <div>
         <svg id="svg" width="801" height="481" xmlns="http://www.w3.org/2000/svg">
@@ -74,6 +75,18 @@
     const SVG_OBJECTS_ID = "objects";
     const SVG_TOOLBOX_ID = "toolbox";
     const SHAPE_CLASS_NAME = "svgShape";
+    const FILE_INPUT = "fileInput";
+    const OBJECT_GROUP_ID = "objectGroup";
+    const FILENAME = "data.svg";
+    const TOOLBOX_RECTANGLE_ID = "toolboxRectangle";
+    const TOOLBOX_CIRCLE_ID = "toolboxCircle";
+    const TOOLBOX_DIAMOND_ID = "toolboxDiamond";
+    const START_OF_DIAGRAM_TAG = "<diagram>";
+    const END_OF_DIAGRAM_TAG = "</diagram>";
+
+    // Must be lowercase "shapename" - "shapeName", as set in the toolbox controller, the DOM adds elements as lowercase!
+    // https://stackoverflow.com/a/6386486/2276361
+    const SHAPE_NAME_ATTR = "shapename";
 
     // Must be "global" so file load can re-attach shapes to the mouse controller.
     var mouseController;
@@ -88,7 +101,7 @@
         Diamond: (mouseController, svgElement) => new Diamond(mouseController, svgElement)
     };
 
-    document.getElementById('file-input').addEventListener('change', readSingleFile, false);
+    document.getElementById(FILE_INPUT).addEventListener('change', readSingleFile, false);
 
     // https://w3c.github.io/FileAPI/
     // https://stackoverflow.com/questions/3582671/how-to-open-a-local-disk-file-with-javascript
@@ -100,18 +113,28 @@
         reader.onload = loadComplete;
         reader.readAsText(file);
         // Clears the last filename(s) so loading the same file will work again.
-        document.getElementById("file-input").value = "";
+        document.getElementById(FILE_INPUT).value = "";
     }
 
     function loadComplete(e) {
         var contents = e.target.result;
-        replaceObjects(contents);
+        fixupSurfaceGrid(contents);
+        replaceObjects(svgData);
+    }
+
+    // Deserialize the diagram's surface XML element to restore grid spacing and grid translation.
+    function fixupSurfaceGrid(contents) {
+        var endOfDiagramData = contents.indexOf(END_OF_DIAGRAM_TAG);
+        var strDiagram = contents.substr(0, endOfDiagramData).substr(START_OF_DIAGRAM_TAG.length);
+        var xmlDiagram = stringToXml(strDiagram);
+        surface.deserialize(xmlDiagram);
+        var svgData = contents.substr(endOfDiagramData + END_OF_DIAGRAM_TAG.length)
     }
 
     // Replace "objects" with the contents of what got loaded.
     function replaceObjects(contents) {
         mouseController.destroyAllButSurface();
-        var objectGroup = getElement("objectGroup");
+        var objectGroup = getElement(OBJECT_GROUP_ID);
         var objects = getElement(SVG_OBJECTS_ID);
         objectGroup.removeChild(objects);
         // https://stackoverflow.com/questions/38985998/insert-svg-string-element-into-an-existing-svg-tag
@@ -120,10 +143,6 @@
         // re-acquire the objects element after adding the contents.
         var objects = getElement(SVG_OBJECTS_ID);
         surface.svgObjects = objects;
-
-        // Other things to do:
-        // save/restore the grid w/h
-        // Save/restore the surface translation
     }
 
     // https://stackoverflow.com/questions/17824145/parse-svg-transform-attribute-with-javascript
@@ -140,8 +159,7 @@
     function createShapeModels() {
         var els = getElements(SHAPE_CLASS_NAME);
         for (let el of els) {       // note usage "of" - ES6.  note usage "let" : scope limited to block.
-            // muse be lowercase "shapename" - "shapeName", as set in the toolbox controller, doesn't preserve case when serialized!
-            let shapeName = el.getAttribute("shapename");
+            let shapeName = el.getAttribute(SHAPE_NAME_ATTR);
             let creator = elementNameShapeMap[shapeName];
             let shape = creator(mouseController, el);
             // Annoyingly, we DO have to parse the translation to set the X and Y properties of the shape!
@@ -156,15 +174,19 @@
 
     // https://stackoverflow.com/questions/23582101/generating-viewing-and-saving-svg-client-side-in-browser
     function saveSvg() {
-        var svg = document.getElementById("objects");
+        var svg = getElement(SVG_OBJECTS_ID);
+        // https://developer.mozilla.org/en-US/docs/Web/API/XMLSerializer
         var serializer = new XMLSerializer();
-        var blob = new Blob([serializer.serializeToString(svg)],
+        var xml = serializer.serializeToString(svg);
+        // Prepend the xml with other things we want to save, like the surface translation and grid spacing.
+        xml = "<diagram>" + surface.serialize() + "</diagram>" + xml;
+        var blob = new Blob([xml],
             { 'type': "image/svg+xml" });
 
         // We're using https://github.com/eligrey/FileSaver.js/
         // but with the "export" (a require node.js thing) removed.
         // There are several forks of this, not sure if there's any improvements in the forks.
-        saveAs(blob, "data.svg");
+        saveAs(blob, FILENAME);
     }
 
     function getElement(id) {
@@ -202,9 +224,9 @@
         mouseController.setSurfaceShape(surface);
         toolboxController.setSurfaceShape(surface);
 
-        new ToolboxRectangle(toolboxController, getElement("toolboxRectangle"));
-        new ToolboxCircle(toolboxController, getElement("toolboxCircle"));
-        new ToolboxDiamond(toolboxController, getElement("toolboxDiamond"));
+        new ToolboxRectangle(toolboxController, getElement(TOOLBOX_RECTANGLE_ID));
+        new ToolboxCircle(toolboxController, getElement(TOOLBOX_CIRCLE_ID));
+        new ToolboxDiamond(toolboxController, getElement(TOOLBOX_DIAMOND_ID));
     })();
 
 </script>

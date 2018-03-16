@@ -4,14 +4,11 @@ class Surface extends SvgElement {
         this.svgObjects = svgObjects;
         this.gridCellW = 80;
         this.gridCellH = 80;
+        this.cellW = 8;
+        this.cellH = 8;
 
         this.registerEventListener(svgSurface, "mouseleave", mouseController.onMouseLeave, mouseController);
     }
-
-    //wireUpObjects(objectsContainer) {
-    //    this.svgObjects = objectsContainer;
-    //    this.wireUpEvents(objectsContainer);
-    //}
 
     onDrag(evt) {
         this.updatePosition(evt);
@@ -24,6 +21,36 @@ class Surface extends SvgElement {
         this.mouseController.clearSelectedObject();
     }
 
+    // Create an XML fragment for things we want to save here.
+    serialize() {
+        var el = document.createElement("surface");
+        // DOM adds elements as lowercase, so let's just start with lowercase keys.
+        var attributes = {x : this.X, y : this.Y, gridcellw : this.gridCellW, gridcellh : this.gridCellH, cellw : this.cellW, cellh : this.cellH}
+        Object.entries(attributes).map(([key, val]) => el.setAttribute(key, val));
+        var serializer = new XMLSerializer();
+        var xml = serializer.serializeToString(el);
+
+        return xml;
+    }
+
+    // Deserialize the xml fragment that contains the surface translation and grid dimensions on a file load.
+    deserialize(xml) {
+        var obj = xmlToJson(xml);
+        var attributes = obj.surface.attributes;
+        // Note the attributes, because they were serialized by the DOM, are all lowercase.
+        // OK to assume all ints?
+        this.X = parseInt(attributes.x);
+        this.Y = parseInt(attributes.y);
+        this.gridCellW = parseInt(attributes.gridcellw);
+        this.gridCellH = parseInt(attributes.gridcellh);
+        this.cellW = parseInt(attributes.cellw);
+        this.cellH = parseInt(attributes.cellh);
+        this.resizeGrid(this.gridCellW, this.gridCellH, this.cellW, this.cellH);
+        var dx = this.X % this.gridCellW;
+        var dy = this.Y % this.gridCellH;
+        this.svgElement.setAttribute("transform", "translate(" + dx + "," + dy + ")");
+    }
+
     scrollSurface(dx, dy, x, y) {
         // svgElement is the surface.
         this.svgElement.setAttribute("transform", "translate(" + dx + "," + dy + ")");
@@ -34,6 +61,8 @@ class Surface extends SvgElement {
     resizeGrid(lw, lh, sw, sh) {
         this.gridCellW = lw;
         this.gridCellH = lh;
+        this.cellW = sw;
+        this.cellH = sh;
         var elLargeGridRect = document.getElementById("largeGridRect");
         var elLargeGridPath = document.getElementById("largeGridPath");
         var elLargeGrid = document.getElementById("largeGrid");

@@ -462,7 +462,7 @@ instance.</li>
     this.events = [];
   }
 
-  onDrag(evt) {
+  updatePosition(evt) {
     var mouseX = evt.clientX;
     var mouseY = evt.clientY;
     var mouseDX = mouseX - this.mouseController.mouseDownX;
@@ -488,7 +488,7 @@ registration and shape drag implementation:</p>
   }
 
   onDrag(evt) {
-    super.onDrag(evt);
+    this.updatePosition(evt);
     this.element.setAttribute(&quot;transform&quot;, &quot;translate(&quot; + this.X + &quot;,&quot; + this.Y + &quot;)&quot;);
   }
 }</pre>
@@ -521,7 +521,6 @@ catch up to mouse position.</li>
 <pre>class Surface extends SvgElement {
   constructor(mouseController, svgSurface, svgObjects) {
     super(mouseController, svgSurface);
-    this.svgSurface = svgSurface;
     this.svgObjects = svgObjects;
     this.gridCellW = 80;
     this.gridCellH = 80;
@@ -530,7 +529,7 @@ catch up to mouse position.</li>
   }
 
   onDrag(evt) {
-    super.onDrag(evt);
+    this.updatePosition();
     var dx = this.X % this.gridCellW;
     var dy = this.Y % this.gridCellH;
     this.scrollSurface(dx, dy, this.X, this.Y);
@@ -541,7 +540,8 @@ catch up to mouse position.</li>
   }
 
   scrollSurface(dx, dy, x, y) {
-    this.svgSurface.setAttribute(&quot;transform&quot;, &quot;translate(&quot; + dx + &quot;,&quot; + dy + &quot;)&quot;);
+    // svgElement is the surface.
+    this.svgElement.setAttribute(&quot;transform&quot;, &quot;translate(&quot; + dx + &quot;,&quot; + dy + &quot;)&quot;);
     this.svgObjects.setAttribute(&quot;transform&quot;, &quot;translate(&quot; + x + &quot;,&quot; + y + &quot;)&quot;);
   }
 
@@ -610,7 +610,7 @@ controller instance and shape element:</p>
 <p>That's it!&nbsp; But where are we actually dragging the shapes?&nbsp; This 
 may have escaped the casual reader--it is happening in the SvgElement class!</p>
 <pre>onDrag(evt) {
-  super.onDrag(evt);
+  this.updatePosition(evt);
   this.element.setAttribute(&quot;transform&quot;, &quot;translate(&quot; + this.X + &quot;,&quot; + this.Y + &quot;)&quot;);
 }</pre>
 <p>Any shape that derives from <code>SvgElement</code> inherits the ability to be dragged 
