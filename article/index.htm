@@ -1420,7 +1420,7 @@ shape, <i>translated</i> to the absolute coordinate of the shape.</p>
 </pre>
 <pre>getLRCorner() {
   var p = new Point(+this.svgElement.getAttribute(&quot;x&quot;) + +this.svgElement.getAttribute(&quot;width&quot;), 
-                    +this.svgElement.getAttribute(&quot;y&quot;) + +this.svgElement.getAttribute(&quot;width&quot;));
+                    +this.svgElement.getAttribute(&quot;y&quot;) + +this.svgElement.getAttribute(&quot;height&quot;));
   p = this.getAbsoluteLocation(p);
 
   return p;
@@ -1889,16 +1889,99 @@ changeRadius(amt) {
   this.svgElement.setAttribute(&quot;r&quot;, r)
 }</pre>
 <h3>Diamonds</h3>
-<p>Diamonds are resized symmetrically top-bottom and left-right.&nbsp; The 
-anchors are the same as for a circle, but the way the anchor points are 
-translated is different.&nbsp; There are three things to deal with:</p>
-<ul>
-	<li>The change in the path.</li>
-<li>The 1/2 offset in the bottom and top anchors when resizing the width.</li>
-	<li>The 1/2 offset in the left and right anchors when resizing the height.</li>
-</ul>
-<p>The most annoying problem is recalculating the path (for example: <code>d: &quot;M 240 100 
-L 210 130 L 240 160 L 270 130 Z&quot;</code>) as this isn't just setting (x, y) coordinates.</p>
+<p><img border="0" src="diamonds1.png" width="237" height="214"></p>
+<p>Diamonds are resized symmetrically top-bottom and left-right.&nbsp; This 
+means that only the positions of the top-bottom or left-right anchors need to be 
+updated when resizing vertically or horizontally, respectively.&nbsp; The most annoying problem is recalculating the path (for example: <code>d: &quot;M 240 100 
+L 210 130 L 240 160 L 270 130 Z&quot;</code>) as this isn't just setting (x, y) coordinates.&nbsp; 
+Given that the bounding rectangle is the absolute coordinates on the SVG 
+surface, we have to remove any translations (shape and surface) when setting the 
+new path values:</p>
+<pre>updatePath(ulCorner, lrCorner) {
+  // example path: d: &quot;M 240 100 L 210 130 L 240 160 L 270 130 Z&quot;
+  this.getRelativeLocation(ulCorner);
+  this.getRelativeLocation(lrCorner);
+  var mx = (ulCorner.X + lrCorner.X) / 2;
+  var my = (ulCorner.Y + lrCorner.Y) / 2;
+  var path = &quot;M &quot; + mx + &quot; &quot; + ulCorner.Y;
+  path = path + &quot; L &quot; + ulCorner.X + &quot; &quot; + my;
+  path = path + &quot; L &quot; + mx + &quot; &quot; + lrCorner.Y;
+  path = path + &quot; L &quot; + lrCorner.X + &quot; &quot; + my;
+  path = path + &quot; Z&quot;
+  this.svgElement.setAttribute(&quot;d&quot;, path);
+}</pre>
+<p>and in the <code>SvgElement</code> class:</p>
+<pre>getRelativeLocation(p) {
+  p.translate(-this.X, -this.Y);
+  p.translate(-this.mouseController.surface.X, -this.mouseController.surface.Y);
+
+  return p;
+}
+</pre>
+<p>On a &quot;move anchor&quot; event, here's two of the four functions (the other two are 
+identical except the signs are reversed):</p>
+<pre>topMove(anchors, anchor, evt) {
+  var ulCorner = this.getULCorner();
+  var lrCorner = this.getLRCorner();
+  this.changeHeight(ulCorner, lrCorner, -evt.movementY);
+  this.moveAnchor(anchors[0], 0, evt.movementY); // top
+  this.moveAnchor(anchors[1], 0, -evt.movementY); // bottom
+}
+
+leftMove(anchors, anchor, evt) {
+  var ulCorner = this.getULCorner();
+  var lrCorner = this.getLRCorner();
+  this.changeWidth(ulCorner, lrCorner, -evt.movementX);
+  this.moveAnchor(anchors[2], evt.movementX, 0);
+  this.moveAnchor(anchors[3], -evt.movementX, 0);
+}</pre>
+<h3>Rectangles</h3>
+<p><img border="0" src="rectangles1.png" width="274" height="223"></p>
+<p>&nbsp;</p>
+<p>For simplicity, we'll just use create the four anchors we've been using for 
+circles and diamonds.&nbsp; Unlike diamonds, moving an anchor is <i>not</i> 
+symmetrical, so in addition to the anchor itself, the diagonal anchors have to 
+be updated as well.&nbsp; The only nuance here is in manipulating the (x, width) 
+and (y, height) values.&nbsp; Again, illustrating only the code for top and left 
+anchor moves (right and bottom sign changes and only adjust width and height):</p>
+<pre>topMove(anchors, anchor, evt) {
+  // Moving the top affects &quot;y&quot; and &quot;height&quot;
+  var y = +this.svgElement.getAttribute(&quot;y&quot;) + evt.movementY;
+  var height = +this.svgElement.getAttribute(&quot;height&quot;) - evt.movementY;
+  this.svgElement.setAttribute(&quot;y&quot;, y);
+  this.svgElement.setAttribute(&quot;height&quot;, height);
+  this.moveAnchor(anchors[0], 0, evt.movementY);
+  this.adjustAnchorY(anchors[2], evt.movementY/2);
+  this.adjustAnchorY(anchors[3], evt.movementY / 2);
+}
+
+leftMove(anchors, anchor, evt) {
+  // Moving the left affects &quot;x&quot; and &quot;width&quot;
+  var x = +this.svgElement.getAttribute(&quot;x&quot;) + evt.movementX;
+  var width = +this.svgElement.getAttribute(&quot;width&quot;) - evt.movementX;
+  this.svgElement.setAttribute(&quot;x&quot;, x);
+  this.svgElement.setAttribute(&quot;width&quot;, width);
+  this.moveAnchor(anchors[2], evt.movementX, 0);
+  this.adjustAnchorX(anchors[0], evt.movementX / 2);
+  this.adjustAnchorX(anchors[1], evt.movementX / 2);
+}</pre>
+<p>And there are a couple new helper functions in the SvgElement class:</p>
+<pre>adjustAnchorX(anchor, dx) {
+  var tx = +anchor.getAttribute(&quot;tx&quot;) + dx;
+  var ty = +anchor.getAttribute(&quot;ty&quot;);
+  anchor.setAttribute(&quot;transform&quot;, &quot;translate(&quot; + tx + &quot;,&quot; + ty + &quot;)&quot;);
+  anchor.setAttribute(&quot;tx&quot;, tx);
+  anchor.setAttribute(&quot;ty&quot;, ty);
+}
+
+adjustAnchorY(anchor, dy) {
+  var tx = +anchor.getAttribute(&quot;tx&quot;);
+  var ty = +anchor.getAttribute(&quot;ty&quot;) + dy;
+  anchor.setAttribute(&quot;transform&quot;, &quot;translate(&quot; + tx + &quot;,&quot; + ty + &quot;)&quot;);
+  anchor.setAttribute(&quot;tx&quot;, tx);
+  anchor.setAttribute(&quot;ty&quot;, ty);
+}</pre>
+<p>&nbsp;</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>

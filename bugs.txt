@@ -4,6 +4,8 @@ create circles within circles.  Since the mouse leave doesn't fire for a particu
 
 Why do I get "a is not defined" when I move parseTransform into helpers?
 
+Negative width/height for diamond shape doesn't render path correctly.  Should prevent changing shape when width/height is negative.
+
 fixed: moving a shape quickly on the surface messes up the anchor translation
 fixed: multiple loads doesn't work (the file is already loaded, so it does nothing)
 fixed: double event trigger on mouse down on shape after load (but only 2, never more)

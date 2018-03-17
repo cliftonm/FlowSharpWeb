@@ -40,6 +40,13 @@ class SvgElement extends SvgObject {
         return p;
     }
 
+    getRelativeLocation(p) {
+        p.translate(-this.X, -this.Y);
+        p.translate(-this.mouseController.surface.X, -this.mouseController.surface.Y);
+
+        return p;
+    }
+
     // https://stackoverflow.com/questions/22183727/how-do-you-convert-screen-coordinates-to-document-space-in-a-scaled-svg
     translateToSvgCoordinate(p) {
         var svg = document.getElementById(SVG_ELEMENT_ID);
@@ -58,6 +65,22 @@ class SvgElement extends SvgObject {
 
     moveAnchor(anchor, dx, dy) {
         var tx = +anchor.getAttribute("tx") + dx;
+        var ty = +anchor.getAttribute("ty") + dy;
+        anchor.setAttribute("transform", "translate(" + tx + "," + ty + ")");
+        anchor.setAttribute("tx", tx);
+        anchor.setAttribute("ty", ty);
+    }
+
+    adjustAnchorX(anchor, dx) {
+        var tx = +anchor.getAttribute("tx") + dx;
+        var ty = +anchor.getAttribute("ty");
+        anchor.setAttribute("transform", "translate(" + tx + "," + ty + ")");
+        anchor.setAttribute("tx", tx);
+        anchor.setAttribute("ty", ty);
+    }
+
+    adjustAnchorY(anchor, dy) {
+        var tx = +anchor.getAttribute("tx");
         var ty = +anchor.getAttribute("ty") + dy;
         anchor.setAttribute("transform", "translate(" + tx + "," + ty + ")");
         anchor.setAttribute("tx", tx);
