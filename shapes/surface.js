@@ -38,13 +38,12 @@ class Surface extends SvgElement {
         var obj = xmlToJson(xml);
         var attributes = obj.surface.attributes;
         // Note the attributes, because they were serialized by the DOM, are all lowercase.
-        // OK to assume all ints?
-        this.X = parseInt(attributes.x);
-        this.Y = parseInt(attributes.y);
-        this.gridCellW = parseInt(attributes.gridcellw);
-        this.gridCellH = parseInt(attributes.gridcellh);
-        this.cellW = parseInt(attributes.cellw);
-        this.cellH = parseInt(attributes.cellh);
+        this.X = +attributes.x;
+        this.Y = +attributes.y;
+        this.gridCellW = +attributes.gridcellw;
+        this.gridCellH = +attributes.gridcellh;
+        this.cellW = +attributes.cellw;
+        this.cellH = +attributes.cellh;
         var dx = this.X % this.gridCellW;
         var dy = this.Y % this.gridCellH;
         this.resizeGrid(this.gridCellW, this.gridCellH, this.cellW, this.cellH);
@@ -88,8 +87,8 @@ class Surface extends SvgElement {
         elGrid.setAttribute("x", -lw);
         elGrid.setAttribute("y", -lh);
 
-        var svgW = elSvg.getAttribute("width");
-        var svgH = elSvg.getAttribute("height");
+        var svgW = +elSvg.getAttribute("width");
+        var svgH = +elSvg.getAttribute("height");
 
         elSurface.setAttribute("width", svgW + lw * 2);
         elSurface.setAttribute("height", svgH + lh * 2);

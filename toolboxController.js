@@ -25,23 +25,24 @@ class ToolboxController extends MouseController {
     // If this is the end of a drag operation, place the shape on the surface at
     // the current mouse position.
     onMouseUp(evt) {
-        if (this.isClick(evt)) {
+        if (this.isClick(evt) && !(this.activeController instanceof ToolboxSurface)) {
             // Treat this as a click.
             var el = this.activeController.createElement();
 
             // The new shape is attached to the grid surface's mouse controller.
             var shape = this.activeController.createShape(this.mouseController, el);
+            this.setShapeName(el, shape);
 
             // Account for surface translation (scrolling)
             shape.translate(-this.surfaceShape.X, -this.surfaceShape.Y);
 
-            // Use the mouse controller associated with the surface.
             this.dropShapeOnSurface(SVG_OBJECTS_ID, el, shape);
             this.mouseDown = false;
         }
     }
 
     dropShapeOnSurface(groupName, svgElement, shapeController) {
+        // Use the mouse controller associated with the surface.
         getElement(groupName).appendChild(svgElement);
         this.mouseController.attach(svgElement, shapeController);
     }
@@ -80,6 +81,7 @@ class ToolboxController extends MouseController {
                         // Here, because we're dragging, the shape needs to be attached to both the toolbox controller and the surface's mouse controller
                         // so that if the user moves the shape too quickly, either the toolbox controller or the surface controller will pick it up.
                         var shape = this.activeController.createShape(this.mouseController, el);
+                        this.setShapeName(el, shape);
                         shape.mouseController.mouseDownX = endDownX;
                         shape.mouseController.mouseDownY = endDownY + 30;   // Offset so shape is drawn under mouse.
                         this.createShapeForDragging(el, shape);
@@ -88,6 +90,12 @@ class ToolboxController extends MouseController {
                 }
             }
         }
+    }
+
+    setShapeName(el, shape) {
+        // set the shape name so we can map shape names to shape constructors when loading a diagram.
+        // https://stackoverflow.com/questions/1249531/how-to-get-a-javascript-objects-class
+        el.setAttributeNS(null, SHAPE_NAME_ATTR, shape.constructor.name);
     }
 
     dragComplete(el) {

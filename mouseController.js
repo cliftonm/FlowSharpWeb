@@ -6,6 +6,12 @@ class MouseController {
         this.mouseDown = false;
         this.controllers = {};
         this.activeController = null;
+        this.anchors = [];
+    }
+
+    // Used for hover anchor point translation.
+    setSurface(surface) {
+        this.surface = surface;
     }
 
     // Create a map between then SVG element (by it's ID, so ID's must be unique) and its controller.
@@ -64,6 +70,23 @@ class MouseController {
         }
     }
 
+    onMouseOver(evt) {
+        var id = evt.currentTarget.getAttribute("id");
+        var activeController = this.controllers[id];
+
+        if (activeController instanceof SvgElement &&
+            !(activeController instanceof ToolboxController) &&
+            !(activeController instanceof Surface)) {
+            var anchors = activeController.getAnchors();
+
+            this.showAnchors(anchors);
+            this.anchors = anchors;
+        } else {
+            this.removeAnchors();
+            this.anchors = [];
+        }
+    }
+
     // Any dragging is now done.
     onMouseUp(evt) {
         if (evt.button == LEFT_MOUSE_BUTTON && this.activeController != null) {
@@ -85,6 +108,45 @@ class MouseController {
     clearSelectedObject() {
         this.mouseDown = false;
         this.activeController = null;
+    }
+
+    showAnchors(anchors) {
+        // not showing?
+        if (this.anchors.length == 0) {
+            var anchorGroup = getElement(ANCHORS_ID);
+
+            anchors.map(anchor => {
+                var el = this.createElement("rect", { x: anchor.X - 5, y: anchor.Y - 5, width: 10, height: 10, fill: "#FFFFFF", stroke: "black", "stroke-width": 0.5});
+                anchorGroup.appendChild(el);
+            });
+        }
+    }
+
+    // TODO: Very similar to SvgToolboxElement.createElement.  Refactor for common helper class?
+    createElement(name, attributes) {
+        var svgns = "http://www.w3.org/2000/svg";
+        var el = document.createElementNS(svgns, name);
+        Object.entries(attributes).map(([key, val]) => el.setAttributeNS(null, key, val));
+
+        return el;
+    }
+
+    removeAnchors() {
+        // already showing?
+        if (this.anchors.length > 0) {
+            var anchorGroup = getElement(ANCHORS_ID);
+            // Reset any translation because the next mouse hover will set the anchors directly over the shape.
+            anchorGroup.setAttribute("transform", "translate(0, 0)");
+
+
+            // https://stackoverflow.com/questions/3955229/remove-all-child-elements-of-a-dom-node-in-javascript
+            // Will change later.
+            anchorGroup.innerHTML = "";
+            // Alternatively:
+            //while (anchorGroup.firstChild) {
+            //    anchorGroup.removeChild(anchorGroup.firstChild);
+            //}
+        }
     }
 }
 

@@ -10,15 +10,18 @@
     <script type="text/javascript" src="toolboxController.js"></script>
     <script type="text/javascript" src="svgObject.js"></script>
     <script type="text/javascript" src="svgElement.js"></script>
+    <script type="text/javascript" src="point.js"></script>
     <script type="text/javascript" src="svgToolboxElement.js"></script>
     <script type="text/javascript" src="shapes/surface.js"></script>
     <script type="text/javascript" src="shapes/toolboxSurface.js"></script>
     <script type="text/javascript" src="shapes/circle.js"></script>
     <script type="text/javascript" src="shapes/rectangle.js"></script>
     <script type="text/javascript" src="shapes/diamond.js"></script>
+    <script type="text/javascript" src="shapes/line.js"></script>
     <script type="text/javascript" src="shapes/toolboxRectangle.js"></script>
     <script type="text/javascript" src="shapes/toolboxCircle.js"></script>
     <script type="text/javascript" src="shapes/toolboxDiamond.js"></script>
+    <script type="text/javascript" src="shapes/toolboxLine.js"></script>
 </head>
 <body>
     <div>
@@ -58,11 +61,19 @@
             <g id="objectGroup">
                 <g id="objects" transform="translate(0, 0)"></g>
             </g>
+            <g id="anchors"></g>
             <g id="toolbox" x="0" y="0" width="200" height="480">
                 <rect id="toolboxSurface" x="0" y="0" width="200" height="480" fill="#FFFFFF" stroke="black" stroke-width="0.5" />
                 <rect id="toolboxRectangle" x="10" y="10" width="40" height="40" stroke="black" stroke-width="1" fill="#FFFFFF" />
                 <circle id="toolboxCircle" cx="85" cy="29" r="21" stroke="black" stroke-width="1" fill="#FFFFFF" />
                 <path id="toolboxDiamond" d="M 140 10 L 115 30 L 140 50 L 165 30 Z" stroke="black" stroke-width="1" fill="#FFFFFF" />
+                <g id="toolboxLine">
+                    <rect id="lineHiddenSelectionArea" x="10" y="70" width="40" height="40" stroke-opacity="0" fill-opacity="0"/>
+                    <!--<line id="lineSelection" x1="10" y1="70" x2="50" y2="110" stroke="#FFA0A0" stroke-width="20" fill="#FFFFFF" stroke-opacity="0" fill-opacity="0" />-->
+                    <!--<rect id="endpoint1" transform="translate(10, 70)" x="-5" y="-5" width="10" height="10" stroke="red" stroke-width="1" fill="#FFFFFF"/>
+                    <rect id="endpoint2" transform="translate(50, 110)" x="-5" y="-5" width="10" height="10" stroke="red" stroke-width="1" fill="#FFFFFF" />-->
+                    <line id="line" x1="10" y1="70" x2="50" y2="110" fill="#FFFFFF" stroke="black" stroke-width="1" />
+                </g>
             </g>
         </svg>
     </div>
@@ -81,6 +92,8 @@
     const TOOLBOX_RECTANGLE_ID = "toolboxRectangle";
     const TOOLBOX_CIRCLE_ID = "toolboxCircle";
     const TOOLBOX_DIAMOND_ID = "toolboxDiamond";
+    const TOOLBOX_LINE_ID = "toolboxLine";
+    const ANCHORS_ID = "anchors";
     const START_OF_DIAGRAM_TAG = "<diagram>";
     const END_OF_DIAGRAM_TAG = "</diagram>";
 
@@ -98,7 +111,8 @@
     var elementNameShapeMap = {
         Rectangle: (mouseController, svgElement) => new Rectangle(mouseController, svgElement),
         Circle: (mouseController, svgElement) => new Circle(mouseController, svgElement),
-        Diamond: (mouseController, svgElement) => new Diamond(mouseController, svgElement)
+        Diamond: (mouseController, svgElement) => new Diamond(mouseController, svgElement),
+        Line: (mouseController, svgElement) => new Line(mouseController, svgElement)
     };
 
     document.getElementById(FILE_INPUT).addEventListener('change', readSingleFile, false);
@@ -135,7 +149,7 @@
         objectGroup.removeChild(objects);
         // https://stackoverflow.com/questions/38985998/insert-svg-string-element-into-an-existing-svg-tag
         objectGroup.innerHTML = contents;
-        createShapeModels();
+        createShapeControllers();
         // re-acquire the objects element after adding the contents.
         var objects = getElement(SVG_OBJECTS_ID);
         surface.svgObjects = objects;
@@ -152,8 +166,8 @@
         return transforms;
     }
 
-    // The difficult part -- creating the shape model based on the element's shapeName attribute to the shape controller class counterpart.
-    function createShapeModels() {
+    // The difficult part -- creating the shape controller based on the element's shapeName attribute to the shape controller class counterpart.
+    function createShapeControllers() {
         var els = getElements(SHAPE_CLASS_NAME);
 
         for (let el of els) {       // note usage "of" - ES6.  note usage "let" : scope limited to block.
@@ -164,9 +178,8 @@
             let transform = el.getAttribute("transform");
             let transforms = parseTransform(transform);
             let translate = transforms["translate"];
-            // We assume integers?
-            shape.X = parseInt(translate[0]);
-            shape.Y = parseInt(translate[1]);
+            shape.X = +translate[0];
+            shape.Y = +translate[1];
         }
     }
 
@@ -208,6 +221,7 @@
 
         surface = new Surface(mouseController, svgSurface, svgObjects);
         surface.resizeGrid(100, 100, 20, 20);
+        mouseController.setSurface(surface);
 
         var toolboxController = new ToolboxController(mouseController);
 
@@ -224,6 +238,7 @@
         new ToolboxRectangle(toolboxController, getElement(TOOLBOX_RECTANGLE_ID));
         new ToolboxCircle(toolboxController, getElement(TOOLBOX_CIRCLE_ID));
         new ToolboxDiamond(toolboxController, getElement(TOOLBOX_DIAMOND_ID));
+        new ToolboxLine(toolboxController, getElement(TOOLBOX_LINE_ID));
     })();
 
 </script>

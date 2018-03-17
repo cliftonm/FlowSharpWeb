@@ -1,0 +1,8 @@
+scrolling surface quickly which causes the mouse to go over an element fires the surface leave event which stops scrolling.
+
+fixed: multiple loads doesn't work (the file is already loaded, so it does nothing)
+fixed: double event trigger on mouse down on shape after load (but only 2, never more)
+fixed: shapes (even new ones dropped) can't be dragged after load
+fixed: after load, scrolling surface translates surface but not objects on surface
+fixed: inspect the svg element, why is the width and height so large?  string/int concat issue?
+

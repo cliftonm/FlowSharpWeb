@@ -3,8 +3,11 @@ class SvgObject {
         this.mouseController = mouseController;
         this.svgElement = svgElement;
         this.events = [];
+
+        // These two parameters are actually the shape TRANSLATION, not the absolute coordinates!!!
         this.X = 0;
         this.Y = 0;
+
         this.mouseController.attach(svgElement, this);
     }
 

@@ -249,8 +249,8 @@ function resizeGrid(lw, lh, sw, sh) {
   elGrid.setAttribute(&quot;x&quot;, -lw);
   elGrid.setAttribute(&quot;y&quot;, -lh);
 
-  var svgW = elSvg.getAttribute(&quot;width&quot;);
-  var svgH = elSvg.getAttribute(&quot;height&quot;);
+  var svgW = +elSvg.getAttribute(&quot;width&quot;);
+  var svgH = +elSvg.getAttribute(&quot;height&quot;);
 
   elSurface.setAttribute(&quot;width&quot;, svgW + lw * 2);
   elSurface.setAttribute(&quot;height&quot;, svgH + lh * 2);
@@ -321,7 +321,7 @@ example, scrolling the surface grid is different than moving a shape in the
 will require tracking the state of the operation -- are we moving the shape, 
 resizing it, rotating it, etc.?</p>
 <p>It's a big leap, but it really is of benefit to create an actual 
-<code>MouseController</code> class and to create a class model for the specialized behaviors of the 
+<code>MouseController</code> class and to create a shape controller class for the specialized behaviors of the 
 different shapes.&nbsp; If we do this now, it becomes a lot easier to continue 
 expanding the capabilities of what so far has just been a playground to test 
 things out.</p>
@@ -428,8 +428,11 @@ instance.</li>
   constructor(mouseController, svgElement) {
     this.mouseController = mouseController;
     this.events = [];
+
+    // These two parameters are actually the shape TRANSLATION, not the absolute coordinates!!!
     this.X = 0;
     this.Y = 0;
+
     this.mouseController.attach(svgElement, this);
   }
 
@@ -838,12 +841,13 @@ up event.</p>
 // If this is the end of a drag operation, place the shape on the surface at
 // the current mouse position.
 onMouseUp(evt) {
-  if (this.isClick(evt)) {
+  if (this.isClick(evt) &amp;&amp; !(this.activeController instanceof ToolboxSurface)) {
     // Treat this as a click.
     var el = this.activeController.createElement();
 
     // The new shape is attached to the grid surface's mouse controller.
     var shape = this.activeController.createShape(this.mouseController, el);
+    this.setShapeName(el, shape);
 
     // Account for surface translation (scrolling)
     shape.translate(-this.surfaceShape.X, -this.surfaceShape.Y);
@@ -853,6 +857,8 @@ onMouseUp(evt) {
     this.mouseDown = false;
   }
 }</pre>
+<p>Note that we prevent anything from happening if the user clicks on the 
+toolbox surface itself.</p>
 <p>This is the heart of the &quot;click &amp; drag&quot; behavior.&nbsp; A click is determined 
 by a mouse up event occurring within a motion &quot;window.&quot;&nbsp; After that:</p>
 <ul>
@@ -887,6 +893,7 @@ onMouseMove(evt) {
           // Here, because we're dragging, the shape needs to be attached to both the toolbox controller and the surface's mouse controller
           // so that if the user moves the shape too quickly, either the toolbox controller or the surface controller will pick it up.
           var shape = this.activeController.createShape(this.mouseController, el);
+          this.setShapeName(el, shape);
           // set the shape name so we can map shape names to shape constructors when loading a diagram.
           el.setAttributeNS(null, &quot;shapeName&quot;, shape.constructor.name);
           shape.mouseController.mouseDownX = endDownX;
@@ -1173,7 +1180,7 @@ function replaceObjects(contents) {
   objectGroup.removeChild(objects);
   // <a href="https://stackoverflow.com/questions/38985998/insert-svg-string-element-into-an-existing-svg-tag">https://stackoverflow.com/questions/38985998/insert-svg-string-element-into-an-existing-svg-tag</a>
   objectGroup.innerHTML = contents;
-  createShapeModels();
+  createShapeControllers();
   // re-acquire the objects element after adding the contents.
   var objects = getElement(SVG_OBJECTS_ID);
   surface.svgObjects = objects;
@@ -1189,7 +1196,7 @@ function replaceObjects(contents) {
 	<li>The child &quot;objects&quot; element is removed.</li>
 	<li>The outer group's inner HTML is replaced with the SVG data that was 
 	loaded from the file.</li>
-	<li>Next, the backing shape classes (the &quot;models&quot; if you will) need to be 
+	<li>Next, the backing shape controller classes need to be 
 	instantiated.&nbsp; This means:<ul>
 		<li>Wiring up their events.</li>
 		<li>Attaching them to the mouse controller.</li>
@@ -1214,8 +1221,8 @@ element, so we ignore it:</p>
     }
   });
 }</pre>
-<p>Creating the shape models is done with a lookup to map the <code>shapename</code> 
-attribute to the function that instantiates the correct shape model:</p>
+<p>Creating the shape controllers is done with a lookup to map the <code>shapename</code> 
+attribute to the function that instantiates the correct shape controller:</p>
 <pre>var elementNameShapeMap = {
   Rectangle: (mouseController, svgElement) =&gt; new Rectangle(mouseController, svgElement),
   Circle: (mouseController, svgElement) =&gt; new Circle(mouseController, svgElement),
@@ -1223,20 +1230,22 @@ attribute to the function that instantiates the correct shape model:</p>
 };
 </pre>
 <p>As an aside, where did the <code>shapename</code> attribute come from?&nbsp; 
-This is created when the shape is dropped from a click or drag operation by the 
-toolbox.&nbsp; In the SvgToolboxElement class:</p>
-<pre>// set the shape name so we can map shape names to shape constructors when loading a diagram.
-// https://stackoverflow.com/questions/1249531/how-to-get-a-javascript-objects-class
-el.setAttributeNS(null, SHAPE_NAME_ATTR, this.constructor.name);
+This is created when the shape is click &amp; dropped or drag &amp; dropped by the 
+toolbox.&nbsp; In the <code>ToolboxController</code> class:</p>
+<pre>setShapeName(el, shape) {
+  // set the shape name so we can map shape names to shape constructors when loading a diagram.
+  // <a href="https://stackoverflow.com/questions/1249531/how-to-get-a-javascript-objects-class">https://stackoverflow.com/questions/1249531/how-to-get-a-javascript-objects-class</a>
+  el.setAttributeNS(null, SHAPE_NAME_ATTR, shape.constructor.name);
+}
 </pre>
-<p>Also, in the same class, we add a class attribute that makes it easy to get 
+<p>Also, in the <code>SvgToolboxElement</code> class, we add a class attribute that makes it easy to get 
 all the SVG elements in the &quot;objects&quot; group:</p>
 <pre>// Create a class common to all shapes so that, on file load, we can get them all and re-attach them
 // to the mouse controller.
 el.setAttributeNS(null, &quot;class&quot;, SHAPE_CLASS_NAME);</pre>
-<p>Javascript for creating the shape models:</p>
-<pre>// The difficult part -- creating the shape model based on the element's shapeName attribute to the shape controller class counterpart.
-function createShapeModels() {
+<p>Javascript for creating the shape controllers:</p>
+<pre>// The difficult part -- creating the shape controller based on the element's shapeName attribute to the shape controller class counterpart.
+function createShapeControllers() {
   var els = getElements(SHAPE_CLASS_NAME);
 
   for (let el of els) { // note usage &quot;of&quot; - ES6. note usage &quot;let&quot; : scope limited to block.
@@ -1253,7 +1262,7 @@ function createShapeModels() {
   }
 }</pre>
 <p>Annoyingly, we have to actually parse the transform because I don't add 
-attributes to the SVG element for the model.&nbsp; This is done using some code 
+attributes to the SVG element for the shape controller.&nbsp; This is done using some code 
 I found on SO:</p>
 <pre>// https://stackoverflow.com/questions/17824145/parse-svg-transform-attribute-with-javascript
 function parseTransform(transform) {
@@ -1276,6 +1285,288 @@ lines are attached to what shapes so that when the shape moves, the line is
 updated as well.&nbsp; I'm not even going to deal with
 <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Arrow_functions">
 arrows</a> yet!</p>
+<h3>The Complexities of Selecting A Line</h3>
+<p>After creating the <code>Line</code> and <code>ToolboxLine</code> classes following the same template as the other 
+shape controller classes, adding a line element to the toolbox 
+group and wiring up the shape controller:</p>
+<pre>&lt;line id=&quot;toolboxLine&quot; x1=&quot;10&quot; y1=&quot;70&quot; x2=&quot;50&quot; y2=&quot;110&quot; stroke=&quot;black&quot; stroke-width=&quot;1&quot; fill=&quot;#FFFFFF&quot; /&gt;
+
+new ToolboxLine(toolboxController, getElement(TOOLBOX_LINE_ID));</pre>
+<p>we encounter the first problem -- it's nearly impossible to actually select 
+the line because the line is so thin -- you have to click exactly on the pixels 
+of the line in order to select it.&nbsp; The best solution to this issue seems 
+to be to create a group with two lines: the actual line and a transparent line 
+with a larger width (<a href="https://stackoverflow.com/a/9126498/2276361">reference</a>.)&nbsp; 
+This is what we want to do once the shape is on the drawing, but for the 
+toolbox, we don't want the user to have to be that precise, so instead we'll 
+create a transparent rectangle so that visually, anywhere in the &quot;box&quot; formed by 
+the toolbox line shape will work.&nbsp; Back to the toolbox group:</p>
+<p><img border="0" src="line1.png" width="422" height="249"></p>
+<p>This works quite well (the commented out transparent line is for future 
+reference):</p>
+<pre>&lt;g id=&quot;toolboxLine&quot;&gt;
+  &lt;line id=&quot;line&quot; x1=&quot;10&quot; y1=&quot;70&quot; x2=&quot;50&quot; y2=&quot;110&quot; stroke=&quot;black&quot; stroke-width=&quot;1&quot; fill=&quot;#FFFFFF&quot; /&gt;
+  &lt;rect id=&quot;hiddenLine&quot; x=&quot;10&quot; y=&quot;70&quot; width=&quot;40&quot; height=&quot;40&quot; stroke=&quot;black&quot; stroke-opacity=&quot;0&quot; fill-opacity=&quot;0&quot;/&gt;
+  &lt;!--&lt;line id=&quot;line2&quot; x1=&quot;10&quot; y1=&quot;70&quot; x2=&quot;50&quot; y2=&quot;110&quot; fill=&quot;#FFFFFF&quot; stroke-opacity=&quot;0&quot; fill-opacity=&quot;0&quot;/&gt;--&gt;
+&lt;/g&gt;</pre>
+<p>While we're at it, we can anticipate the next problem -- clicking and 
+dragging the line's endpoints so that it's easier to change the line's length 
+and orientation.&nbsp; Let's look at how this group is rendered:</p>
+<pre>&lt;g id=&quot;toolboxLine&quot;&gt;
+  &lt;rect id=&quot;hiddenLine&quot; x=&quot;10&quot; y=&quot;70&quot; width=&quot;40&quot; height=&quot;40&quot; stroke=&quot;black&quot; stroke-opacity=&quot;0&quot; fill-opacity=&quot;0&quot;/&gt;
+  &lt;line id=&quot;line2&quot; x1=&quot;10&quot; y1=&quot;70&quot; x2=&quot;50&quot; y2=&quot;110&quot; fill=&quot;#FFFFFF&quot; stroke=&quot;black&quot; stroke-width=&quot;20&quot;/&gt;
+  &lt;line id=&quot;line&quot; x1=&quot;10&quot; y1=&quot;70&quot; x2=&quot;50&quot; y2=&quot;110&quot; stroke=&quot;red&quot; stroke-width=&quot;1&quot; fill=&quot;#FFFFFF&quot; /&gt;
+&lt;/g&gt;</pre>
+<p><img border="0" src="line2.png" width="74" height="69"></p>
+<p>Notice that the stroke width doesn't cause the larger line to extend beyond 
+the extents of the red line with stroke width 1.&nbsp; From a UI perspective, 
+this means that the user would have to select a line endpoint by being &quot;inside&quot; 
+the line -- selecting the line endpoint near the &quot;outside&quot; won't result in the 
+mouse events being handled by the line.&nbsp; Again, we can fix this by creating 
+transparent rectangles around the line endpoints which will represent the 
+clickable area for selecting a line endpoint.&nbsp; When rendered without 
+transparency, we get this -- the red areas are the clickable areas to select the 
+shape in the toolbox and to select the endpoints once the line has been drawn on 
+the surface:</p>
+<p><img border="0" src="line3.png" width="64" height="61"></p>
+<pre>&lt;g id=&quot;toolboxLine&quot;&gt;
+  &lt;rect id=&quot;lineHiddenSelectionArea&quot; x=&quot;10&quot; y=&quot;70&quot; width=&quot;40&quot; height=&quot;40&quot; stroke=&quot;red&quot; stroke-width=&quot;1&quot; fill=&quot;#FFFFFF&quot;/&gt; 
+  &lt;rect id=&quot;endpoint1&quot; transform=&quot;translate(10, 70)&quot; x=&quot;-5&quot; y=&quot;-5&quot; width=&quot;10&quot; height=&quot;10&quot; stroke=&quot;red&quot; stroke-width=&quot;1&quot; fill=&quot;#FFFFFF&quot;/&gt;
+  &lt;rect id=&quot;endpoint2&quot; transform=&quot;translate(50, 110)&quot; x=&quot;-5&quot; y=&quot;-5&quot; width=&quot;10&quot; height=&quot;10&quot; stroke=&quot;red&quot; stroke-width=&quot;1&quot; fill=&quot;#FFFFFF&quot; /&gt;
+  &lt;line id=&quot;line&quot; x1=&quot;10&quot; y1=&quot;70&quot; x2=&quot;50&quot; y2=&quot;110&quot; fill=&quot;#FFFFFF&quot; stroke=&quot;black&quot; stroke-width=&quot;1&quot; /&gt;
+&lt;/g&gt;</pre>
+<p>In reality, when creating a line on the surface, we'll deal with anchors 
+slightly differently rather than adding them to the &quot;toolboxLine&quot; group.</p>
+<ul>
+	<li>For the toolbox, we don't need to the endpoint rectangles or the larger 
+	transparent stroke line.</li>
+	<li>For the line when it's on the diagram surface, we need to endpoint 
+	rectangles and the larger transparent stroke line for easy selection by the 
+	mouse.<ul>
+	<li>In reality, when creating a line on the surface, we'll deal with anchors 
+	slightly differently rather than adding them to the &quot;toolboxLine&quot; group, as 
+	described in the next section.</li>
+</ul>
+	</li>
+</ul>
+<p>This means that we have some specialized work to do when creating the element 
+when it is dropped onto the surface (showing only the <code>createElement</code> function):</p>
+<pre>createElement() {
+  var el = super.createElement('g', {});
+  el.appendChild(super.createChildElement('line', { x1: 240, y1: 100, x2: 300, y2: 160, &quot;stroke-width&quot;: 20, stroke: &quot;black&quot;, &quot;stroke-opacity&quot;: &quot;0&quot;, &quot;fill-opacity&quot;: &quot;0&quot; }));
+  el.appendChild(super.createChildElement('line', { x1: 240, y1: 100, x2: 300, y2: 160, fill: &quot;#FFFFFF&quot;, stroke: &quot;black&quot;, &quot;stroke-width&quot;: 1 }));
+
+  return el;
+}</pre>
+<p>Of note here is something important:</p>
+<ul>
+	<li>The stroke &quot;color&quot; must be initialized in the transparent line, 
+	otherwise the outer group does not include it in its region and the wider 
+	transparent line is not selectable!</li>
+</ul>
+<p>I also had to write a <code>createChildElement</code> function which differs from 
+<code>createElement</code> only in that it does not create a <code>class</code> attribute, as we don't 
+want these child elements to be mapped to the shape controllers -- only the outer group.</p>
+<p><img border="0" src="line4.png" width="175" height="141"></p>
+<p>We can now click &amp; drop and drag &amp; drop a line onto the surface and then drag 
+the line around.</p>
+<h3>Point Class and Shape Rectangle</h3>
+<p>At this point, I'm going to digress briefly -- it's time to create a Point 
+class and functions that help us get the diagonal corners of a shape.&nbsp; Each 
+shape has nuances.&nbsp; Lines have (x1,y1) and (x2,y2) attributes, rectangles 
+have (x, y) and (width, height) attributes, circles have (cx, cy) and (r) 
+attributes and paths, well, having a bounding rectangle.&nbsp; I want to unify 
+this mess.&nbsp; We'll define a simple Point class:</p>
+<pre>class Point {
+  constructor(x, y) {
+    this.X = x;
+    this.Y = y;
+  }
+
+  translate(x, y) {
+    this.X += x;
+    this.Y += y;
+
+    return this;
+  }
+}</pre>
+<p>Yes, there's already an
+<a href="https://developer.mozilla.org/en-US/docs/Web/API/SVGPoint">SVGPoint</a> 
+object as well as a
+<a href="https://developer.mozilla.org/en-US/docs/Web/API/DOMPoint">DOMPoint</a> 
+object, but I'm not using either, as I want behaviors, like translate, that 
+these objects don't provide.</p>
+<p>Now we can implement getting the upper left and lower right corners for each 
+shape, <i>translated</i> to the absolute coordinate of the shape.</p>
+<p>Rectangle:</p>
+<pre>getULCorner() {
+  var p = new Point(+this.svgElement.getAttribute(&quot;x&quot;), +this.svgElement.getAttribute(&quot;y&quot;));
+  p = this.getAbsoluteLocation(p);
+
+  return p;
+}
+</pre>
+<pre>getLRCorner() {
+  var p = new Point(+this.svgElement.getAttribute(&quot;x&quot;) + +this.svgElement.getAttribute(&quot;width&quot;), 
+                    +this.svgElement.getAttribute(&quot;y&quot;) + +this.svgElement.getAttribute(&quot;width&quot;));
+  p = this.getAbsoluteLocation(p);
+
+  return p;
+}</pre>
+<p>Circle:</p>
+<pre>getULCorner() {
+  var p = new Point(+this.svgElement.getAttribute(&quot;cx&quot;) - +this.svgElement.getAttribute(&quot;r&quot;),
+                    +this.svgElement.getAttribute(&quot;cy&quot;) - +this.svgElement.getAttribute(&quot;r&quot;));
+  p = this.getAbsoluteLocation(p);
+
+  return p;
+}
+
+getLRCorner() {
+  var p = new Point(+this.svgElement.getAttribute(&quot;cx&quot;) + +this.svgElement.getAttribute(&quot;r&quot;), 
+                    +this.svgElement.getAttribute(&quot;cy&quot;) + +this.svgElement.getAttribute(&quot;r&quot;));
+  p = this.getAbsoluteLocation(p);
+
+  return p;
+}</pre>
+<p>Line:</p>
+<pre>getULCorner() {
+  var line = this.svgElement.children[0];
+  var p = new Point(+line.getAttribute(&quot;x1&quot;), +line.getAttribute(&quot;y1&quot;));
+  p = this.getAbsoluteLocation(p);
+
+  return p;
+}
+
+getLRCorner() {
+  var line = this.svgElement.children[0];
+  var p = new Point(+line.getAttribute(&quot;x2&quot;), +line.getAttribute(&quot;y2&quot;));
+  p = this.getAbsoluteLocation(p);
+
+  return p;
+}</pre>
+<p>Diamond:</p>
+<p>Paths are interesting because <code>getBoundingClientRect</code> returns the shape's 
+location <i>already translated</i>.&nbsp; As the function name indicates, the 
+returns the client (in screen coordinates) location, so we have to translate it 
+to the root SVG element's location.</p>
+<pre>getULCorner() {
+  var rect = this.svgElement.getBoundingClientRect();
+  var p = new Point(rect.left, rect.top);
+  this.translateToSvgCoordinate(p);
+
+  return p;
+}
+
+getLRCorner() {
+  var rect = this.svgElement.getBoundingClientRect();
+  var p = new Point(rect.right, rect.bottom);
+  this.translateToSvgCoordinate(p);
+
+  return p;
+}</pre>
+<p>And for the two helper functions:</p>
+<pre>getAbsoluteLocation(p) {
+  p.translate(this.X, this.Y);
+  p.translate(this.mouseController.surface.X, this.mouseController.surface.Y);
+
+  return p;
+}
+
+// https://stackoverflow.com/questions/22183727/how-do-you-convert-screen-coordinates-to-document-space-in-a-scaled-svg
+translateToSvgCoordinate(p) {
+  var svg = document.getElementById(SVG_ELEMENT_ID);
+  var pt = svg.createSVGPoint();
+  var offset = pt.matrixTransform(svg.getScreenCTM().inverse());
+  p.translate(offset.x, offset.y);
+}</pre>
+<h3>Anchors, Line Length and Orientation</h3>
+<p>Next, we want to be able to change the line length and its orientation.&nbsp; 
+This will be a useful exercise as the behavior is similar to resizing a shape.&nbsp; 
+In WinForm app <a href="https://www.codeproject.com/Articles/1136050/FlowSharp">
+FlowSharp</a>, I had each shape determine the anchor points for sizing.&nbsp; 
+We'll do the same thing here.&nbsp; We finally have something to implement in 
+the shape's controller classes!&nbsp; The idea here is that when the mouse hovers 
+over a shape, the anchors magically appear so the user has an indication of 
+where to click &amp; drag to modify the shape.&nbsp; In the mouse controller, we'll 
+add an <code>onMouseOver</code> event handler and add it to the events that get 
+wired up in the shape's controller <code>SvgElement</code> base class:</p>
+<pre>this.registerEventListener(svgElement, &quot;mouseover&quot;, mouseController.onMouseOver, mouseController);</pre>
+<p>The event handler:</p>
+<pre>onMouseOver(evt) {
+  var id = evt.currentTarget.getAttribute(&quot;id&quot;);
+  var activeController = this.controllers[id];
+
+  if (activeController instanceof SvgElement &amp;&amp;
+      !(activeController instanceof ToolboxController) &amp;&amp;
+      !(activeController instanceof Surface)) {
+    var anchors = activeController.getAnchors();
+
+    this.showAnchors(anchors);
+    this.anchors = anchors;
+  } else {
+    this.removeAnchors();
+    this.anchors = [];
+  }
+}</pre>
+<p>Anchors will be displayed between the &quot;objects&quot; and &quot;toolbox&quot; groups, so that 
+anchors are on top of every other shape but below the toolbox:</p>
+<pre>&lt;g id=&quot;objectGroup&quot;&gt;
+  &lt;g id=&quot;objects&quot; transform=&quot;translate(0, 0)&quot;&gt;&lt;/g&gt;
+&lt;/g&gt;
+&lt;g id=&quot;anchors&quot;&gt;&lt;/g&gt;
+&lt;g id=&quot;toolbox&quot; x=&quot;0&quot; y=&quot;0&quot; width=&quot;200&quot; height=&quot;480&quot;&gt;
+...</pre>
+<p>Creating anchors:</p>
+<pre>showAnchors(anchors) {
+  // not showing?
+  if (this.anchors.length == 0) {
+    var anchorGroup = getElement(ANCHORS_ID);
+
+    anchors.map(anchor =&gt; {
+      var el = this.createElement(&quot;rect&quot;, 
+        { x: anchor.X - 5, y: anchor.Y - 5, width: 10, height: 10, 
+          fill: &quot;#FFFFFF&quot;, stroke: &quot;black&quot;, &quot;stroke-width&quot;: 0.5});
+      anchorGroup.appendChild(el);
+    });
+  }
+}
+
+// TODO: Very similar to SvgToolboxElement.createElement. Refactor for common helper class?
+createElement(name, attributes) {
+  var svgns = &quot;<a href="http://www.w3.org/2000/svg">http://www.w3.org/2000/svg</a>&quot;;
+  var el = document.createElementNS(svgns, name);
+  Object.entries(attributes).map(([key, val]) =&gt; el.setAttributeNS(null, key, val));
+
+  return el;
+}</pre>
+<p>Removing anchors:</p>
+<pre>removeAnchors() {
+  // already showing?
+  if (this.anchors.length &gt; 0) {
+    var anchorGroup = getElement(ANCHORS_ID);
+
+    // Reset any translation because the next mouse hover will set the anchors directly over the shape.
+    anchorGroup.setAttribute(&quot;transform&quot;, &quot;translate(0, 0)&quot;);
+
+    // <a href="https://stackoverflow.com/questions/3955229/remove-all-child-elements-of-a-dom-node-in-javascript">https://stackoverflow.com/questions/3955229/remove-all-child-elements-of-a-dom-node-in-javascript</a>
+    // Will change later.
+    anchorGroup.innerHTML = &quot;&quot;;
+    // Alternatively:
+    //while (anchorGroup.firstChild) {
+    // anchorGroup.removeChild(anchorGroup.firstChild);
+    //}
+  }
+}</pre>
+<p>One touch-up is that we now also need to translate the anchors group when the 
+object is being dragged in the <code>SvgElement</code> class (notice the reset 
+functionality above in <code>removeAnchors</code>):</p>
+<pre>onDrag(evt) {
+  this.updatePosition(evt);
+  this.svgElement.setAttribute(&quot;transform&quot;, &quot;translate(&quot; + this.X + &quot;,&quot; + this.Y + &quot;)&quot;);
+  getElement(ANCHORS_ID).setAttribute(&quot;transform&quot;, &quot;translate(&quot; + this.X + &quot;,&quot; + this.Y + &quot;)&quot;);
+}</pre>
+<p>&nbsp;</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>

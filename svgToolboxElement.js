@@ -16,13 +16,23 @@ class SvgToolboxElement extends SvgObject {
         // when the user drags the shape.
         el.setAttributeNS(null, "id", this.uuidv4());
 
-        // set the shape name so we can map shape names to shape constructors when loading a diagram.
-        // https://stackoverflow.com/questions/1249531/how-to-get-a-javascript-objects-class
-        el.setAttributeNS(null, SHAPE_NAME_ATTR, this.constructor.name);
-
         // Create a class common to all shapes so that, on file load, we can get them all and re-attach them
         // to the mouse controller.
         el.setAttributeNS(null, "class", SHAPE_CLASS_NAME);
+
+        // Add the attributes to the element.
+        Object.entries(attributes).map(([key, val]) => el.setAttributeNS(null, key, val));
+
+        return el;
+    }
+
+    // A child element doesn't set the class attribute.
+    createChildElement(elementName, attributes) {
+        var el = document.createElementNS(this.svgns, elementName);
+
+        // Create a unique ID for the element so we can acquire the correct shape controller
+        // when the user drags the shape.
+        el.setAttributeNS(null, "id", this.uuidv4());
 
         // Add the attributes to the element.
         Object.entries(attributes).map(([key, val]) => el.setAttributeNS(null, key, val));
