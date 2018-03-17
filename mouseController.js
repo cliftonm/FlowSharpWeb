@@ -8,6 +8,7 @@ class MouseController {
         this.activeController = null;
         this.toolboxController = null;
         this.anchors = [];
+        this.selectedShape = null;
     }
 
     // Used for hover anchor point translation.
@@ -72,6 +73,7 @@ class MouseController {
             evt.preventDefault();
             var id = evt.currentTarget.getAttribute("id");
             this.activeController = this.controllers[id];
+            this.selectedShape = activeController;
             this.mouseDown = true;
             this.mouseDownX = evt.clientX;
             this.mouseDownY = evt.clientY;
@@ -84,7 +86,7 @@ class MouseController {
     // If the user is dragging, call the controller's onDrag function.
     onMouseMove(evt) {
         evt.preventDefault();
-        console.log(this.mouseDown + " " + this.activeController);
+        // console.log(this.mouseDown + " " + this.activeController);
 
         if (this.mouseDown && this.activeController != null) {
             this.activeController.onDrag(evt);

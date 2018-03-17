@@ -24,7 +24,7 @@ class SvgElement extends SvgObject {
     }
 
     // Default behavior is that the shape has no anchors.
-    // All shapes have anchors, this is just a placeholder while we implement the sub-class behaviors.
+    // Text is a case where there are no anchors.
     getAnchors() {
         return [];
     }

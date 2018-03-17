@@ -25,6 +25,20 @@ Javascript in so far as to achieve the goals outlined above.&nbsp; However, what
 it will teach you is how to create dynamic SVG drawings, and what better way to 
 do this than to actually create a simple drawing program.&nbsp; Then again, I 
 learned a lot about both SVG and modern Javascript writing this article.</p>
+<h3>No Third Party Libraries</h3>
+<p><u>No third party libraries are used in this code.</u>&nbsp; There were a few 
+useful Javascript functions (in particular, the FileSaver) that I included in 
+the source here that came from elsewhere (see the article for where), but there 
+are no dependencies on any SVG manipulation frameworks.&nbsp; This code doesn't 
+even use jQuery.&nbsp; In my opinion, this makes it a lot easier to learn SVG 
+from the ground up -- you're <u>not</u> dealing with SVG + YAF (Yet Another 
+Framework.)</p>
+<h3>Describing Why and How</h3>
+<p>The point of this code and the code comments is to describe why I'm doing 
+things in a certain way, and how I'm doing them.&nbsp; As this was a learning 
+experience for myself, any time I had to reach out to the web to figure 
+something out, I reference the source of the information -- this turns out to 
+mostly be StackOverflow references!</p>
 <h3>draw.io</h3>
 <p>One of the best online SVG drawing programs is <a href="https://www.draw.io/">
 draw.io</a> and I'm not going to attempt to recreate it.&nbsp; However, like 
@@ -37,7 +51,8 @@ specifications which supports PHP, .NET, Java, and Javascript.&nbsp; If you're
 looking for a polished drawing program, similar to Visio, look at draw.io.&nbsp; 
 If you want to<i> learn</i> about how 
 this stuff is done, that's what this article is for.<i>&nbsp; </i></p>
-<h2>Step 1: Creating a Scrollable Grid</h2>
+<p>That said, let's begin!</p>
+<h2>Creating a Scrollable Grid</h2>
 <p><img border="0" src="grid1.png" width="276" height="200"></p>
 <p>The first thing I wanted to learn how to do was create a grid that scrolls.&nbsp; 
 It was easy enough to find an example on the Internet which I used as a starting 
@@ -185,7 +200,7 @@ function onMouseLeave(evt) {
   evt.preventDefault();
   mouseDown = false;
 }</pre>
-<h2>Step 2: Resizing the Grid - Our First Dynamic SVG</h2>
+<h2>Resizing the Grid - Our First Dynamic SVG</h2>
 <p><img border="0" src="grid2.png" width="363" height="248"></p>
 <p>Of course, all the code above is hard-coded for a grid of dimensions 80x80 
 with inner grid spacing of 8x8.&nbsp; We would like this to actually be user 
@@ -270,7 +285,7 @@ function resizeGrid(lw, lh, sw, sh) {
 	dimensions.</li>
 	<li>Resizing the buffer zone and surface dimensions.</li>
 </ul>
-<h2>Step 3: Adding Some Static Shapes</h2>
+<h2>Adding Some Static Shapes</h2>
 <p><img border="0" src="grid3.png" width="326" height="227"></p>
 <p>Remember the group that I added around the grid rectangle?&nbsp; We'll now 
 add another group that is used for shapes, and we'll put a couple static shapes 
@@ -312,7 +327,7 @@ offset.</li>
 <p>If we don't keep the two regions separate, we get the strange effect that the 
 shapes return to their original positions as a result of the modulus operation.&nbsp; 
 Obviously we don't want that.</p>
-<h2>Step 4:&nbsp; Moving Shapes Around</h2>
+<h2>Moving Shapes Around</h2>
 <p>At this point, we have to start getting more sophisticated about how mouse 
 events are captured -- each shape (including the surface) must handle its own 
 mouse events.&nbsp; However, what the event does is not always the same -- for 
@@ -641,15 +656,7 @@ around the surface.&nbsp; For example, we'll add a rectangle:</p>
 <pre>new Rectangle(mouseController, document.getElementById(&quot;nose&quot;));</pre>
 <p>and we get (after moving the shapes around):</p>
 <p><img border="0" src="grid5.png" width="256" height="209"></p>
-<h2>Step 5: A Toolbox and Dynamic Shape Creation</h2>
-<p>Let's make what we're doing more useful by adding a toolbox so we can drag 
-and drop new shapes on the surface.&nbsp; The toolbox will be the third group, 
-making it the topmost group so that everything else (grid and objects) are 
-always rendered <i>behind</i> the toolbox:</p>
-<pre>&lt;g id=&quot;toolboxGroup&quot; x=&quot;0&quot; y=&quot;0&quot; width=&quot;200&quot; height=&quot;480&quot;&gt;
-  &lt;rect id=&quot;toolbox&quot; x=&quot;0&quot; y=&quot;0&quot; width=&quot;200&quot; height=&quot;480&quot; fill=&quot;#FFFFFF&quot; stroke=&quot;black&quot; stroke-width=&quot;0.5&quot; /&gt;
-&lt;/g&gt;</pre>
-<h2>Step 5: A Toolbox and Dynamic Shape Creation</h2>
+<h2>A Toolbox and Dynamic Shape Creation</h2>
 <p>Let's make what we're doing more useful by adding a toolbox so we can drag 
 and drop new shapes on the surface.&nbsp; The toolbox will be the third group, 
 making it the topmost group so that everything else (grid and objects) are 
@@ -1000,7 +1007,7 @@ controller's state:</p>
 <pre><img border="0" src="toolbox3.png" width="532" height="363"></pre>
 <p>Phew!&nbsp; All done!&nbsp; (Except maybe getting the shapes to click &amp; drop 
 at more uniform location.)</p>
-<h2>Step 6: Saving and Restoring the Diagram Locally</h2>
+<h2>Saving and Restoring the Diagram Locally</h2>
 <p>We have enough happening now that before doing anything else, I think it's a 
 good idea to look at how shapes are saved and loaded locally.&nbsp; The 
 implementation I present here is very rudimentary -- it automatically initiates 
@@ -1289,7 +1296,7 @@ function parseTransform(transform) {
 <p>We now have a simple mechanism for saving and loading a diagram.&nbsp; When 
 new shapes are added, only the <code>elementNameShapeMap</code> needs to be updated.</p>
 
-<h2>Step 7: Lines and Anchor Points</h2>
+<h2>Lines and Anchor Points</h2>
 <p>The last thing I want to create for this article is the ability to draw 
 simple lines that can connect shapes.&nbsp; Easier said than done, as this means 
 we will need some additional diagram state information so that we know what 
@@ -1981,13 +1988,91 @@ adjustAnchorY(anchor, dy) {
   anchor.setAttribute(&quot;tx&quot;, tx);
   anchor.setAttribute(&quot;ty&quot;, ty);
 }</pre>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
+<h2>Connecting Lines</h2>
+<p>We want the ability to connect lines to shapes.&nbsp; This involves:</p>
+<ul>
+	<li>Connection points on the shape.</li>
+	<li>Showing those connection points.</li>
+	<li>Managing what line endpoint is connected to what shape's connection 
+	point.<ul>
+		<li>Attaching endpoints</li>
+		<li>Detaching endpoints</li>
+		<li>Persisting connections</li>
+	</ul>
+	</li>
+	<li>Moving the lines when the shape moves.</li>
+	<li>Moving the lines when the shape size changes.</li>
+</ul>
+<p>That's a lot!&nbsp; Hopefully we can be efficient about how we implement all 
+this.</p>
+<h2>Text</h2>
+<p><img border="0" src="text1.png" width="424" height="202"></p>
+<p>One last thing in this article to make this application at least minimally 
+useful - the ability to add some text to the diagram.&nbsp; At the moment, 
+there's no fancy font, font size, alignment, or word wrapping features.&nbsp; 
+Also, text is an independent shape -- if you overlay text on a rectangle, the 
+text will not move when you move the rectangle.&nbsp; This is bare-bones 
+functionality!&nbsp; </p>
+<p>Adding the toolbox 
+text shape to the toolbox group:</p>
+<pre>&lt;text id=&quot;toolboxText&quot; x=&quot;73&quot; y=&quot;100&quot; font-size=&quot;32&quot; font-family=&quot;Verdana&quot;&gt;A&lt;/text&gt;</pre>
+<p>There is also a supporting <code>Text</code> and <code>ToolboxClass</code> with 
+typical implementation with one minor variation -- setting the inner HTML:</p>
+<pre>createElement() {
+  var el = super.createElement('text', { x: 240, y: 100, &quot;font-size&quot;: 12, &quot;font-family&quot;: &quot;Verdana&quot; });
+  el.innerHTML = &quot;[text]&quot;;
+
+  return el;
+}</pre>
+<p>Same with the <code>createElementAt</code> function.</p>
+<p>I also don't want the cursor to change to an I-beam when the mouse moves 
+over a text element, so our first (and only) CSS:</p>
+<pre>&lt;style&gt;
+  text {cursor:default}
+&lt;/style&gt;</pre>
+<h3>Changing Text</h3>
+<p>As I mentioned earlier, I'm less interested in a fancy UI at the moment and 
+more interested in getting the basic behaviors ironed out.&nbsp; So to set the 
+text, one selects the shape and then enters the text in the edit box at the top 
+of the diagram as shown in the screenshot at the start of this section.&nbsp; 
+The implementation, in the Text class, is trivial:</p>
+<pre>class Text extends SvgElement {
+  constructor(mouseController, svgElement) {
+    super(mouseController, svgElement);
+    this.registerEventListener(svgElement, &quot;mousedown&quot;, this.onMouseDown);
+  }
+
+  // Update the UI with the text associated with the shape.
+  onMouseDown(evt) {
+    var text = this.svgElement.innerHTML;
+    document.getElementById(&quot;text&quot;).value = text;
+  }
+
+  setText(text) {
+    this.svgElement.innerHTML = text;
+  }
+}</pre>
+<p>The only interesting thing to note here is that the <code>Text</code> class adds a second 
+<code>mousedown</code> event handler so that it can set the text of text shape into the input 
+box on the screen.&nbsp; When the text is changed in the input box, the selected 
+shape's <code>setText</code> method is called:</p>
+<pre>function setText() {
+  if (mouseController.selectedShape != null) {
+    var text = document.getElementById(&quot;text&quot;).value;
+    mouseController.selectedShape.setText(text);
+  }
+}</pre>
+<p>It's a bit kludgy, using the global <code>mouseController</code> and so forth, but we can expand upon this later to have 
+all shapes include a text area.</p>
 <h2>Conclusion</h2>
-<p>&nbsp;</p>
+<p>There's so much more to do!&nbsp; Zooming, rotations, a &quot;properties&quot; window 
+for setting colors and stroke widths, font and font sizes, arrow endpoints, 
+smart line connectors, grouping, moving shapes up/down the hierarchy, and so 
+forth.&nbsp; To a large degree, these are all bells and whistles (with some 
+complexity, particularly with regards to rotations and connection points) which 
+I'll continue to add.&nbsp; What this article has presented is a good baseline 
+for the core functionality of a web-based diagramming tool.&nbsp; Stay tuned for 
+Part II!</p>
 
 </body>
 

@@ -21,18 +21,25 @@
     <script type="text/javascript" src="shapes/rectangle.js"></script>
     <script type="text/javascript" src="shapes/diamond.js"></script>
     <script type="text/javascript" src="shapes/line.js"></script>
+    <script type="text/javascript" src="shapes/text.js"></script>
     <script type="text/javascript" src="shapes/toolboxRectangle.js"></script>
     <script type="text/javascript" src="shapes/toolboxCircle.js"></script>
     <script type="text/javascript" src="shapes/toolboxDiamond.js"></script>
     <script type="text/javascript" src="shapes/toolboxLine.js"></script>
+    <script type="text/javascript" src="shapes/toolboxText.js"></script>
 </head>
 <body>
+    <style>
+        text {cursor:default}
+    </style>
     <div>
         <!-- https://stackoverflow.com/questions/1944267/how-to-change-the-button-text-of-input-type-file -->
         <!-- creates a hidden file input on routes the button to clicking on that tag -->
         <button onclick="saveSvg()">Save</button>
         <button onclick="document.getElementById('fileInput').click();">Load</button>
         <input type="file" id="fileInput" style="display:none;"/>
+        &nbsp; Text:
+        <input id="text" type="text" onchange="setText()" />
     </div>
     <div>
         <svg id="svg" width="801" height="481" xmlns="http://www.w3.org/2000/svg">
@@ -77,6 +84,7 @@
                     <rect id="endpoint2" transform="translate(50, 110)" x="-5" y="-5" width="10" height="10" stroke="red" stroke-width="1" fill="#FFFFFF" />-->
                     <line id="line" x1="10" y1="70" x2="50" y2="110" fill="#FFFFFF" stroke="black" stroke-width="1" />
                 </g>
+                <text id="toolboxText" x="73" y="100" font-size="32" font-family="Verdana">A</text>
             </g>
         </svg>
     </div>
@@ -96,6 +104,7 @@
     const TOOLBOX_CIRCLE_ID = "toolboxCircle";
     const TOOLBOX_DIAMOND_ID = "toolboxDiamond";
     const TOOLBOX_LINE_ID = "toolboxLine";
+    const TOOLBOX_TEXT_ID = "toolboxText";
     const ANCHORS_ID = "anchors";
     const START_OF_DIAGRAM_TAG = "<diagram>";
     const END_OF_DIAGRAM_TAG = "</diagram>";
@@ -115,10 +124,18 @@
         Rectangle: (mouseController, svgElement) => new Rectangle(mouseController, svgElement),
         Circle: (mouseController, svgElement) => new Circle(mouseController, svgElement),
         Diamond: (mouseController, svgElement) => new Diamond(mouseController, svgElement),
-        Line: (mouseController, svgElement) => new Line(mouseController, svgElement)
+        Line: (mouseController, svgElement) => new Line(mouseController, svgElement),
+        Text: (mouseController, svgELement) => new Text(mouseController, svgElement)
     };
 
     document.getElementById(FILE_INPUT).addEventListener('change', readSingleFile, false);
+
+    function setText() {
+        if (mouseController.selectedShape != null) {
+            var text = document.getElementById("text").value;
+            mouseController.selectedShape.setText(text);
+        }
+    }
 
     // https://w3c.github.io/FileAPI/
     // https://stackoverflow.com/questions/3582671/how-to-open-a-local-disk-file-with-javascript
@@ -242,6 +259,7 @@
         new ToolboxCircle(toolboxController, getElement(TOOLBOX_CIRCLE_ID));
         new ToolboxDiamond(toolboxController, getElement(TOOLBOX_DIAMOND_ID));
         new ToolboxLine(toolboxController, getElement(TOOLBOX_LINE_ID));
+        new ToolboxText(toolboxController, getElement(TOOLBOX_TEXT_ID));
     })();
 
 </script>
