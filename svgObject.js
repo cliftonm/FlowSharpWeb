@@ -8,6 +8,13 @@ class SvgObject {
         this.X = 0;
         this.Y = 0;
 
+        // These two parameters are the relative change during the CURRENT translation.
+        // These is reset to 0 at the beginning of each move.
+        // We use these numbers for translating the anchors because anchors are always 
+        // placed with an initial translation of (0, 0)
+        this.dragX = 0;
+        this.dragY = 0;
+
         this.mouseController.attach(svgElement, this);
     }
 
@@ -41,6 +48,11 @@ class SvgObject {
         this.events = [];
     }
 
+    startMove() {
+        this.dragX = 0;
+        this.dragY = 0;
+    }
+
     updatePosition(evt) {
         var mouseX = evt.clientX;
         var mouseY = evt.clientY;
@@ -48,6 +60,8 @@ class SvgObject {
         var mouseDY = mouseY - this.mouseController.mouseDownY;
         this.X += mouseDX;
         this.Y += mouseDY;
+        this.dragX += mouseDX;
+        this.dragY += mouseDY;
         this.mouseController.mouseDownX = mouseX;
         this.mouseController.mouseDownY = mouseY;
     }

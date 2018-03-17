@@ -1,5 +1,7 @@
 scrolling surface quickly which causes the mouse to go over an element fires the surface leave event which stops scrolling.
 
+moving a shape quickly on the surface messes up the anchor translation
+
 fixed: multiple loads doesn't work (the file is already loaded, so it does nothing)
 fixed: double event trigger on mouse down on shape after load (but only 2, never more)
 fixed: shapes (even new ones dropped) can't be dragged after load

@@ -11,16 +11,6 @@ class ToolboxController extends MouseController {
         super.onMouseDown(evt);
     }
 
-    isClick(evt) {
-        var endDownX = evt.clientX;
-        var endDownY = evt.clientY;
-
-        var isClick = Math.abs(this.startDownX - endDownX) < TOOLBOX_DRAG_MIN_MOVE &&
-                      Math.abs(this.startDownY - endDownY) < TOOLBOX_DRAG_MIN_MOVE;
-
-        return isClick;
-    }
-
     // If this is a "click", create the shape in a fixed location on the surface.
     // If this is the end of a drag operation, place the shape on the surface at
     // the current mouse position.
@@ -102,6 +92,7 @@ class ToolboxController extends MouseController {
         this.draggingShape = false;
         this.detach(el);
         this.mouseDown = false;
+        this.mouseController.displayAnchors(this.activeController);
         this.activeController = null;
     }
 

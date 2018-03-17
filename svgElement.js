@@ -13,14 +13,14 @@ class SvgElement extends SvgObject {
 
     onDrag(evt) {
         this.updatePosition(evt);
-        this.svgElement.setAttribute("transform", "translate(" + this.X + "," + this.Y + ")");
-        getElement(ANCHORS_ID).setAttribute("transform", "translate(" + this.X + "," + this.Y + ")");
+        this.svgElement.setAttributeNS(null, "transform", "translate(" + this.X + "," + this.Y + ")");
+        getElement(ANCHORS_ID).setAttributeNS(null, "transform", "translate(" + this.dragX + "," + this.dragY + ")");
     }
 
     translate(x, y) {
         this.X += x;
         this.Y += y;
-        this.svgElement.setAttribute("transform", "translate(" + this.X + "," + this.Y + ")");
+        this.svgElement.setAttributeNS(null, "transform", "translate(" + this.X + "," + this.Y + ")");
     }
 
     // Default behavior is that the shape has no anchors.
@@ -46,5 +46,13 @@ class SvgElement extends SvgObject {
         var pt = svg.createSVGPoint();
         var offset = pt.matrixTransform(svg.getScreenCTM().inverse());
         p.translate(offset.x, offset.y);
+    }
+
+    moveAnchor(anchor, dx, dy) {
+        var tx = +anchor.getAttribute("tx") + dx;
+        var ty = +anchor.getAttribute("ty") + dy;
+        anchor.setAttribute("transform", "translate(" + tx + "," + ty + ")");
+        anchor.setAttribute("tx", tx);
+        anchor.setAttribute("ty", ty);
     }
 }

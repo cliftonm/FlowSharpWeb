@@ -433,6 +433,13 @@ instance.</li>
     this.X = 0;
     this.Y = 0;
 
+    // These two parameters are the relative change during the CURRENT translation.
+    // These is reset to 0 at the beginning of each move.
+    // We use these numbers for translating the anchors because anchors are always 
+    // placed with an initial translation of (0, 0)
+    this.dragX = 0;
+    this.dragY = 0;
+
     this.mouseController.attach(svgElement, this);
   }
 
@@ -463,6 +470,11 @@ instance.</li>
     }
 
     this.events = [];
+  }
+
+  startMove() {
+    this.dragX = 0;
+    this.dragY = 0;
   }
 
   updatePosition(evt) {
@@ -1480,7 +1492,7 @@ translateToSvgCoordinate(p) {
   var offset = pt.matrixTransform(svg.getScreenCTM().inverse());
   p.translate(offset.x, offset.y);
 }</pre>
-<h3>Anchors, Line Length and Orientation</h3>
+<h3>Anchors</h3>
 <p>Next, we want to be able to change the line length and its orientation.&nbsp; 
 This will be a useful exercise as the behavior is similar to resizing a shape.&nbsp; 
 In WinForm app <a href="https://www.codeproject.com/Articles/1136050/FlowSharp">
@@ -1495,19 +1507,28 @@ wired up in the shape's controller <code>SvgElement</code> base class:</p>
 <p>The event handler:</p>
 <pre>onMouseOver(evt) {
   var id = evt.currentTarget.getAttribute(&quot;id&quot;);
-  var activeController = this.controllers[id];
-
-  if (activeController instanceof SvgElement &amp;&amp;
-      !(activeController instanceof ToolboxController) &amp;&amp;
-      !(activeController instanceof Surface)) {
-    var anchors = activeController.getAnchors();
-
-    this.showAnchors(anchors);
-    this.anchors = anchors;
-  } else {
-    this.removeAnchors();
+  var hoverShape = this.controllers[id];
+  
+  // On drag &amp; drop, anchors are not shown because of this first test.
+  // We do this test so that if the user moves the mouse quickly, we don't
+  // re-initialize the anchors when the shape catches up (resulting in
+  // a mousemove event again.
+  if (this.activeController == null) {
+    if (hoverShape instanceof SvgElement &amp;&amp;
+        !(hoverShape instanceof ToolboxController) &amp;&amp;
+        !(hoverShape instanceof Surface)) {
+      this.displayAnchors(hoverShape);
+    } else {
+      this.removeAnchors();
     this.anchors = [];
+    }
   }
+}
+
+displayAnchors(hoverShape) {
+  var anchors = hoverShape.getAnchors();
+  this.showAnchors(anchors);
+  this.anchors = anchors;
 }</pre>
 <p>Anchors will be displayed between the &quot;objects&quot; and &quot;toolbox&quot; groups, so that 
 anchors are on top of every other shape but below the toolbox:</p>
@@ -1522,6 +1543,8 @@ anchors are on top of every other shape but below the toolbox:</p>
   // not showing?
   if (this.anchors.length == 0) {
     var anchorGroup = getElement(ANCHORS_ID);
+    // Reset any translation because the next mouse hover will set the anchors directly over the shape.
+    anchorGroup.setAttribute(&quot;transform&quot;, &quot;translate(0, 0)&quot;);
 
     anchors.map(anchor =&gt; {
       var el = this.createElement(&quot;rect&quot;, 
@@ -1536,6 +1559,7 @@ anchors are on top of every other shape but below the toolbox:</p>
 createElement(name, attributes) {
   var svgns = &quot;<a href="http://www.w3.org/2000/svg">http://www.w3.org/2000/svg</a>&quot;;
   var el = document.createElementNS(svgns, name);
+  el.setAttribute(&quot;id&quot;, Helpers.uuidv4());
   Object.entries(attributes).map(([key, val]) =&gt; el.setAttributeNS(null, key, val));
 
   return el;
@@ -1546,9 +1570,6 @@ createElement(name, attributes) {
   if (this.anchors.length &gt; 0) {
     var anchorGroup = getElement(ANCHORS_ID);
 
-    // Reset any translation because the next mouse hover will set the anchors directly over the shape.
-    anchorGroup.setAttribute(&quot;transform&quot;, &quot;translate(0, 0)&quot;);
-
     // <a href="https://stackoverflow.com/questions/3955229/remove-all-child-elements-of-a-dom-node-in-javascript">https://stackoverflow.com/questions/3955229/remove-all-child-elements-of-a-dom-node-in-javascript</a>
     // Will change later.
     anchorGroup.innerHTML = &quot;&quot;;
@@ -1558,14 +1579,66 @@ createElement(name, attributes) {
     //}
   }
 }</pre>
-<p>One touch-up is that we now also need to translate the anchors group when the 
-object is being dragged in the <code>SvgElement</code> class (notice the reset 
-functionality above in <code>removeAnchors</code>):</p>
+<p>Notice the resetting of the anchor group translation above in <code>showAnchors</code> 
+when the anchors are first drawn.&nbsp; One touch-up is that we now also need to translate the anchors group when the 
+object is being dragged in the <code>SvgElement</code> class:</p>
 <pre>onDrag(evt) {
   this.updatePosition(evt);
   this.svgElement.setAttribute(&quot;transform&quot;, &quot;translate(&quot; + this.X + &quot;,&quot; + this.Y + &quot;)&quot;);
   getElement(ANCHORS_ID).setAttribute(&quot;transform&quot;, &quot;translate(&quot; + this.X + &quot;,&quot; + this.Y + &quot;)&quot;);
+  getElement(ANCHORS_ID).setAttribute(&quot;transform&quot;, &quot;translate(&quot; + this.dragX + &quot;,&quot; + this.dragY + &quot;)&quot;);
 }</pre>
+<p>The <code>dragX</code> and <code>dragY</code> coordinates are reset on the mouse down event in the 
+<code>MouseController</code>:</p>
+<pre>onMouseDown(evt) {
+  if (evt.button == LEFT_MOUSE_BUTTON) {
+    evt.preventDefault();
+    var id = evt.currentTarget.getAttribute(&quot;id&quot;);
+    this.activeController = this.controllers[id];
+    this.mouseDown = true;
+    this.mouseDownX = evt.clientX;
+    this.mouseDownY = evt.clientY;
+    this.startDownX = evt.clientX;
+    this.startDownY = evt.clientY;
+    this.activeController.startMove();  // &lt;----- added this
+  }
+}
+</pre>
+<p>We do this because the anchor group always begins with a translation of (0,0) 
+so we need to know the translation relative to the current drag operation.&nbsp; 
+There's two more nuances:</p>
+<ul>
+	<li>Because the user can move the mouse quickly (off the shape), the <code>mouseover</code> event will re-fire 
+	(the mouse leaves the shape and when the shape catches up, the <code>mouseover</code> 
+	event is fired again.)&nbsp; For this reason we check to see if there's an 
+	active shape controller (a shape is actually being dragged), which is set when the user clicks down on a shape.&nbsp; 
+	The side-effect to this is actually a nice one -- the anchor points are not 
+	shown when the shape is drag &amp; dropped from the toolbox because the surface 
+	mouse controller has an active shape controller. </li>
+	<li>However, this has the unintentional side-effect of not showing the 
+	anchors when the shape is dropped after a drag &amp; drop operation and the 
+	mouse is still over the just-dropped shape.</li>
+</ul>
+<p>To fix the second problem, the toolbox controller must initiate the display 
+of the anchors once the shape is dropped after a drag &amp; drop operation:</p>
+<pre>dragComplete(el) {
+  this.draggingShape = false;
+  this.detach(el);
+  this.mouseDown = false;
+  this.mouseController.displayAnchors(this.activeController); // &lt;--- I added this line
+  this.activeController = null;
+}</pre>
+<p><img border="0" src="anchors1.png" width="266" height="129"> </p>
+<p><img border="0" src="anchors2.png" width="260" height="128"></p>
+<p>Shapes now have anchors!&nbsp; We also have the visual side-effect of now 
+showing the user what shape is about to be selected if the user wants to drag 
+the shape.</p>
+<h3>Line Length and Orientation</h3>
+<p>Now that we have anchors displaying, we have to get the anchors working.&nbsp; 
+We'll focus on the line shape.&nbsp; Notice in the above picture that the anchor 
+is drawn on top of the line.&nbsp; This helps us select the anchor for dragging 
+rather than the entire line.</p>
+<p>&nbsp;</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
