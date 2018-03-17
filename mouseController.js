@@ -73,7 +73,7 @@ class MouseController {
             evt.preventDefault();
             var id = evt.currentTarget.getAttribute("id");
             this.activeController = this.controllers[id];
-            this.selectedShape = activeController;
+            this.selectedShape = this.activeController;
             this.mouseDown = true;
             this.mouseDownX = evt.clientX;
             this.mouseDownY = evt.clientY;

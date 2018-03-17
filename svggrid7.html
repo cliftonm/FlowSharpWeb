@@ -125,11 +125,12 @@
         Circle: (mouseController, svgElement) => new Circle(mouseController, svgElement),
         Diamond: (mouseController, svgElement) => new Diamond(mouseController, svgElement),
         Line: (mouseController, svgElement) => new Line(mouseController, svgElement),
-        Text: (mouseController, svgELement) => new Text(mouseController, svgElement)
+        Text: (mouseController, svgElement) => new Text(mouseController, svgElement)
     };
 
     document.getElementById(FILE_INPUT).addEventListener('change', readSingleFile, false);
 
+    // Update the selected shape's text.  Works only with text shapes right now.
     function setText() {
         if (mouseController.selectedShape != null) {
             var text = document.getElementById("text").value;
