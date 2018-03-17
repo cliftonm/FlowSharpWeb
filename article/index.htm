@@ -1492,7 +1492,7 @@ translateToSvgCoordinate(p) {
   var offset = pt.matrixTransform(svg.getScreenCTM().inverse());
   p.translate(offset.x, offset.y);
 }</pre>
-<h3>Anchors</h3>
+<h2>Anchors</h2>
 <p>Next, we want to be able to change the line length and its orientation.&nbsp; 
 This will be a useful exercise as the behavior is similar to resizing a shape.&nbsp; 
 In WinForm app <a href="https://www.codeproject.com/Articles/1136050/FlowSharp">
@@ -1637,13 +1637,273 @@ the shape.</p>
 <p>Now that we have anchors displaying, we have to get the anchors working.&nbsp; 
 We'll focus on the line shape.&nbsp; Notice in the above picture that the anchor 
 is drawn on top of the line.&nbsp; This helps us select the anchor for dragging 
-rather than the entire line.</p>
+rather than the entire line.&nbsp; If the line was on top of the anchor it would 
+be possible for the user to click exactly on the line, missing the anchor.</p>
+<p>To begin with, we need to be able to specify the function that is called when 
+the anchor is moved.&nbsp; This is a change in the anchors array that is passed 
+back to the mouse controller when displaying anchors:</p>
+<pre>getAnchors() {
+  var corners = this.getCorners(); 
+  var anchors = [{ anchor: corners[0], onDrag: this.moveULCorner.bind(this) }, 
+                 { anchor: corners[1], onDrag: this.moveLRCorner.bind(this) }];
+
+  return anchors;
+}</pre>
+<ul>
+	<li>Notice the <code>bind</code>, so that the &quot;this&quot; in the event handler function is the 
+	<code>Line</code> 
+object.&nbsp; Sigh.</li>
+</ul>
+<p>The Line class implements the handlers (notice the extra anchor parameter 
+which I discuss shortly):</p>
+<pre>// Move the (x1, y1) coordinate.
+moveULCorner(anchor, evt) {
+  // Use movementX and movementY - this is much better than dealing with the base class X or dragX stuff.
+  // Do both the transparent line and the visible line.
+  this.moveLine(&quot;x1&quot;, &quot;y1&quot;, this.svgElement.children[0], evt.movementX, evt.movementY);
+  this.moveLine(&quot;x1&quot;, &quot;y1&quot;, this.svgElement.children[1], evt.movementX, evt.movementY);
+  this.moveAnchor(anchor, evt.movementX, evt.movementY);
+}
+
+// Move the (x2, y2) coordinate.
+moveLRCorner(anchor, evt) {
+  this.moveLine(&quot;x2&quot;, &quot;y2&quot;, this.svgElement.children[0], evt.movementX, evt.movementY);
+  this.moveLine(&quot;x2&quot;, &quot;y2&quot;, this.svgElement.children[1], evt.movementX, evt.movementY);
+  this.moveAnchor(anchor, evt.movementX, evt.movementY);
+}
+
+moveLine(ax, ay, line, dx, dy) {
+  var x1 = +line.getAttribute(ax) + dx;
+  var y1 = +line.getAttribute(ay) + dy;
+  line.setAttribute(ax, x1);
+  line.setAttribute(ay, y1);
+}</pre>
+<p>Notice that we have to move both the transparent line and the visible line.&nbsp; </p>
+<ul>
+	<li>At this point in the coding I learned about the <code>movementX</code> and <code>movementY</code> 
+	properties of the event, which if I'd known about earlier would have changed 
+	how I had implemented some of the other code!</li>
+</ul>
+<p>The <code>moveAnchor</code> function will be common to all shapes, so it lives in the 
+<code>SvgElement</code> base class:</p>
+<pre>moveAnchor(anchor, dx, dy) {
+  var tx = +anchor.getAttribute(&quot;tx&quot;) + dx;
+  var ty = +anchor.getAttribute(&quot;ty&quot;) + dy;
+  anchor.setAttribute(&quot;transform&quot;, &quot;translate(&quot; + tx + &quot;,&quot; + ty + &quot;)&quot;);
+  anchor.setAttribute(&quot;tx&quot;, tx);
+  anchor.setAttribute(&quot;ty&quot;, ty);
+}
+</pre>
+<p>Next, we need an actual <code>Anchor</code> shape class:</p>
+<pre>class Anchor extends SvgObject {
+  constructor(anchorController, svgElement, onDrag) {
+    super(anchorController, svgElement);
+    this.wireUpEvents(svgElement);
+    this.onDrag = onDrag;
+  }
+
+  wireUpEvents(svgElement) {
+    // The mouse controller is actually the derived anchor controller.
+    this.registerEventListener(svgElement, &quot;mousedown&quot;, this.mouseController.onMouseDown, this.mouseController);
+    this.registerEventListener(svgElement, &quot;mousemove&quot;, this.mouseController.onMouseMove, this.mouseController);
+    this.registerEventListener(svgElement, &quot;mouseup&quot;, this.mouseController.onMouseUp, this.mouseController);
+    this.registerEventListener(svgElement, &quot;mouseleave&quot;, this.mouseController.onMouseLeave, this.mouseController);
+  }
+}</pre>
+<p>Again, in order to deal with mouse events being received by the surface when 
+the anchor is dragged &quot;too fast&quot;, the <code>AnchorController</code> spoofs the surface mouse 
+controller into thinking (correctly so) that it's moving an anchor element:</p>
+<pre>class AnchorController extends MouseController {
+  constructor(mouseController) {
+    super();
+    // For handling dragging an anchor but the surface or shape gets the mousemove events.
+    this.mouseController = mouseController;
+  }
+
+  onMouseDown(evt) {
+    super.onMouseDown(evt);
+    // For handling dragging an anchor but the surface or shape gets the mousemove events.
+    this.mouseController.mouseDown = true;
+    this.mouseController.activeController = this.activeController;
+  }
+
+  onMouseUp(evt) {
+    super.onMouseUp(evt);
+    // For handling dragging an anchor but the surface or shape gets the mousemove events.
+    this.mouseController.mouseDown = false;
+    this.mouseController.activeController = null;
+  }
+
+  // Ignore mouse leave events when dragging an anchor.
+  onMouseLeave(evt) { }
+}
+</pre>
+<ul>
+	<li>As a side note, this is getting annoying to have to implement and is 
+	indicative of a potential design flaw.&nbsp; </li>
+</ul>
+<p>The real fun part is how the anchor controller, anchor shape, and drag event 
+handlers are set up when the anchors are drawn.&nbsp; This is a change to the 
+first rendition described earlier of the <code>showAnchors</code> function:</p>
+<pre>showAnchors(anchors) {
+  // not showing?
+  if (this.anchors.length == 0) {
+    var anchorGroup = getElement(ANCHORS_ID);
+    // Reset any translation because the next mouse hover will set the anchors directly over the shape.
+    anchorGroup.setAttributeNS(null, &quot;transform&quot;, &quot;translate(0, 0)&quot;);
+    // We pass in the shape (which is also the surface) mouse controller so we can
+    // handle when the shape or surface gets the mousemove event, which happens if
+    // the user moves the mouse too quickly and the pointer leaves the anchor rectangle.
+    this.anchorController = new AnchorController(this);
+
+    anchors.map(anchorDefinition =&gt; {
+      var anchor = anchorDefinition.anchor;
+      // Note the additional translation attributes tx and ty which we use for convenience (so we don't have to parse the transform) when translating the anchor.
+      var el = this.createElement(&quot;rect&quot;, { 
+          x: anchor.X - 5, y: anchor.Y - 5, tx: 0, ty: 0, width: 10, height: 10, 
+          fill: &quot;#FFFFFF&quot;, stroke: &quot;#808080&quot;, &quot;stroke-width&quot;: 0.5 });
+      // Create anchor shape, wire up anchor events, and attach it to the MouseController::AnchorController object.
+      new Anchor(this.anchorController, el, this.partialCall(el, anchorDefinition.onDrag));
+      anchorGroup.appendChild(el);
+    });
+  }
+}
+</pre>
+<p>Notice the additional <code>tx</code> and <code>ty</code> attributes which are used to keep track of 
+the anchor translation.&nbsp; The <code>partialCall</code> function lets us pass in the 
+anchor element as part of the <code>onDrag</code> callback:</p>
+<pre>// We need to set up a partial call so that we can include the anchor being dragged when we call
+// the drag method for moving the shape's anchor. At that point we also pass in the event data.
+partialCall(anchorElement, onDrag) {
+  return (function (anchorElement, onDrag) {
+    return function (evt) { onDrag(anchorElement, evt); }
+  })(anchorElement, onDrag);
+}</pre>
+<p><img border="0" src="line5.png" width="196" height="162"></p>
+<p>We can now resize and re-orient lines!</p>
+<h2>Anchor Drag Operations for Other Shapes</h2>
+<p>Circles and other shapes that need to maintain their aspect ratio are 
+annoying because all the anchor points have to move!&nbsp; We have this issue 
+with other shapes as well (such as resizing a rectangle or diamond), as sizing a 
+shape changes other anchor locations.&nbsp; So another refactoring (not shown) 
+passes in the entire anchors collection so shapes can translate the other 
+anchors when one particular anchor is being dragged.&nbsp; We wouldn't have this 
+problem if we removed all anchors but the anchor being moved, which is another 
+possibility, but I don't like to rely on a UI behavior to control the internal 
+logic of how objects are manipulated.&nbsp; So another refactoring to how 
+anchors are created:</p>
+<pre>// We need to set up a partial call so that we can include the anchor being dragged when we call
+// the drag method for moving the shape's anchor. At that point we also pass in the event data.
+partialCall(anchors, anchorElement, onDrag) {
+  return (function (anchors, anchorElement, onDrag) {
+    return function (evt) { onDrag(anchors, anchorElement, evt); }
+  })(anchors, anchorElement, onDrag);
+}
+
+showAnchors(anchors) {
+  // not showing?
+  if (this.anchors.length == 0) {
+    var anchorGroup = getElement(ANCHORS_ID);
+    // Reset any translation because the next mouse hover will set the anchors directly over the shape.
+    anchorGroup.setAttributeNS(null, &quot;transform&quot;, &quot;translate(0, 0)&quot;);
+    // We pass in the shape (which is also the surface) mouse controller so we can
+    // handle when the shape or surface gets the mousemove event, which happens if
+    // the user moves the mouse too quickly and the pointer leaves the anchor rectangle.
+    this.anchorController = new AnchorController(this);
+    var anchorElements = [];
+
+    anchors.map(anchorDefinition =&gt; {
+      var anchor = anchorDefinition.anchor;
+      // Note the additional translation attributes tx and ty which we use for convenience 
+      // (so we don't have to parse the transform) when translating the anchor.
+      var el = this.createElement(&quot;rect&quot;, 
+          { x: anchor.X - 5, y: anchor.Y - 5, tx: 0, ty: 0, width: 10, height: 10, 
+            fill: &quot;#FFFFFF&quot;, stroke: &quot;#808080&quot;, &quot;stroke-width&quot;: 0.5 });
+      anchorElements.push(el);
+      anchorGroup.appendChild(el);
+    });
+
+    // Separate iterator so we can pass in all the anchor elements to the onDrag callback once they've been accumulated.
+    for (var i = 0; i &lt; anchors.length; i++) {
+      var anchorDefinition = anchors[i];
+      var el = anchorElements[i];
+      // Create anchor shape, wire up anchor events, and attach it to the MouseController::AnchorController object.
+      new Anchor(this.anchorController, el, this.partialCall(anchorElements, el, anchorDefinition.onDrag));
+    }
+  }
+}</pre>
+<h3>Circles</h3>
+<p><img border="0" src="circles1.png" width="230" height="202"></p>
+<p>The circle anchor points are the top, bottom, middle and right:</p>
+<pre>getAnchors() {
+  var corners = this.getCorners();
+  var middleTop = new Point((corners[0].X + corners[1].X) / 2, corners[0].Y);
+  var middleBottom = new Point((corners[0].X + corners[1].X) / 2, corners[1].Y);
+  var middleLeft = new Point(corners[0].X, (corners[0].Y + corners[1].Y) / 2);
+  var middleRight = new Point(corners[1].X, (corners[0].Y + corners[1].Y) / 2);
+
+  var anchors = [
+    { anchor: middleTop, onDrag: this.topMove.bind(this) },
+    { anchor: middleBottom, onDrag: this.bottomMove.bind(this) },
+    { anchor: middleLeft, onDrag: this.leftMove.bind(this) },
+    { anchor: middleRight, onDrag: this.rightMove.bind(this) }
+  ];
+
+  return anchors;
+}</pre>
+<p>The adjustments to the circle radius and anchor points:</p>
+<pre>topMove(anchors, anchor, evt) {
+  this.changeRadius(-evt.movementY);
+  this.moveAnchor(anchors[0], 0, evt.movementY);
+  this.moveAnchor(anchors[1], 0, -evt.movementY);
+  this.moveAnchor(anchors[2], evt.movementY, 0);
+  this.moveAnchor(anchors[3], -evt.movementY, 0);
+}
+
+bottomMove(anchors, anchor, evt) {
+  this.changeRadius(evt.movementY);
+  this.moveAnchor(anchors[0], 0, -evt.movementY);
+  this.moveAnchor(anchors[1], 0, evt.movementY);
+  this.moveAnchor(anchors[2], -evt.movementY, 0);
+  this.moveAnchor(anchors[3], evt.movementY, 0);
+}
+
+leftMove(anchors, anchor, evt) {
+  this.changeRadius(-evt.movementX);
+  this.moveAnchor(anchors[0], 0, evt.movementX);
+  this.moveAnchor(anchors[1], 0, -evt.movementX);
+  this.moveAnchor(anchors[2], evt.movementX, 0);
+  this.moveAnchor(anchors[3], -evt.movementX, 0);
+}
+
+rightMove(anchors, anchor, evt) {
+  this.changeRadius(evt.movementX);
+  this.moveAnchor(anchors[0], 0, -evt.movementX);
+  this.moveAnchor(anchors[1], 0, evt.movementX);
+  this.moveAnchor(anchors[2], -evt.movementX, 0);
+  this.moveAnchor(anchors[3], evt.movementX, 0);
+}
+
+changeRadius(amt) {
+  var r = +this.svgElement.getAttribute(&quot;r&quot;) + amt;
+  this.svgElement.setAttribute(&quot;r&quot;, r)
+}</pre>
+<h3>Diamonds</h3>
+<p>Diamonds are resized symmetrically top-bottom and left-right.&nbsp; The 
+anchors are the same as for a circle, but the way the anchor points are 
+translated is different.&nbsp; There are three things to deal with:</p>
+<ul>
+	<li>The change in the path.</li>
+<li>The 1/2 offset in the bottom and top anchors when resizing the width.</li>
+	<li>The 1/2 offset in the left and right anchors when resizing the height.</li>
+</ul>
+<p>The most annoying problem is recalculating the path (for example: <code>d: &quot;M 240 100 
+L 210 130 L 240 160 L 270 130 Z&quot;</code>) as this isn't just setting (x, y) coordinates.</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
-<p>&nbsp;</p>
-<p>Conclusion</p>
+<h2>Conclusion</h2>
 <p>&nbsp;</p>
 
 </body>
