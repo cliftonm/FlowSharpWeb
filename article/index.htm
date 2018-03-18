@@ -2056,7 +2056,8 @@ The implementation, in the Text class, is trivial:</p>
 <code>mousedown</code> event handler so that it can set the text of text shape into the input 
 box on the screen.&nbsp; When the text is changed in the input box, the selected 
 shape's <code>setText</code> method is called:</p>
-<pre>function setText() {
+<pre>// Update the selected shape's text. Works only with text shapes right now.
+function setText() {
   if (mouseController.selectedShape != null) {
     var text = document.getElementById(&quot;text&quot;).value;
     mouseController.selectedShape.setText(text);
