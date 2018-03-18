@@ -14,4 +14,18 @@ class Helpers {
 
         return transforms;
     }
+
+    static getElement(id) {
+        var svg = document.getElementById(SVG_ELEMENT_ID);
+        var el = svg.getElementById(id);
+
+        return el;
+    }
+
+    static getElements(className) {
+        var svg = document.getElementById(SVG_ELEMENT_ID);
+        var els = svg.getElementsByClassName(className);
+
+        return els;
+    }
 }

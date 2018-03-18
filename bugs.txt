@@ -1,6 +1,7 @@
 scrolling surface quickly which causes the mouse to go over an element fires the surface leave event which stops scrolling.
 
 create circles within circles.  Since the mouse leave doesn't fire for a particular circle, we only get the anchor points for the outer circle.
+Related: If you place a text shape inside another shape and try to move the text shape, the anchors of the outer shape move with the text!
 
 Why do I get "a is not defined" when I move parseTransform into helpers?
 

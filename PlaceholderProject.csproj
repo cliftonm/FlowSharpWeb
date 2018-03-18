@@ -33,9 +33,22 @@
   </PropertyGroup>
   <ItemGroup>
     <Content Include="anchorController.js" />
+    <Content Include="bugs.txt" />
+    <Content Include="connection.js" />
     <Content Include="fileSaver.js" />
     <Content Include="helpers.js" />
+    <Content Include="models\shapeModel.js" />
+    <Content Include="models\objectsModel.js" />
     <Content Include="mouseController.js" />
+    <Content Include="controllers\controller.js" />
+    <Content Include="models\model.js" />
+    <Content Include="controllers\mouseController.js" />
+    <Content Include="controllers\shapeController.js" />
+    <Content Include="controllers\surfaceController.js" />
+    <Content Include="models\surfaceModel.js" />
+    <Content Include="views\objectsView.js" />
+    <Content Include="views\surfaceView.js" />
+    <Content Include="views\view.js" />
     <Content Include="point.js" />
     <Content Include="shapes\anchor.js" />
     <Content Include="shapes\circle.js" />
@@ -51,11 +64,12 @@
     <Content Include="shapes\toolboxSurface.js" />
     <Content Include="shapes\toolboxText.js" />
     <Content Include="svgElement.js" />
-    <Content Include="svggrid7.html" />
+    <Content Include="svggrid8.html" />
     <Content Include="svgObject.js" />
     <Content Include="svgToolboxElement.js" />
     <Content Include="toolboxController.js" />
     <Content Include="xmlToJson.js" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
