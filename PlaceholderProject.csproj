@@ -1,0 +1,61 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{068F8DAA-98AD-4F9E-990C-F099BB8F0441}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>PlaceholderProject</RootNamespace>
+    <AssemblyName>PlaceholderProject</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Content Include="anchorController.js" />
+    <Content Include="fileSaver.js" />
+    <Content Include="helpers.js" />
+    <Content Include="mouseController.js" />
+    <Content Include="point.js" />
+    <Content Include="shapes\anchor.js" />
+    <Content Include="shapes\circle.js" />
+    <Content Include="shapes\diamond.js" />
+    <Content Include="shapes\line.js" />
+    <Content Include="shapes\rectangle.js" />
+    <Content Include="shapes\surface.js" />
+    <Content Include="shapes\text.js" />
+    <Content Include="shapes\toolboxCircle.js" />
+    <Content Include="shapes\toolboxDiamond.js" />
+    <Content Include="shapes\toolboxLine.js" />
+    <Content Include="shapes\toolboxRectangle.js" />
+    <Content Include="shapes\toolboxSurface.js" />
+    <Content Include="shapes\toolboxText.js" />
+    <Content Include="svgElement.js" />
+    <Content Include="svggrid7.html" />
+    <Content Include="svgObject.js" />
+    <Content Include="svgToolboxElement.js" />
+    <Content Include="toolboxController.js" />
+    <Content Include="xmlToJson.js" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
