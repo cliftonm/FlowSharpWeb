@@ -4,7 +4,7 @@
         model.eventPropertyChanged = this.onPropertyChange.bind(this);
     }
 
-    getId() {
+    get id() {
         return this.svgElement.getAttribute("id");
     }
 

@@ -17,6 +17,7 @@
     -->
 
     <script type="text/javascript" src="helpers.js"></script>
+    <script type="text/javascript" src="point.js"></script>
 
     <script type="text/javascript" src="models/model.js"></script>
     <script type="text/javascript" src="models/objectsModel.js"></script>
@@ -25,6 +26,7 @@
 
     <script type="text/javascript" src="views/view.js"></script>
     <script type="text/javascript" src="views/objectsView.js"></script>
+    <script type="text/javascript" src="views/shapeView.js"></script>
     <script type="text/javascript" src="views/surfaceView.js"></script>
 
     <script type="text/javascript" src="controllers/controller.js"></script>
@@ -149,7 +151,11 @@
 
         var rectEl = Helpers.createElement('rect', { x: 240, y: 100, width: 60, height: 60, fill: "#FFFFFF", stroke: "black", "stroke-width": 1 });
         var rectModel = new Model();
-        var rectView = new View(rectEl, rectModel);
+        rectModel._x = 240;
+        rectModel._y = 100;
+        rectModel._width = 60;
+        rectModel._height = 60;
+        var rectView = new ShapeView(rectEl, rectModel);
         var rectController = new RectangleController(mouseController, rectView, rectModel);
         Helpers.getElement(Constants.SVG_OBJECTS_ID).appendChild(rectEl);
         mouseController.attach(rectView, rectController);

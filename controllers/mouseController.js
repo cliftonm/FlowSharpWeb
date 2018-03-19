@@ -10,7 +10,7 @@ class MouseController {
 
     // Attach as many controllers as you want to the view.
     attach(view, controller) {
-        var id = view.getId();
+        var id = view.id;
 
         if (this.controllers[id] == undefined) {
             this.controllers[id] = [];
@@ -24,7 +24,7 @@ class MouseController {
 
     // Detach all controllers associated with this view.
     detach(view) {
-        var id = view.getId();
+        var id = view.id;
         delete this.controllers[id];
     }
 
@@ -67,10 +67,6 @@ class MouseController {
             this.activeControllers = this.controllers[id];
             this.selectedShape = id;
             this.mouseDown = true;
-            this.mouseDownX = evt.clientX;
-            this.mouseDownY = evt.clientY;
-            this.startDownX = evt.clientX;
-            this.startDownY = evt.clientY;
             this.activeControllers.map(c => c.onMouseDown());
         }
     }

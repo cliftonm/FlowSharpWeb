@@ -49,6 +49,7 @@
     <Content Include="controllers\surfaceController.js" />
     <Content Include="models\surfaceModel.js" />
     <Content Include="views\objectsView.js" />
+    <Content Include="views\shapeView.js" />
     <Content Include="views\surfaceView.js" />
     <Content Include="views\view.js" />
     <Content Include="point.js" />

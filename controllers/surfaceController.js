@@ -5,9 +5,9 @@ class SurfaceController extends Controller {
 
     // overrides Controller.onDrag.
     onDrag(evt) {
-        this.model.updatePosition(evt);
-        var dx = this.model.x % this.model.gridCellW;
-        var dy = this.model.y % this.model.gridCellH;
+        this.model.updateTranslation(evt);
+        var dx = this.model.tx % this.model.gridCellW;
+        var dy = this.model.ty % this.model.gridCellH;
         this.model.setTranslate(dx, dy);
     }
 
