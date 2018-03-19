@@ -1,13 +1,12 @@
 class Point {
     constructor(x, y) {
-        this.X = x;
-        this.Y = y;
+        this.x = x;
+        this.y = y;
     }
 
     translate(x, y) {
-        this.X += x;
-        this.Y += y;
+        var p = new Point(this.x + x, this.y + y);
 
-        return this;
+        return p;
     }
 }

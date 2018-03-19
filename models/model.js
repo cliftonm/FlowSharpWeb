@@ -40,9 +40,9 @@
         }
     }
 
-    updateTranslation(evt) {
-        this._tx += evt.movementX;
-        this._ty += evt.movementY;
+    updateTranslation(dx, dy) {
+        this._tx += dx;
+        this._ty += dy;
     }
 
     // All models have a translation 

@@ -129,11 +129,14 @@
     // https://stackoverflow.com/a/6386486/2276361
     const SHAPE_NAME_ATTR = "shapename";
 
+    // Global so we can access the surface translation.
+    var surfaceModel = null;
+
     (function initialize() {
         var mouseController = new MouseController();
         var svgSurface = Helpers.getElement(Constants.SVG_SURFACE_ID);
         var svgObjects = Helpers.getElement(Constants.SVG_OBJECTS_ID);
-        var surfaceModel = new SurfaceModel();
+        surfaceModel = new SurfaceModel();
         var objectsModel = new ObjectsModel();
         var surfaceView = new SurfaceView(svgSurface, surfaceModel);
         var objectsView = new ObjectsView(svgObjects, objectsModel);
