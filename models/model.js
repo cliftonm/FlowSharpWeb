@@ -45,10 +45,13 @@
         this._ty += dy;
     }
 
-    // All models have a translation 
+    // All models have a translation.  Notice we do not use _tx, _ty here
+    // nor do we set _tx, _ty to (x, y) because (x, y) might be mod'ed by
+    // the grid (w, h).  We want to use exactly the parameters passed in
+    // without modifying our model.
+    // See SurfaceController.onDrag and note how the translation is updated
+    // but setTranslate is called with the mod'ed (x, y) coordinates.
     setTranslate(x, y) {
-        this._tx = x;
-        this._ty = y;
         this.translation = "translate(" + x + "," + y + ")";
         // later to be extended to build the transform so that it includes rotation and other things we can do.
         this.transform = this.translation;

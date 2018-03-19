@@ -21,6 +21,8 @@
         this.showingAnchors = true;
         var anchorGroup = Helpers.getElement(Constants.SVG_ANCHORS_ID);
         // Reset any translation because the next mouse hover will set the anchors directly over the shape.
+        this.model._tx = 0;
+        this.model._ty = 0;
         this.model.setTranslate(0, 0);
         // We pass in the shape (which is also the surface) mouse controller so we can
         // handle when the shape or surface gets the mousemove event, which happens if
