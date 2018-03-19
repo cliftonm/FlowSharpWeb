@@ -47,6 +47,8 @@
 
     // All models have a translation 
     setTranslate(x, y) {
+        this._tx = x;
+        this._ty = y;
         this.translation = "translate(" + x + "," + y + ")";
         // later to be extended to build the transform so that it includes rotation and other things we can do.
         this.transform = this.translation;

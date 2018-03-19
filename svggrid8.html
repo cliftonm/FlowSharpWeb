@@ -30,6 +30,7 @@
     <script type="text/javascript" src="views/surfaceView.js"></script>
 
     <script type="text/javascript" src="controllers/controller.js"></script>
+    <script type="text/javascript" src="controllers/anchorController.js"></script>
     <script type="text/javascript" src="controllers/mouseController.js"></script>
     <script type="text/javascript" src="controllers/shapeController.js"></script>
     <script type="text/javascript" src="controllers/surfaceController.js"></script>
@@ -110,6 +111,7 @@
         SVG_TOOLBOX_SURFACE_ID : "toolboxSurface",
         SVG_OBJECTS_ID : "objects",
         SVG_TOOLBOX_ID : "toolbox",
+        SVG_ANCHORS_ID: "anchors",
         SHAPE_CLASS_NAME : "svgShape",
         FILE_INPUT : "fileInput",
         OBJECT_GROUP_ID : "objectGroup",
@@ -119,7 +121,6 @@
         TOOLBOX_DIAMOND_ID : "toolboxDiamond",
         TOOLBOX_LINE_ID : "toolboxLine",
         TOOLBOX_TEXT_ID : "toolboxText",
-        ANCHORS_ID : "anchors",
     };
 
     const START_OF_DIAGRAM_TAG = "<diagram>";
@@ -132,17 +133,26 @@
     // Global so we can access the surface translation.
     var surfaceModel = null;
 
+    // AnchorController is global for the moment because it's used by all shape controllers.
+    var anchorsController = null;
+
     (function initialize() {
         var mouseController = new MouseController();
         var svgSurface = Helpers.getElement(Constants.SVG_SURFACE_ID);
         var svgObjects = Helpers.getElement(Constants.SVG_OBJECTS_ID);
+        var svgAnchors = Helpers.getElement(Constants.SVG_ANCHORS_ID);
+
         surfaceModel = new SurfaceModel();
         var objectsModel = new ObjectsModel();
+        var anchorsModel = new Model();
+
         var surfaceView = new SurfaceView(svgSurface, surfaceModel);
         var objectsView = new ObjectsView(svgObjects, objectsModel);
+        var anchorsView = new View(svgAnchors, anchorsModel);
 
         var surfaceController = new SurfaceController(mouseController, surfaceView, surfaceModel);
         var objectsController = new ObjectsController(mouseController, objectsView, objectsModel);
+        anchorsController = new AnchorController(mouseController, anchorsView, anchorsModel);
 
         // Attach both the surface and objects controller to the surface view so that events from the 
         // surface view are routed to both controllers, one for dealing with the grid, one for moving
@@ -162,6 +172,8 @@
         var rectController = new RectangleController(mouseController, rectView, rectModel);
         Helpers.getElement(Constants.SVG_OBJECTS_ID).appendChild(rectEl);
         mouseController.attach(rectView, rectController);
+        // Most shapes also need an anchor controller
+        mouseController.attach(rectView, anchorsController);
 
         // mouseController.setSurface(surface);
 
