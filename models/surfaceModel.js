@@ -7,15 +7,6 @@
         this.cellH = 8;
     }
 
-    setTranslate(x, y) {
-        this.setTransform("translate(" + x + "," + y + ")");
-    }
-
-    setTransform(value) {
-        this.transform = value;
-        this.propertyChanged("transform", value);
-    }
-
     // Programmatically change the grid spacing for the larger grid cells and smaller grid cells.
     // None of this is relevant to the SurfaceView so we just set the attributes directly.
     resizeGrid(lw, lh, sw, sh) {

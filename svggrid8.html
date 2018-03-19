@@ -31,6 +31,8 @@
     <script type="text/javascript" src="controllers/mouseController.js"></script>
     <script type="text/javascript" src="controllers/shapeController.js"></script>
     <script type="text/javascript" src="controllers/surfaceController.js"></script>
+    <script type="text/javascript" src="controllers/objectsController.js"></script>
+    <script type="text/javascript" src="controllers/rectangleController.js"></script>
 
     <!--
     <script type="text/javascript" src="shapes/anchor.js"></script>
@@ -98,21 +100,26 @@
 </body>
 </html>
 <script type="text/javascript">
-    const SVG_ELEMENT_ID = "svg";
-    const SVG_SURFACE_ID = "surface";
-    const SVG_TOOLBOX_SURFACE_ID = "toolboxSurface";
-    const SVG_OBJECTS_ID = "objects";
-    const SVG_TOOLBOX_ID = "toolbox";
-    const SHAPE_CLASS_NAME = "svgShape";
-    const FILE_INPUT = "fileInput";
-    const OBJECT_GROUP_ID = "objectGroup";
-    const FILENAME = "data.svg";
-    const TOOLBOX_RECTANGLE_ID = "toolboxRectangle";
-    const TOOLBOX_CIRCLE_ID = "toolboxCircle";
-    const TOOLBOX_DIAMOND_ID = "toolboxDiamond";
-    const TOOLBOX_LINE_ID = "toolboxLine";
-    const TOOLBOX_TEXT_ID = "toolboxText";
-    const ANCHORS_ID = "anchors";
+    // TODO: Prepend "Constants."
+    const Constants = {
+        SVG_NS: "http://www.w3.org/2000/svg",
+        SVG_ELEMENT_ID : "svg",
+        SVG_SURFACE_ID : "surface",
+        SVG_TOOLBOX_SURFACE_ID : "toolboxSurface",
+        SVG_OBJECTS_ID : "objects",
+        SVG_TOOLBOX_ID : "toolbox",
+        SHAPE_CLASS_NAME : "svgShape",
+        FILE_INPUT : "fileInput",
+        OBJECT_GROUP_ID : "objectGroup",
+        FILENAME : "data.svg",
+        TOOLBOX_RECTANGLE_ID : "toolboxRectangle",
+        TOOLBOX_CIRCLE_ID : "toolboxCircle",
+        TOOLBOX_DIAMOND_ID : "toolboxDiamond",
+        TOOLBOX_LINE_ID : "toolboxLine",
+        TOOLBOX_TEXT_ID : "toolboxText",
+        ANCHORS_ID : "anchors",
+    };
+
     const START_OF_DIAGRAM_TAG = "<diagram>";
     const END_OF_DIAGRAM_TAG = "</diagram>";
 
@@ -122,17 +129,30 @@
 
     (function initialize() {
         var mouseController = new MouseController();
-        var svgSurface = Helpers.getElement(SVG_SURFACE_ID);
-        var svgObjects = Helpers.getElement(SVG_OBJECTS_ID);
+        var svgSurface = Helpers.getElement(Constants.SVG_SURFACE_ID);
+        var svgObjects = Helpers.getElement(Constants.SVG_OBJECTS_ID);
         var surfaceModel = new SurfaceModel();
         var objectsModel = new ObjectsModel();
         var surfaceView = new SurfaceView(svgSurface, surfaceModel);
         var objectsView = new ObjectsView(svgObjects, objectsModel);
 
         var surfaceController = new SurfaceController(mouseController, surfaceView, surfaceModel);
+        var objectsController = new ObjectsController(mouseController, objectsView, objectsModel);
 
+        // Attach both the surface and objects controller to the surface view so that events from the 
+        // surface view are routed to both controllers, one for dealing with the grid, one for moving
+        // the objects on the surface and the surface is translated.
         mouseController.attach(surfaceView, surfaceController);
+        mouseController.attach(surfaceView, objectsController);
+
         surfaceModel.resizeGrid(100, 100, 20, 20);
+
+        var rectEl = Helpers.createElement('rect', { x: 240, y: 100, width: 60, height: 60, fill: "#FFFFFF", stroke: "black", "stroke-width": 1 });
+        var rectModel = new Model();
+        var rectView = new View(rectEl, rectModel);
+        var rectController = new RectangleController(mouseController, rectView, rectModel);
+        Helpers.getElement(Constants.SVG_OBJECTS_ID).appendChild(rectEl);
+        mouseController.attach(rectView, rectController);
 
         // mouseController.setSurface(surface);
 

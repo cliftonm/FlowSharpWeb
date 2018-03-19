@@ -8,14 +8,10 @@ class SurfaceController extends Controller {
         this.model.updatePosition(evt);
         var dx = this.model.x % this.model.gridCellW;
         var dy = this.model.y % this.model.gridCellH;
-        this.scrollSurface(dx, dy);
+        this.model.setTranslate(dx, dy);
     }
 
     onMouseLeave() {
         this.mouseController.clearSelectedObject();
-    }
-
-    scrollSurface(dx, dy) {
-        this.model.setTranslate(dx, dy);
     }
 }

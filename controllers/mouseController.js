@@ -5,19 +5,24 @@ class MouseController {
     constructor() {
         this.mouseDown = false;
         this.controllers = {};
-        this.activeController = null;
-        this.selectedController = null;
+        this.activeControllers = null;
     }
 
-    // Create a map between then SVG element (by it's ID, so ID's must be unique) and its controller.
+    // Attach as many controllers as you want to the view.
     attach(view, controller) {
         var id = view.getId();
-        this.controllers[id] = controller;
+
+        if (this.controllers[id] == undefined) {
+            this.controllers[id] = [];
+        }
+
+        this.controllers[id].push(controller);
     }
 
     // Compare functions detach with destroyAll.
     // We should probably implement a "destroy" method as well.
 
+    // Detach all controllers associated with this view.
     detach(view) {
         var id = view.getId();
         delete this.controllers[id];
@@ -29,13 +34,17 @@ class MouseController {
 
     // Detaches all controllers and unwires events associated with the controller.
     destroyAll() {
-        Object.entries(this.controllers).map(([key, val]) => val.destroy());
+        Object.entries(this.controllers).map(([key, val]) => val.map(v => v.destroy()));
+        this.controllers = {};
     }
 
     destroyAllButSurface() {
         Object.entries(this.controllers).map(([key, val]) => {
             if (!(val instanceof SurfaceController)) {
-                val.destroy();
+                val.map(v => v.destroy());
+                // Hopefully deleting the dictionary entry while iterating won't be
+                // a disaster since we called Object.entries!
+                delete this.controllers[key];
             }
         });
     }
@@ -55,29 +64,30 @@ class MouseController {
         if (evt.button == LEFT_MOUSE_BUTTON) {
             evt.preventDefault();
             var id = evt.currentTarget.getAttribute("id");
-            this.activeController = this.controllers[id];
-            this.selectedShape = this.activeController;
+            this.activeControllers = this.controllers[id];
+            this.selectedShape = id;
             this.mouseDown = true;
             this.mouseDownX = evt.clientX;
             this.mouseDownY = evt.clientY;
             this.startDownX = evt.clientX;
             this.startDownY = evt.clientY;
-            this.activeController.onMouseDown();
+            this.activeControllers.map(c => c.onMouseDown());
         }
     }
 
     // If the user is dragging, call the controller's onDrag function.
     onMouseMove(evt) {
         evt.preventDefault();
-        if (this.mouseDown && this.activeController != null) {
-            this.activeController.onDrag(evt);
+        if (this.mouseDown && this.activeControllers != null) {
+            this.activeControllers.map(c => c.onDrag(evt));
         }
     }
 
     onMouseOver(evt) {
         var id = evt.currentTarget.getAttribute("id");
-        var overShape = this.controllers[id];
-        overShape.onMouseOver();
+        var controllers = this.controllers[id];
+        controllers.map(c => c.onMouseOver());
+
         /*
         // On drag & drop, anchors are not shown because of this first test.
         // We do this test so that if the user moves the mouse quickly, we don't
@@ -98,9 +108,9 @@ class MouseController {
 
     // Any dragging is now done.
     onMouseUp(evt) {
-        if (evt.button == LEFT_MOUSE_BUTTON && this.activeController != null) {
+        if (evt.button == LEFT_MOUSE_BUTTON && this.activeControllers != null) {
             evt.preventDefault();
-            this.activeController.onMouseUp();
+            this.activeControllers.map(c => c.onMouseUp());
             this.clearSelectedObject();
         }
     }
@@ -108,14 +118,14 @@ class MouseController {
     // Any dragging is now done.
     onMouseLeave(evt) {
         evt.preventDefault();
-        if (this.mouseDown && this.activeController != null) {
-            this.activeController.onMouseLeave();
+        if (this.mouseDown && this.activeControllers != null) {
+            this.activeControllers.map(c => c.onMouseLeave());
         }
     }
 
     clearSelectedObject() {
         this.mouseDown = false;
-        this.activeController = null;
+        this.activeControllers = null;
     }
 
     /*

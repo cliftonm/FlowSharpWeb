@@ -35,6 +35,8 @@
     <Content Include="anchorController.js" />
     <Content Include="bugs.txt" />
     <Content Include="connection.js" />
+    <Content Include="controllers\objectsController.js" />
+    <Content Include="controllers\rectangleController.js" />
     <Content Include="fileSaver.js" />
     <Content Include="helpers.js" />
     <Content Include="models\shapeModel.js" />

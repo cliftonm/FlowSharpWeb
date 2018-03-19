@@ -12,7 +12,6 @@
     }
 
     destroy() {
-        this.mouseController.detach(this.svgElement, this);
         this.unhookEvents();
     }
 
@@ -49,5 +48,12 @@
     onMouseDown() { }
     onMouseOver() { }
     onMouseUp() { }
-    onDrag(evt) { }
+    onMouseLeave() { }
+
+    // Default behavior
+    onDrag(evt)
+    {
+        this.model.updatePosition(evt);
+        this.model.setTranslate(this.model.x, this.model.y);
+    }
 }
