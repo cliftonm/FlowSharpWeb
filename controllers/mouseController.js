@@ -44,6 +44,12 @@ class MouseController {
         this.controllers = {};
     }
 
+    destroy(view) {
+        var id = view.id;
+        this.controllers[id].map(controller=>controller.destroy());
+        delete this.controllers[id];
+    }
+
     // Detaches all controllers and unwires events associated with the controller.
     destroyAll() {
         Object.entries(this.controllers).map(([key, val]) => val.map(v => v.destroy()));
@@ -115,13 +121,27 @@ class MouseController {
             // Hover management.
             // Do we have controllers for the shape we're entering, and is it a new shape?
             if (this.controllers[id] !== undefined && this.currentHoverShapeId != id) {
-                // Tell the shape's controllers that we were in that we're leaving.
-                this.currentHoverControllers.map(c => c.onMouseLeave());
+                if (this.controllers[id][0] instanceof AnchorController) {
+                    console.log("hovering over anchor--ignore");
+                } else {
+                    // Tell the shape's controllers that we were in that we're leaving.
 
-                // Tell the new shape that we're entering.
-                this.currentHoverShapeId = id;
-                this.currentHoverControllers = this.controllers[id];
-                this.currentHoverControllers.map(c => c.onMouseEnter());
+                    if (this.currentHoverControllers === undefined) {
+                        console.log("No hover controllers!");
+                    }
+
+                    this.currentHoverControllers.map(c => c.onMouseLeave());
+
+                    // Tell the new shape that we're entering.
+                    this.currentHoverShapeId = id;
+                    this.currentHoverControllers = this.controllers[id];
+
+                    if (this.controllers[id] == undefined) {
+                        console.log("No controllers for shape id " + id);
+                    }
+
+                    this.currentHoverControllers.map(c => c.onMouseEnter());
+                }
             }
         }
     }

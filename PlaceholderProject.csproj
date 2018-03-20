@@ -36,6 +36,7 @@
     <Content Include="bugs.txt" />
     <Content Include="connection.js" />
     <Content Include="controllers\anchorController.js" />
+    <Content Include="controllers\anchorGroupController.js" />
     <Content Include="controllers\objectsController.js" />
     <Content Include="controllers\rectangleController.js" />
     <Content Include="fileSaver.js" />

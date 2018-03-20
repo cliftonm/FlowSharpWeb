@@ -15,13 +15,11 @@ class ShapeController extends Controller {
 
     onDrag(dx, dy) {
         super.onDrag(dx, dy);
-        // anchorsController.onDrag(dx, dy);
     }
 
     onMouseEnter() {
         if (!this.mouseController.mouseDown) {
-            var anchors = this.getAnchors();
-            anchorsController.showAnchors(anchors);
+            anchorGroupController.showAnchors(this);
         }
     }
 
@@ -29,7 +27,7 @@ class ShapeController extends Controller {
     // will erase the anchors!
     onMouseLeave() {
         if (!this.mouseController.mouseDown) {
-            anchorsController.removeAnchors();
+            anchorGroupController.removeAnchors();
         }
     }
 }

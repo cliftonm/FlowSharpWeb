@@ -31,6 +31,7 @@
 
     <script type="text/javascript" src="controllers/controller.js"></script>
     <script type="text/javascript" src="controllers/anchorController.js"></script>
+    <script type="text/javascript" src="controllers/anchorGroupController.js"></script>
     <script type="text/javascript" src="controllers/mouseController.js"></script>
     <script type="text/javascript" src="controllers/shapeController.js"></script>
     <script type="text/javascript" src="controllers/surfaceController.js"></script>
@@ -133,8 +134,8 @@
     // Global so we can access the surface translation.
     var surfaceModel = null;
 
-    // AnchorController is global for the moment because it's used by all shape controllers.
-    var anchorsController = null;
+    // AnchorGroupController is global for the moment because it's used by all shape controllers.
+    var anchorGroupController = null;
 
     (function initialize() {
         var mouseController = new MouseController();
@@ -152,7 +153,7 @@
 
         var surfaceController = new SurfaceController(mouseController, surfaceView, surfaceModel);
         var objectsController = new ObjectsController(mouseController, objectsView, objectsModel);
-        anchorsController = new AnchorController(mouseController, anchorsView, anchorsModel);
+        anchorGroupController = new AnchorGroupController(mouseController, anchorsView, anchorsModel);
 
         // Attach both the surface and objects controller to the surface view so that events from the 
         // surface view are routed to both controllers, one for dealing with the grid, one for moving
@@ -173,7 +174,7 @@
         Helpers.getElement(Constants.SVG_OBJECTS_ID).appendChild(rectEl);
         mouseController.attach(rectView, rectController);
         // Most shapes also need an anchor controller
-        mouseController.attach(rectView, anchorsController);
+        mouseController.attach(rectView, anchorGroupController);
 
         // mouseController.setSurface(surface);
 
@@ -236,6 +237,11 @@
 
     // Saving files locally, but doesn't work in Edge:
     https://stackoverflow.com/questions/21012580/is-it-possible-to-write-data-to-file-using-only-javascript
+
+    // Explanations of why not to use arguments.callee.name to get the name of the function being called.
+    // https://stackoverflow.com/questions/29572466/how-do-you-find-out-the-caller-function-in-javascript-when-use-strict-is-enabled
+
+
 
 
 -->
