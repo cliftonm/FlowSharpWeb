@@ -31,11 +31,22 @@
 
         // this.anchorController = new AnchorController(this);
         var anchorElements = [];
+        var anchorModels = [];
 
         this.anchors.map(anchorDefinition => {
             var anchor = anchorDefinition.anchor;
-            var el = this.createElement("rect", { x: anchor.x - 5, y: anchor.y - 5, width: 10, height: 10, fill: "#FFFFFF", stroke: "#808080", "stroke-width": 0.5 });
+
+            var model = new Model();
+            model._x = anchor.x - 5;
+            model._y = anchor.y - 5;
+            model._width = 10;
+            model._height = 10;
+            // TODO: Set other properties (fill, stroke, stroke-width, etc)
+
+            var el = this.createElement("rect", { x: model.x, y: model.y, width: model.width, height: model.height, fill: "#FFFFFF", stroke: "#808080", "stroke-width": 0.5 });
+
             anchorElements.push(el);
+            anchorModels.push(model);
             anchorGroup.appendChild(el);
         });
 
@@ -47,10 +58,13 @@
             // Note that this will now result in the shape receiving onenter/onleave events for the shape itself when the
             // user mouses over the anchor shape!  The mouse controller handles this.
             var el = anchorElements[i];
-            var anchorModel = new Model();
-            var anchorView = new View(el, anchorModel);
-            var anchorController = new Controller(this.mouseController, anchorView, anchorModel);
-            anchorController.onDrag = this.partialCall(this.anchors, anchorModel, anchorDefinition.onDrag);
+
+            // Helpful for debugging
+            el.setAttribute("id", "anchor" + i);
+
+            var anchorView = new View(el, anchorModels[i]);
+            var anchorController = new AnchorController(this.mouseController, anchorView, anchorModels[i]);
+            anchorController.onDrag = this.partialCall(anchorModels, anchorModels[i], anchorDefinition.onDrag);
             this.mouseController.attach(anchorView, anchorController);
             this.anchors.views.push(anchorView);     // Save the view for when we need to destroy the individual anchors.
         }

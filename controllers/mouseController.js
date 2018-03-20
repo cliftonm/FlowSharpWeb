@@ -6,8 +6,8 @@ class MouseController {
         this.mouseDown = false;
         this.controllers = {};
         this.activeControllers = null;
-        this.currentHoverShapeId = "";
         this.currentHoverControllers = [];
+        this.leavingId = -1;
 
         // We really can't use movementX and movementY of the event because
         // when the user moves the mouse quickly, the move events switch from
@@ -112,35 +112,27 @@ class MouseController {
     }
 
     onMouseEnter(evt) {
+        evt.preventDefault();
+        var id = evt.currentTarget.getAttribute("id");
 
         if (this.mouseDown) {
-           // Doing a drag operation, so ignore shapes we enter and leave.
+            // Doing a drag operation, so ignore shapes we enter and leave so
+            // that even if the mouse moves over another shape, we keep track
+            // of the shape we're dragging.
         } else {
-            var id = evt.currentTarget.getAttribute("id");
-
             // Hover management.
-            // Do we have controllers for the shape we're entering, and is it a new shape?
-            if (this.controllers[id] !== undefined && this.currentHoverShapeId != id) {
-                if (this.controllers[id][0] instanceof AnchorController) {
-                    console.log("hovering over anchor--ignore");
-                } else {
-                    // Tell the shape's controllers that we were in that we're leaving.
+            if (this.leavingId != -1) {
+                console.log("Leaving " + this.leavingId);
 
-                    if (this.currentHoverControllers === undefined) {
-                        console.log("No hover controllers!");
-                    }
-
+                // If we're entering an anchor, don't leave anything as we want to preserve the anchors.
+                if (!(this.controllers[id][0] instanceof AnchorController)) {
                     this.currentHoverControllers.map(c => c.onMouseLeave());
-
+                    console.log("Entering " + id + " => " + this.controllers[id]);
                     // Tell the new shape that we're entering.
-                    this.currentHoverShapeId = id;
                     this.currentHoverControllers = this.controllers[id];
-
-                    if (this.controllers[id] == undefined) {
-                        console.log("No controllers for shape id " + id);
-                    }
-
                     this.currentHoverControllers.map(c => c.onMouseEnter());
+                } else {
+                    console.log("Leaving shape to enter anchor.");
                 }
             }
         }
@@ -148,11 +140,7 @@ class MouseController {
 
     onMouseLeave(evt) {
         evt.preventDefault();
-        if (this.mouseDown) {
-            // Doing a drag operation, so see what the controller wants to do.
-            // For example, the surface clears the selection.
-            this.activeControllers.map(c => c.onMouseLeave());
-        }
+        this.leavingId = evt.currentTarget.getAttribute("id");
     }
 
     // Returns the controllers associated with the SVG element.

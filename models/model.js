@@ -53,12 +53,44 @@
     // but setTranslate is called with the mod'ed (x, y) coordinates.
     setTranslate(x, y) {
         this.translation = "translate(" + x + "," + y + ")";
-        // later to be extended to build the transform so that it includes rotation and other things we can do.
         this.transform = this.translation;
     }
 
+    // TODO: Later to be extended to build the transform so that it includes rotation and other things we can do.
     set transform(value) {
         this._transform = value;
         this.propertyChanged("transform", value);
+    }
+
+    set tx(value) {
+        this._tx = value;
+        this.translation = "translate(" + this._tx + "," + this._ty + ")";
+        this.transform = this.translation;
+    }
+
+    set tx(value) {
+        this._ty = value;
+        this.translation = "translate(" + this._tx + "," + this._ty + ")";
+        this.transform = this.translation;
+    }
+
+    set x(value) {
+        this._x = value;
+        this.propertyChanged("x", value);
+    }
+
+    set y(value) {
+        this._y = value;
+        this.propertyChanged("y", value);
+    }
+
+    set width(value) {
+        this._width = value;
+        this.propertyChanged("width", value);
+    }
+
+    set height(value) {
+        this._height = value;
+        this.propertyChanged("height", value);
     }
 }

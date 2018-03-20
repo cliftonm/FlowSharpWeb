@@ -24,10 +24,23 @@ class ShapeController extends Controller {
     }
 
     // If we're showing the anchors, moving the mouse on top of an anchor will cause the current shape to leave, which
-    // will erase the anchors!
+    // will erase the anchors!  We handle this situation in the mouse controller.
     onMouseLeave() {
-        if (!this.mouseController.mouseDown) {
-            anchorGroupController.removeAnchors();
-        }
+        anchorGroupController.removeAnchors();
+    }
+
+    moveAnchor(anchor, dx, dy) {
+        anchor.updateTranslation(dx, dy);
+        anchor.setTranslate(anchor.tx, anchor.ty);
+    }
+
+    adjustAnchorX(anchor, dx) {
+        anchor.updateTranslation(dx, anchor.ty);
+        anchor.setTranslate(anchor.tx, anchor.ty);
+    }
+
+    adjustAnchorY(anchor, dy) {
+        anchor.updateTranslation(anchor.tx, dy);
+        anchor.setTranslate(anchor.tx, anchor.ty);
     }
 }
