@@ -87,6 +87,11 @@
         this.propertyChanged("r", value);
     }
 
+    set d(value) {
+        this._d = value;
+        this.propertyChanged("d", value);
+    }
+
     set x(value) {
         this._x = value;
         this.propertyChanged("x", value);

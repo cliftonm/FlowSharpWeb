@@ -40,8 +40,10 @@
 
     <script type="text/javascript" src="controllers/rectangleController.js"></script>
     <script type="text/javascript" src="controllers/circleController.js"></script>
+    <script type="text/javascript" src="controllers/diamondController.js"></script>
     <script type="text/javascript" src="controllers/toolboxRectangleController.js"></script>
     <script type="text/javascript" src="controllers/toolboxCircleController.js"></script>
+    <script type="text/javascript" src="controllers/toolboxDiamondController.js"></script>
 
     <!--
     <script type="text/javascript" src="shapes/anchor.js"></script>
@@ -207,7 +209,7 @@
         // Create Toolbox Model-View-Controllers and register with mouse controller.
         registerToolboxItem(mouseController, Constants.TOOLBOX_RECTANGLE_ID, (mc, view, model) => new ToolboxRectangleController(mc, view, model));
         registerToolboxItem(mouseController, Constants.TOOLBOX_CIRCLE_ID, (mc, view, model) => new ToolboxCircleController(mc, view, model));
-        //registerToolboxItem(mouseController, Constants.TOOLBOX_DIAMOND_ID);
+        registerToolboxItem(mouseController, Constants.TOOLBOX_DIAMOND_ID, (mc, view, model) => new ToolboxDiamondController(mc, view, model));
         //registerToolboxItem(mouseController, Constants.TOOLBOX_LINE_ID);
         //registerToolboxItem(mouseController, Constants.TOOLBOX_TEXT_ID);
 

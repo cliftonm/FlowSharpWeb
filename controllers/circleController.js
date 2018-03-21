@@ -67,6 +67,6 @@
     }
 
     changeRadius(amt) {
-        this.model.r = this.model._r + amt;
+        this.model.r = this.model.r + amt;
     }
 }

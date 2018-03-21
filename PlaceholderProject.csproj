@@ -38,9 +38,11 @@
     <Content Include="controllers\anchorController.js" />
     <Content Include="controllers\anchorGroupController.js" />
     <Content Include="controllers\circleController.js" />
+    <Content Include="controllers\diamondController.js" />
     <Content Include="controllers\objectsController.js" />
     <Content Include="controllers\rectangleController.js" />
     <Content Include="controllers\toolboxCircleController.js" />
+    <Content Include="controllers\toolboxDiamondController.js" />
     <Content Include="controllers\toolboxRectangleController.js" />
     <Content Include="controllers\toolboxShapeController.js" />
     <Content Include="fileSaver.js" />
