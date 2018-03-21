@@ -98,7 +98,20 @@
                 <g id="objects" transform="translate(0, 0)"></g>
             </g>
             <g id="anchors"></g>
-            <!-- toolbox goes here -->
+            <g id="toolbox" x="0" y="0" width="200" height="480">
+                <rect id="toolboxSurface" x="0" y="0" width="200" height="480" fill="#FFFFFF" stroke="black" stroke-width="0.5" />
+                <rect id="toolboxRectangle" x="10" y="10" width="40" height="40" stroke="black" stroke-width="1" fill="#FFFFFF" />
+                <circle id="toolboxCircle" cx="85" cy="29" r="21" stroke="black" stroke-width="1" fill="#FFFFFF" />
+                <path id="toolboxDiamond" d="M 140 10 L 115 30 L 140 50 L 165 30 Z" stroke="black" stroke-width="1" fill="#FFFFFF" />
+                <g id="toolboxLine">
+                    <rect id="lineHiddenSelectionArea" x="10" y="70" width="40" height="40" stroke-opacity="0" fill-opacity="0" />
+                    <!--<line id="lineSelection" x1="10" y1="70" x2="50" y2="110" stroke="#FFA0A0" stroke-width="20" fill="#FFFFFF" stroke-opacity="0" fill-opacity="0" />-->
+                    <!--<rect id="endpoint1" transform="translate(10, 70)" x="-5" y="-5" width="10" height="10" stroke="red" stroke-width="1" fill="#FFFFFF"/>
+                        <rect id="endpoint2" transform="translate(50, 110)" x="-5" y="-5" width="10" height="10" stroke="red" stroke-width="1" fill="#FFFFFF" />-->
+                    <line id="line" x1="10" y1="70" x2="50" y2="110" fill="#FFFFFF" stroke="black" stroke-width="1" />
+                </g>
+                <text id="toolboxText" x="73" y="100" font-size="32" font-family="Verdana">A</text>
+            </g>
         </svg>
     </div>
 </body>

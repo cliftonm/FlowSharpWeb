@@ -1,3 +1,9 @@
+Sometimes an anchor (or two) disappears in when sizing the rectangle.
+
+-width & -height results in no rectangle appearing.
+
+==========================
+
 scrolling surface quickly which causes the mouse to go over an element fires the surface leave event which stops scrolling.
 
 create circles within circles.  Since the mouse leave doesn't fire for a particular circle, we only get the anchor points for the outer circle.
