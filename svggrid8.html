@@ -27,6 +27,7 @@
     <script type="text/javascript" src="views/view.js"></script>
     <script type="text/javascript" src="views/objectsView.js"></script>
     <script type="text/javascript" src="views/shapeView.js"></script>
+    <script type="text/javascript" src="views/lineView.js"></script>
     <script type="text/javascript" src="views/surfaceView.js"></script>
 
     <script type="text/javascript" src="controllers/controller.js"></script>
@@ -41,9 +42,11 @@
     <script type="text/javascript" src="controllers/rectangleController.js"></script>
     <script type="text/javascript" src="controllers/circleController.js"></script>
     <script type="text/javascript" src="controllers/diamondController.js"></script>
+    <script type="text/javascript" src="controllers/lineController.js"></script>
     <script type="text/javascript" src="controllers/toolboxRectangleController.js"></script>
     <script type="text/javascript" src="controllers/toolboxCircleController.js"></script>
     <script type="text/javascript" src="controllers/toolboxDiamondController.js"></script>
+    <script type="text/javascript" src="controllers/toolboxLineController.js"></script>
 
     <!--
     <script type="text/javascript" src="shapes/anchor.js"></script>
@@ -210,7 +213,7 @@
         registerToolboxItem(mouseController, Constants.TOOLBOX_RECTANGLE_ID, (mc, view, model) => new ToolboxRectangleController(mc, view, model));
         registerToolboxItem(mouseController, Constants.TOOLBOX_CIRCLE_ID, (mc, view, model) => new ToolboxCircleController(mc, view, model));
         registerToolboxItem(mouseController, Constants.TOOLBOX_DIAMOND_ID, (mc, view, model) => new ToolboxDiamondController(mc, view, model));
-        //registerToolboxItem(mouseController, Constants.TOOLBOX_LINE_ID);
+        registerToolboxItem(mouseController, Constants.TOOLBOX_LINE_ID, (mc, view, model) => new ToolboxLineController(mc, view, model));
         //registerToolboxItem(mouseController, Constants.TOOLBOX_TEXT_ID);
 
         // mouseController.setSurface(surface);

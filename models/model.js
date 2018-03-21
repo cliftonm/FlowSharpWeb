@@ -102,6 +102,26 @@
         this.propertyChanged("y", value);
     }
 
+    set x1(value) {
+        this._x1 = value;
+        this.propertyChanged("x1", value);
+    }
+
+    set y1(value) {
+        this._y1 = value;
+        this.propertyChanged("y1", value);
+    }
+
+    set x2(value) {
+        this._x2 = value;
+        this.propertyChanged("x2", value);
+    }
+
+    set y2(value) {
+        this._y2 = value;
+        this.propertyChanged("y2", value);
+    }
+
     set width(value) {
         this._width = value;
         this.propertyChanged("width", value);

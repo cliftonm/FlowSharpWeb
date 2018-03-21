@@ -39,10 +39,12 @@
     <Content Include="controllers\anchorGroupController.js" />
     <Content Include="controllers\circleController.js" />
     <Content Include="controllers\diamondController.js" />
+    <Content Include="controllers\lineController.js" />
     <Content Include="controllers\objectsController.js" />
     <Content Include="controllers\rectangleController.js" />
     <Content Include="controllers\toolboxCircleController.js" />
     <Content Include="controllers\toolboxDiamondController.js" />
+    <Content Include="controllers\toolboxLineController.js" />
     <Content Include="controllers\toolboxRectangleController.js" />
     <Content Include="controllers\toolboxShapeController.js" />
     <Content Include="fileSaver.js" />
@@ -56,6 +58,7 @@
     <Content Include="controllers\shapeController.js" />
     <Content Include="controllers\surfaceController.js" />
     <Content Include="models\surfaceModel.js" />
+    <Content Include="views\lineView.js" />
     <Content Include="views\objectsView.js" />
     <Content Include="views\shapeView.js" />
     <Content Include="views\surfaceView.js" />
