@@ -40,11 +40,19 @@
         }
     }
 
+    // Update our internal translation and set the translation immediately.
+    setTranslation(x, y) {
+        this._tx += x;
+        this._ty += y;
+        this.setTranslate(x, y);
+    }
+
     updateTranslation(dx, dy) {
         this._tx += dx;
         this._ty += dy;
     }
 
+    // Sets the "translate" portion of the "transform" property.
     // All models have a translation.  Notice we do not use _tx, _ty here
     // nor do we set _tx, _ty to (x, y) because (x, y) might be mod'ed by
     // the grid (w, h).  We want to use exactly the parameters passed in

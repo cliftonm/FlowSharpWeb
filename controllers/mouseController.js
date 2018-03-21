@@ -85,6 +85,8 @@ class MouseController {
             this.activeControllers = this.controllers[id];
             this.selectedShape = id;
             this.mouseDown = true;
+            this.startDownX = evt.clientX;
+            this.startDownY = evt.clientY;
             this.x = evt.clientX;
             this.y = evt.clientY;
             this.activeControllers.map(c => c.onMouseDown());
@@ -106,7 +108,8 @@ class MouseController {
     onMouseUp(evt) {
         if (evt.button == LEFT_MOUSE_BUTTON && this.activeControllers != null) {
             evt.preventDefault();
-            this.activeControllers.map(c => c.onMouseUp());
+            var isClick = this.isClick(evt);
+            this.activeControllers.map(c => c.onMouseUp(isClick));
             this.clearSelectedObject();
         }
     }

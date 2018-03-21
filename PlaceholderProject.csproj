@@ -39,6 +39,8 @@
     <Content Include="controllers\anchorGroupController.js" />
     <Content Include="controllers\objectsController.js" />
     <Content Include="controllers\rectangleController.js" />
+    <Content Include="controllers\toolboxRectangleController.js" />
+    <Content Include="controllers\toolboxShapeController.js" />
     <Content Include="fileSaver.js" />
     <Content Include="helpers.js" />
     <Content Include="models\shapeModel.js" />

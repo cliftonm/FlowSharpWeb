@@ -18,7 +18,7 @@
     registerEventListener(element, eventName, callback, self) {
         var ref;
 
-        if (self == null) {
+        if (self == null || self === undefined) {
             self = this;
         }
 

@@ -34,9 +34,12 @@
     <script type="text/javascript" src="controllers/anchorGroupController.js"></script>
     <script type="text/javascript" src="controllers/mouseController.js"></script>
     <script type="text/javascript" src="controllers/shapeController.js"></script>
+    <script type="text/javascript" src="controllers/toolboxShapeController.js"></script>
     <script type="text/javascript" src="controllers/surfaceController.js"></script>
     <script type="text/javascript" src="controllers/objectsController.js"></script>
+
     <script type="text/javascript" src="controllers/rectangleController.js"></script>
+    <script type="text/javascript" src="controllers/toolboxRectangleController.js"></script>
 
     <!--
     <script type="text/javascript" src="shapes/anchor.js"></script>
@@ -150,6 +153,14 @@
     // AnchorGroupController is global for the moment because it's used by all shape controllers.
     var anchorGroupController = null;
 
+    function registerToolboxItem(mouseController, elementId, fncCreateController) {
+        var svgElement = Helpers.getElement(elementId);
+        var model = new Model();
+        var view = new View(svgElement, model);
+        var controller = fncCreateController(mouseController, view, model);
+        mouseController.attach(view, controller);
+    }
+
     (function initialize() {
         var mouseController = new MouseController();
         var svgSurface = Helpers.getElement(Constants.SVG_SURFACE_ID);
@@ -176,6 +187,7 @@
 
         surfaceModel.resizeGrid(100, 100, 20, 20);
 
+        /*
         var rectEl = Helpers.createElement('rect', { x: 240, y: 100, width: 60, height: 60, fill: "#FFFFFF", stroke: "black", "stroke-width": 1 });
         var rectModel = new Model();
         rectModel._x = 240;
@@ -188,6 +200,14 @@
         mouseController.attach(rectView, rectController);
         // Most shapes also need an anchor controller
         mouseController.attach(rectView, anchorGroupController);
+        */
+
+        // Create Toolbox Model-View-Controllers and register with mouse controller.
+        registerToolboxItem(mouseController, Constants.TOOLBOX_RECTANGLE_ID, (mc, view, model) => new ToolboxRectangleController(mc, view, model));
+        //registerToolboxItem(mouseController, Constants.TOOLBOX_CIRCLE_ID);
+        //registerToolboxItem(mouseController, Constants.TOOLBOX_DIAMOND_ID);
+        //registerToolboxItem(mouseController, Constants.TOOLBOX_LINE_ID);
+        //registerToolboxItem(mouseController, Constants.TOOLBOX_TEXT_ID);
 
         // mouseController.setSurface(surface);
 
