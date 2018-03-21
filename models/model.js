@@ -82,6 +82,11 @@
         this.transform = this.translation;
     }
 
+    set r(value) {
+        this._r = value;
+        this.propertyChanged("r", value);
+    }
+
     set x(value) {
         this._x = value;
         this.propertyChanged("x", value);
