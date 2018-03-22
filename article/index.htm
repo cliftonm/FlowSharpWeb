@@ -52,6 +52,17 @@ looking for a polished drawing program, similar to Visio, look at draw.io.&nbsp;
 If you want to<i> learn</i> about how 
 this stuff is done, that's what this article is for.<i>&nbsp; </i></p>
 <p>That said, let's begin!</p>
+<h2>Prototype Build</h2>
+<p>The first two-thirds of this article is a prototype build.&nbsp; It vets the 
+basic functionality and manipulation of the SVG DOM with UI interaction and 
+diagram persistence.&nbsp; In particular, I implemented a very shallow 
+view-controller architecture which gets completely replaced later on in the 
+article.&nbsp; In the section that begins &quot;Refactoring the Prototype&quot; I move to 
+a full model-view-controller, which cleans up a lot of the kludgy workarounds 
+that you'll see here.&nbsp; Making the transition wasn't that painful -- 90% of 
+the code was re-used in a proper MVC model, with the most significant changes 
+occurring in the mouse controller and toolbox controller.&nbsp; And all cases of 
+<code>instanceof</code> have been removed, something I considered quite a kludge in itself.</p>
 <h2>Creating a Scrollable Grid</h2>
 <p><img border="0" src="grid1.png" width="276" height="200"></p>
 <p>The first thing I wanted to learn how to do was create a grid that scrolls.&nbsp; 
@@ -1994,86 +2005,6 @@ moved <i>into</i> the shape and then back <i>out</i> to the edge to select the
 anchor.&nbsp; This issue exists with connection points as well.&nbsp; One way to 
 deal with this is that each shape needs to be in a group with a transparent but 
 slightly larger mirror shape.&nbsp; It's on the todo list.</p>
-<h2>Connecting Lines</h2>
-<p>We want the ability to connect lines to shapes.&nbsp; This involves:</p>
-<ul>
-	<li>Connection points on the shape.</li>
-	<li>Showing those connection points.</li>
-	<li>Managing what line endpoint is connected to what shape's connection 
-	point.<ul>
-		<li>Attaching endpoints</li>
-		<li>Detaching endpoints</li>
-		<li>Persisting connections</li>
-	</ul>
-	</li>
-	<li>Moving the lines when the shape moves.</li>
-	<li>Moving the lines when the shape size changes.</li>
-</ul>
-<p>That's a lot!&nbsp; Hopefully we can be efficient about how we implement all 
-this.</p>
-<h3>Connection Points</h3>
-<p>For the moment, I'm going to keep connection points simple, meaning that for 
-circles and diamonds, there's no 45 / 135 / 225 / 315 degree points (or even 
-others.)&nbsp; For rectangles, there's no intermediate connection points between 
-the edge and the midpoint.&nbsp; Connection points, like anchors, will for now 
-be the cardinal compass points: N, S, E, W.&nbsp; However, we'll implement the 
-structure so that it can be extended later on.&nbsp; As such, defining 
-connection points looks very similar to defining anchors, except that there's no 
-behavior associated with a connection point, it's just a visual aid.&nbsp; In 
-the full blown implementation, connection points can be added, removed, moved 
-around, and so forth, so what <i>is </i>important is that we have some way to 
-associate a name (even if it's an auto-generated GUID) to a connection point so 
-there is something concrete to use as a reference between the line endpoint and 
-the shape connection point, rather than just an index into an array.</p>
-<h3>Models and Controllers</h3>
-<p>So far we've avoided having to maintain and persist a separate model.&nbsp; 
-The shape classes <code>Rectangle</code>, <code>Text</code>, <code>Circle</code>, and so forth are more controllers 
-than models, though there is a bit of entanglement evident in the 
-<code>createShapeControllers</code> function, which is called when loading a diagram.&nbsp; 
-This fragment:</p>
-<pre>shape.X = +translate[0];
-shape.Y = +translate[1];</pre>
-<p>is clue that we're entangling controller and model.&nbsp; Similarly, in the 
-<code>Surface</code> class, the <code>serialize</code> / <code>deserialize</code> functions are another clue that 
-controller and model are being entangled.&nbsp; The code for serializing the 
-surface data is itself rather hacky.&nbsp; Reviewing it:</p>
-<pre>serialize() {
-  var el = document.createElement(&quot;surface&quot;);
-  // DOM adds elements as lowercase, so let's just start with lowercase keys.
-  var attributes = {x : this.X, y : this.Y, gridcellw : this.gridCellW, gridcellh : this.gridCellH, cellw : this.cellW, cellh : this.cellH}
-  Object.entries(attributes).map(([key, val]) =&gt; el.setAttribute(key, val));
-  var serializer = new XMLSerializer();
-  var xml = serializer.serializeToString(el);
-
-  return xml;
-}</pre>
-<p>Besides the kludge of dealing with lowercase attributes, we also have the 
-hack of serializing to XML to stay consistent with the actual SVG object graph 
-serialization, which is also in XML.&nbsp; There are some options that should be 
-considered.</p>
-<ul>
-	<li>Serialize only the model and reconstruct the SVG object graph from the 
-	model.&nbsp; The drawback here is that the SVG, serialized as XML, is easily 
-	imported into some other application.&nbsp; Of course, we could add an 
-	&quot;export&quot; function if we want this behavior.</li>
-	<li>Serialize the SVG object graph as XML and the shape models as JSON, 
-	which is more Javascript native.&nbsp; We either entangle XML and JSON in 
-	the same file or save them as separate files.</li>
-</ul>
-<p>At the end of the day, I think the preferred approach is the serialize the <i>
-model</i> and reconstruct the SVG object graph <i>from the model</i>.&nbsp; We 
-can then establish a kind of MVC pattern:</p>
-<p><img border="0" src="mvc1.png" width="412" height="316"></p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
 <h2>Text</h2>
 <p><img border="0" src="text1.png" width="424" height="202"></p>
 <p>One last thing in this article to make this application at least minimally 
@@ -2134,6 +2065,87 @@ function setText() {
 }</pre>
 <p>It's a bit kludgy, using the global <code>mouseController</code> and so forth, but we can expand upon this later to have 
 all shapes include a text area.</p>
+<h2>Refactoring the Prototype</h2>
+<p>So far we've avoided having to maintain and persist a separate model.&nbsp; 
+The shape classes <code>Rectangle</code>, <code>Text</code>, <code>Circle</code>, and so forth are more controllers 
+than models, though there is a bit of entanglement evident in the 
+<code>createShapeControllers</code> function, which is called when loading a diagram.&nbsp; 
+This fragment:</p>
+<pre>shape.X = +translate[0];
+shape.Y = +translate[1];</pre>
+<p>is clue that we're entangling controller and model.&nbsp; Similarly, in the 
+<code>Surface</code> class, the <code>serialize</code> / <code>deserialize</code> functions are another clue that 
+controller and model are being entangled.&nbsp; The code for serializing the 
+surface data is itself rather hacky.&nbsp; Reviewing it:</p>
+<pre>serialize() {
+  var el = document.createElement(&quot;surface&quot;);
+  // DOM adds elements as lowercase, so let's just start with lowercase keys.
+  var attributes = {x : this.X, y : this.Y, gridcellw : this.gridCellW, gridcellh : this.gridCellH, cellw : this.cellW, cellh : this.cellH}
+  Object.entries(attributes).map(([key, val]) =&gt; el.setAttribute(key, val));
+  var serializer = new XMLSerializer();
+  var xml = serializer.serializeToString(el);
+
+  return xml;
+}</pre>
+<p>Besides the kludge of dealing with lowercase attributes, we also have the 
+hack of serializing to XML to stay consistent with the actual SVG object graph 
+serialization, which is also in XML.&nbsp; There are some options that should be 
+considered.</p>
+<ul>
+	<li>Serialize only the model and reconstruct the SVG object graph from the 
+	model.&nbsp; The drawback here is that the SVG, serialized as XML, is easily 
+	imported into some other application.&nbsp; Of course, we could add an 
+	&quot;export&quot; function if we want this behavior.</li>
+	<li>Serialize the SVG object graph as XML and the shape models as JSON, 
+	which is more Javascript native.&nbsp; We either entangle XML and JSON in 
+	the same file or save them as separate files.</li>
+</ul>
+<p>At the end of the day, I think the preferred approach is the serialize the <i>
+model</i> and reconstruct the SVG object graph <i>from the model</i>.</p>
+<h3>Models and Controllers</h3>
+<p>Here's the basic MVC pattern:</p>
+<p><img border="0" src="mvc1.png" width="412" height="316"></p>
+<p>&nbsp;</p>
+<h2>Connecting Lines</h2>
+<p>We want the ability to connect lines to shapes.&nbsp; This involves:</p>
+<ul>
+	<li>Connection points on the shape.</li>
+	<li>Showing those connection points.</li>
+	<li>Managing what line endpoint is connected to what shape's connection 
+	point.<ul>
+		<li>Attaching endpoints</li>
+		<li>Detaching endpoints</li>
+		<li>Persisting connections</li>
+	</ul>
+	</li>
+	<li>Moving the lines when the shape moves.</li>
+	<li>Moving the lines when the shape size changes.</li>
+</ul>
+<p>That's a lot!&nbsp; Hopefully we can be efficient about how we implement all 
+this.</p>
+<h3>Connection Points</h3>
+<p>For the moment, I'm going to keep connection points simple, meaning that for 
+circles and diamonds, there's no 45 / 135 / 225 / 315 degree points (or even 
+others.)&nbsp; For rectangles, there's no intermediate connection points between 
+the edge and the midpoint.&nbsp; Connection points, like anchors, will for now 
+be the cardinal compass points: N, S, E, W.&nbsp; However, we'll implement the 
+structure so that it can be extended later on.&nbsp; As such, defining 
+connection points looks very similar to defining anchors, except that there's no 
+behavior associated with a connection point, it's just a visual aid.&nbsp; In 
+the full blown implementation, connection points can be added, removed, moved 
+around, and so forth, so what <i>is </i>important is that we have some way to 
+associate a name (even if it's an auto-generated GUID) to a connection point so 
+there is something concrete to use as a reference between the line endpoint and 
+the shape connection point, rather than just an index into an array.</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
 <h2>Conclusion</h2>
 <p>There's so much more to do!&nbsp; Zooming, rotations, a &quot;properties&quot; window 
 for setting colors and stroke widths, font and font sizes, arrow endpoints, 

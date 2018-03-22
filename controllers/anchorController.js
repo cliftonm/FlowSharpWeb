@@ -2,4 +2,8 @@
     constructor(mouseController, view, model) {
         super(mouseController, view, model);
     }
+
+    isAnchorController() {
+        return true;
+    }
 }

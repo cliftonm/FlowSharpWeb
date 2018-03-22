@@ -43,6 +43,10 @@
         this.registerEventListener(this.view.svgElement, "mouseleave", this.mouseController.onMouseLeave, this.mouseController);
     }
 
+    isAnchorController() {
+        return false;
+    }
+
     getAbsoluteLocation(p) {
         p = p.translate(this.model.tx, this.model.ty);
         p = p.translate(surfaceModel.tx, surfaceModel.ty);

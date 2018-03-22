@@ -60,6 +60,7 @@ class MouseController {
         this.controllers = {};
     }
 
+    /*
     destroyAllButSurface() {
         Object.entries(this.controllers).map(([key, val]) => {
             if (!(val instanceof SurfaceController)) {
@@ -70,6 +71,7 @@ class MouseController {
             }
         });
     }
+    */
 
     isClick() {
         var endDownX = this.x;
@@ -145,7 +147,7 @@ class MouseController {
                 console.log("Leaving " + this.leavingId);
 
                 // If we're entering an anchor, don't leave anything as we want to preserve the anchors.
-                if (!(this.controllers[id][0] instanceof AnchorController)) {
+                if (!this.controllers[id][0].isAnchorController()) {
                     this.currentHoverControllers.map(c => c.onMouseLeave());
                     console.log("Entering " + id + " => " + this.controllers[id]);
                     // Tell the new shape that we're entering.
