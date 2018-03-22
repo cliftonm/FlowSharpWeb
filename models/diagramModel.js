@@ -90,7 +90,7 @@
                 this.mouseController.attach(view, controller);
 
                 // Most shapes also need an anchor controller.  An exception is the Text shape, at least for now.
-                if (key != "Text") {
+                if (controller.shouldShowAnchors) {
                     this.mouseController.attach(view, anchorGroupController);
                 }
             }

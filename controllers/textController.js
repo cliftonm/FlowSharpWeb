@@ -3,6 +3,10 @@
         super(mouseController, view, model);
     }
 
+    get shouldShowAnchors() {
+        return false;
+    }
+
     // Update the UI with the text associated with the shape.
     onMouseDown(evt) {
         super.onMouseDown(evt);

@@ -55,6 +55,10 @@
         return false;
     }
 
+    get shouldShowAnchors() {
+        return true;
+    }
+
     getAbsoluteLocation(p) {
         p = p.translate(this.model.tx, this.model.ty);
         p = p.translate(surfaceModel.tx, surfaceModel.ty);
