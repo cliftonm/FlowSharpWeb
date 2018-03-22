@@ -7,6 +7,24 @@
         this._height = 0;
     }
 
+    serialize() {
+        var model = super.serialize();
+        model.x = this._x;
+        model.y = this._y;
+        model.width = this._width;
+        model.height = this._height;
+
+        return { Rectangle: model };
+    }
+
+    deserialize(model, el) {
+        super.deserialize(model, el);
+        this.x = model.x;
+        this.y = model.y;
+        this.width = model.width;
+        this.height = model.height;
+    }
+
     get x() { return this._x; }
     get y() { return this._y; }
     get width() { return this._width; }

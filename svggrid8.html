@@ -18,8 +18,10 @@
 
     <script type="text/javascript" src="helpers.js"></script>
     <script type="text/javascript" src="point.js"></script>
+    <script type="text/javascript" src="fileSaver.js"></script>
 
     <script type="text/javascript" src="models/model.js"></script>
+    <script type="text/javascript" src="models/diagramModel.js"></script>
     <script type="text/javascript" src="models/objectsModel.js"></script>
     <script type="text/javascript" src="models/shapeModel.js"></script>
     <script type="text/javascript" src="models/surfaceModel.js"></script>
@@ -149,7 +151,7 @@
         SHAPE_CLASS_NAME : "svgShape",
         FILE_INPUT : "fileInput",
         OBJECT_GROUP_ID : "objectGroup",
-        FILENAME : "data.svg",
+        FILENAME : "diagram.json",
         TOOLBOX_RECTANGLE_ID : "toolboxRectangle",
         TOOLBOX_CIRCLE_ID : "toolboxCircle",
         TOOLBOX_DIAMOND_ID : "toolboxDiamond",
@@ -173,11 +175,45 @@
     // AnchorGroupController is global for the moment because it's used by all shape controllers.
     var anchorGroupController = null;
 
+    // Global so we can add/remove shape models as they are dropped / removed from the diagram.
+    var diagramModel = null;
+
+    document.getElementById(Constants.FILE_INPUT).addEventListener('change', readSingleFile, false);
+
+    // https://w3c.github.io/FileAPI/
+    // https://stackoverflow.com/questions/3582671/how-to-open-a-local-disk-file-with-javascript
+    // Loading the file after it has been loaded doesn't trigger this event again because it's
+    // hooked up to "change", and the filename hasn't changed!
+    function readSingleFile(e) {
+        var file = e.target.files[0];
+        var reader = new FileReader();
+        reader.onload = loadComplete;
+        reader.readAsText(file);
+        // Clears the last filename(s) so loading the same file will work again.
+        document.getElementById(Constants.FILE_INPUT).value = "";
+    }
+
+    function loadComplete(e) {
+        var contents = e.target.result;
+        diagramModel.deserialize(contents);
+    }
+
+    // https://stackoverflow.com/questions/23582101/generating-viewing-and-saving-svg-client-side-in-browser
+    function saveSvg() {
+        var json = diagramModel.serialize();
+        var blob = new Blob([json], { 'type': "image/json" });
+
+        // We're using https://github.com/eligrey/FileSaver.js/
+        // but with the "export" (a require node.js thing) removed.
+        // There are several forks of this, not sure if there's any improvements in the forks.
+        saveAs(blob, Constants.FILENAME);
+    }
+
     // Update the selected shape's text.  Works only with text shapes right now.
     function setText() {
-        if (mouseController.selectedShapeController != null) {
+        if (mouseController.selectedControllers != null) {
             var text = document.getElementById("text").value;
-            mouseController.selectedShapeController.model.text = text;
+            mouseController.selectedControllers.map(c => c.model.text = text);
         }
     }
 
@@ -191,6 +227,7 @@
 
     (function initialize() {
         mouseController = new MouseController();
+        diagramModel = new DiagramModel(mouseController);
         var svgSurface = Helpers.getElement(Constants.SVG_SURFACE_ID);
         var svgObjects = Helpers.getElement(Constants.SVG_OBJECTS_ID);
         var svgAnchors = Helpers.getElement(Constants.SVG_ANCHORS_ID);
@@ -224,9 +261,10 @@
 
         surfaceModel.resizeGrid(100, 100, 20, 20);
 
+        // Example of creating a shape programmatically:
         /*
         var rectEl = Helpers.createElement('rect', { x: 240, y: 100, width: 60, height: 60, fill: "#FFFFFF", stroke: "black", "stroke-width": 1 });
-        var rectModel = new Model();
+        var rectModel = new RectangleModel();
         rectModel._x = 240;
         rectModel._y = 100;
         rectModel._width = 60;

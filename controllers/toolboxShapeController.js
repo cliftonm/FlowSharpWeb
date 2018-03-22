@@ -8,6 +8,7 @@
         if (isClick) {
             console.log("toolbox shape click");
             var emvc = this.createElementAt(270, 130);
+            diagramModel.addModel(emvc.model, emvc.view.id);
             // Account for surface translation (scrolling) so that shape is always placed in a fixed position.
             emvc.model.translate(-surfaceModel.tx, -surfaceModel.ty);
             this.addToObjectsGroup(emvc);
@@ -22,6 +23,7 @@
             console.log("toolbox shape onDrag");
             // TODO: Figure out where we place the element so the shape is created centered over the mouse!
             var emvc = this.createElementAt(this.mouseController.x, this.mouseController.y);
+            diagramModel.addModel(emvc.model, emvc.view.id);
             // Add the shape to the toolbox group for now so it is topmost, rather than adding
             // it to the objects group.
             this.addToToolboxGroup(emvc);

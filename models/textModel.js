@@ -6,6 +6,22 @@
         this._text = "";
     }
 
+    serialize() {
+        var model = super.serialize();
+        model.x = this._x;
+        model.y = this._y;
+        model.text = this._text;
+
+        return { Text: model };
+    }
+
+    deserialize(model, el) {
+        super.deserialize(model, el);
+        this.x = model.x;
+        this.y = model.y;
+        this.text = model.text;
+    }
+
     get x() { return this._x; }
     get y() { return this._y; }
     get text() { return this._text; }

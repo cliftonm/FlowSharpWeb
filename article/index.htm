@@ -2102,12 +2102,183 @@ considered.</p>
 </ul>
 <p>At the end of the day, I think the preferred approach is the serialize the <i>
 model</i> and reconstruct the SVG object graph <i>from the model</i>.</p>
-<h3>Models and Controllers</h3>
+<h3>Models, Views, and Controllers</h3>
 <p>Here's the basic MVC pattern:</p>
-<p><img border="0" src="mvc1.png" width="412" height="316"></p>
-<p>&nbsp;</p>
+<p><img border="0" src="mvc1.png" width="524" height="409"></p>
+<p>Each shape implements its own specific model, view, and controller.&nbsp; For 
+example (because it's interesting) here are the MVC classes for the text shape:</p>
+<h3>The Text Model</h3>
+<pre>class TextModel extends ShapeModel {
+  constructor() {
+    super();
+    this._x = 0;
+    this._y = 0;
+    this._text = &quot;&quot;;
+  }
+
+  get x() { return this._x; }
+  get y() { return this._y; }
+  get text() { return this._text; }
+
+  set x(value) {
+    this._x = value;
+    this.propertyChanged(&quot;x&quot;, value);
+  }
+
+  set y(value) {
+    this._y = value;
+    this.propertyChanged(&quot;y&quot;, value);
+  }
+
+  set text(value) {
+    this._text = value;
+    this.propertyChanged(&quot;text&quot;, value);
+  }
+}</pre>
+<h3>The Text Controller</h3>
+<pre>class TextController extends Controller {
+  constructor(mouseController, view, model) {
+    super(mouseController, view, model);
+  }
+
+  // Update the UI with the text associated with the shape.
+  onMouseDown(evt) {
+    super.onMouseDown(evt);
+    var text = this.model.text;
+    document.getElementById(&quot;text&quot;).value = text;
+    this.mouseController.selectedShapeController = this;
+  }
+}</pre>
+<h3>The Text View</h3>
+<pre>class TextView extends View{
+  constructor(svgElement, model) {
+    super(svgElement, model);
+  }
+
+  // Custom handling for property &quot;text&quot;
+  onPropertyChange(property, value) {
+    if (property == &quot;text&quot;) {
+      this.svgElement.innerHTML = value;
+    } else {
+      super.onPropertyChange(property, value);
+    }
+  }
+}</pre>
+<h3>The Base Model</h3>
+<p>Every shape requires translation, so the base <code>Model</code> class handles these 
+properties and provides some helper methods:</p>
+<pre>class Model {
+  constructor() {
+    this.eventPropertyChanged = null;
+
+    this._tx = 0;
+    this._ty = 0;
+  }
+
+  get tx() { return this._tx; }
+  get ty() { return this._ty; }
+
+  propertyChanged(propertyName, value) {
+    if (this.eventPropertyChanged != null) {
+      this.eventPropertyChanged(propertyName, value);
+    }
+  }
+
+  translate(x, y) {
+    this._tx += x;
+    this._ty += y;
+    this.setTranslate(this._tx, this._ty);
+  }
+
+  // Update our internal translation and set the translation immediately.
+  setTranslation(x, y) {
+    this._tx = x;
+    this._ty = y;
+    this.setTranslate(x, y);
+  }
+
+  // Deferred translation -- this only updates _tx and _ty
+  // Used when we want to internally maintain the true _tx and _ty
+  // but set the translation to a modulus, as in when translating
+  // the grid.
+  updateTranslation(dx, dy) {
+    this._tx += dx;
+    this._ty += dy;
+  }
+
+  // Sets the &quot;translate&quot; portion of the &quot;transform&quot; property.
+  // All models have a translation. Notice we do not use _tx, _ty here
+  // nor do we set _tx, _ty to (x, y) because (x, y) might be mod'ed by
+  // the grid (w, h). We want to use exactly the parameters passed in
+  // without modifying our model.
+  // See SurfaceController.onDrag and note how the translation is updated
+  // but setTranslate is called with the mod'ed (x, y) coordinates.
+  setTranslate(x, y) {
+    this.translation = &quot;translate(&quot; + x + &quot;,&quot; + y + &quot;)&quot;;
+    this.transform = this.translation;
+  }
+
+  // TODO: Later to be extended to build the transform so that it includes rotation and other things we can do.
+  set transform(value) {
+    this._transform = value;
+    this.propertyChanged(&quot;transform&quot;, value);
+  }
+
+  set tx(value) {
+    this._tx = value;
+    this.translation = &quot;translate(&quot; + this._tx + &quot;,&quot; + this._ty + &quot;)&quot;;
+    this.transform = this.translation;
+  }
+
+  set ty(value) {
+    this._ty = value;
+  this.translation = &quot;translate(&quot; + this._tx + &quot;,&quot; + this._ty + &quot;)&quot;;
+  this.transform = this.translation;
+  }
+}</pre>
+<h3>The Base View</h3>
+<p>The base <code>View</code> class has a helper function for acquiring the ID of the SVG 
+element and sets the attribute of the associated SVG element:</p>
+<pre>class View {
+  constructor(svgElement, model) {
+    this.svgElement = svgElement;
+    model.eventPropertyChanged = this.onPropertyChange.bind(this);
+  }
+
+  get id() {
+    return this.svgElement.getAttribute(&quot;id&quot;);
+  }
+
+  onPropertyChange(property, value) {
+    this.svgElement.setAttribute(property, value);
+  }
+}</pre>
+<p>Also notice that the constructor wires up the property changed &quot;event&quot; that 
+the model fires.</p>
+<h3>Creating a Shape Programmatically</h3>
+<p>Given the new MVC architecture, here's how a shape is created 
+programmatically.&nbsp; Notice that the model must be initialized to match the 
+shape attribute values.&nbsp; Also notice that right now, our model doesn't 
+handle other attributes such as fill, stroke, and stroke-width.&nbsp; We don't 
+have UI support for that yet, so I haven't implemented those properties of the 
+model.</p>
+<pre>var rectEl = Helpers.createElement('rect', { x: 240, y: 100, width: 60, height: 60, fill: &quot;#FFFFFF&quot;, stroke: &quot;black&quot;, &quot;stroke-width&quot;: 1 });
+var rectModel = new RectangleModel();
+rectModel._x = 240;
+rectModel._y = 100;
+rectModel._width = 60;
+rectModel._height = 60;
+var rectView = new ShapeView(rectEl, rectModel);
+var rectController = new RectangleController(mouseController, rectView, rectModel);
+Helpers.getElement(Constants.SVG_OBJECTS_ID).appendChild(rectEl);
+mouseController.attach(rectView, rectController);
+// Most shapes also need an anchor controller
+mouseController.attach(rectView, anchorGroupController);</pre>
+<p>Also notice how the mouse controller now supports multiple shape controllers!</p>
 <h2>Connecting Lines</h2>
-<p>We want the ability to connect lines to shapes.&nbsp; This involves:</p>
+<p>Now that we have a solid MVC architecture, the additional glue required to 
+manage connected lines (lines endpoints connected to shapes) can be 
+accomplished.&nbsp; This involves:</p>
 <ul>
 	<li>Connection points on the shape.</li>
 	<li>Showing those connection points.</li>
@@ -2140,7 +2311,8 @@ the shape connection point, rather than just an index into an array.</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
-<p>&nbsp;</p>
+<h2>Removing A Shape</h2>
+<p>I almost forgot this!</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>

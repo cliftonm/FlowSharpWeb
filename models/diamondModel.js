@@ -2,4 +2,10 @@
     constructor() {
         super();
     }
+
+    serialize() {
+        var model = super.serialize();
+
+        return { Diamond: model };
+    }
 }

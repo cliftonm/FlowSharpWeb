@@ -2,7 +2,6 @@
     constructor() {
         this.eventPropertyChanged = null;
 
-        // Depending on associated the SVG element, not all of these parameters will be used.
         this._tx = 0;
         this._ty = 0;
     }
@@ -14,6 +13,16 @@
         if (this.eventPropertyChanged != null) {
             this.eventPropertyChanged(propertyName, value);
         }
+    }
+
+    serialize() {
+        return { tx: this._tx, ty: this._ty };
+    }
+
+    deserialize(model, el) {
+        this._tx = model.tx;
+        this._ty = model.ty;
+        this.setTranslate(this._tx, this._ty);
     }
 
     translate(x, y) {
@@ -62,7 +71,7 @@
         this.transform = this.translation;
     }
 
-    set tx(value) {
+    set ty(value) {
         this._ty = value;
         this.translation = "translate(" + this._tx + "," + this._ty + ")";
         this.transform = this.translation;

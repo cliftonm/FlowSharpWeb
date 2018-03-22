@@ -2,7 +2,19 @@
     constructor() {
         super();
         this._d = null;
-   }
+    }
+
+    serialize() {
+        var model = super.serialize();
+        model.d = this._d;
+
+        return model;
+    }
+
+    deserialize(model, el) {
+        super.deserialize(model, el);
+        this.d = model.d;
+    }
 
     get d() { return this._d; }
 

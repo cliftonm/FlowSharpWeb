@@ -7,6 +7,25 @@
         this.cellH = 8;
     }
 
+    serialize() {
+        var model = super.serialize();
+        model.gridCellW = this.gridCellW;
+        model.gridCellH = this.gridCellH;
+        model.cellW = this.cellW;
+        model.cellH = this.cellH;
+
+        return { Surface: model };
+    }
+
+    deserialize(model, el) {
+        super.deserialize(model, el);
+        this.gridCellW = model.gridCellW;
+        this.gridCellH = model.gridCellH;
+        this.cellW = model.cellW;
+        this.cellH = model.cellH;
+        this.resizeGrid(this.gridCellW, this.gridCellH, this.cellW, this.cellH);
+    }
+
     // Programmatically change the grid spacing for the larger grid cells and smaller grid cells.
     // None of this is relevant to the SurfaceView so we just set the attributes directly.
     resizeGrid(lw, lh, sw, sh) {

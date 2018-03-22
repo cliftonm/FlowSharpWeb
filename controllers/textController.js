@@ -8,6 +8,5 @@
         super.onMouseDown(evt);
         var text = this.model.text;
         document.getElementById("text").value = text;
-        this.mouseController.selectedShapeController = this;
     }
 }

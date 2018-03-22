@@ -10,7 +10,7 @@
 
     // We need to set up a partial call so that we can include the anchor being dragged when we call
     // the drag method for moving the shape's anchor.  At that point we also pass in the event data.
-    partialCall(anchors, anchorElement, onDrag) {
+    partialOnDrag(anchors, anchorElement, onDrag) {
         return (function (anchors, anchorElement, onDrag) {
             return function (dx, dy) { onDrag(anchors, anchorElement, dx, dy); }
         })(anchors, anchorElement, onDrag);
@@ -64,7 +64,7 @@
 
             var anchorView = new View(el, anchorModels[i]);
             var anchorController = new AnchorController(this.mouseController, anchorView, anchorModels[i]);
-            anchorController.onDrag = this.partialCall(anchorModels, anchorModels[i], anchorDefinition.onDrag);
+            anchorController.onDrag = this.partialOnDrag(anchorModels, anchorModels[i], anchorDefinition.onDrag);
             this.mouseController.attach(anchorView, anchorController);
             this.anchors.views.push(anchorView);     // Save the view for when we need to destroy the individual anchors.
         }

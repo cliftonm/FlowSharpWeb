@@ -9,9 +9,7 @@ class MouseController {
         this.currentHoverControllers = [];
         this.leavingId = -1;
         this.draggingToolboxShape = false;
-
-        // Used by the TextController for now to interface with the UI for setting text.
-        this.selectedShapeController = null;
+        this.selectedControllers = null;
 
         // We really can't use movementX and movementY of the event because
         // when the user moves the mouse quickly, the move events switch from
@@ -89,6 +87,7 @@ class MouseController {
             evt.preventDefault();
             var id = evt.currentTarget.getAttribute("id");
             this.activeControllers = this.controllers[id];
+            this.selectedControllers = this.controllers[id];
             this.selectedShape = id;
             this.mouseDown = true;
             this.startDownX = evt.clientX;
