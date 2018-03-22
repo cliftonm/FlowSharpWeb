@@ -9,7 +9,7 @@
             console.log("toolbox shape click");
             var emvc = this.createElementAt(270, 130);
             // Account for surface translation (scrolling) so that shape is always placed in a fixed position.
-            emvc.model.setTranslation(-surfaceModel.tx, -surfaceModel.ty);
+            emvc.model.translate(-surfaceModel.tx, -surfaceModel.ty);
             this.addToObjectsGroup(emvc);
             this.attachToMouseController(emvc);
         }
@@ -32,6 +32,7 @@
             // on the service, special things can happen - the shape is moved into the objects group and the
             // anchors are shown.
             this.mouseController.draggingToolboxShape = true;
+            this.mouseController.shapeBeingDraggedAndDropped = emvc.el;
         }
     }
 

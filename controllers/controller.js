@@ -80,7 +80,6 @@
     // Default behavior
     onDrag(dx, dy)
     {
-        this.model.updateTranslation(dx, dy);
-        this.model.setTranslate(this.model.tx, this.model.ty);
+        this.model.translate(dx, dy);
     }
 }

@@ -113,12 +113,18 @@ class MouseController {
             this.y = evt.clientY;
             var isClick = this.isClick();
 
-            if (this.draggingToolboxShape) {
-                this.finishDragAndDrop(evt.currentTarget);
-            }
-
             this.activeControllers.map(c => c.onMouseUp(isClick));
             this.clearSelectedObject();
+
+            // Do this after the mouseDown flag is reset, otherwise anchors won't appear.
+            if (this.draggingToolboxShape) {
+                // shapeBeingDraggedAndDropped is set by the ToolboxShapeController.
+                // We preserve this shape in case the user releases the mouse button
+                // while the mouse is over a different shape (like the surface) as
+                // as result of a very fast drag & drop where the shape hasn't caught
+                // up with the mouse, or the mouse is outside of shape's boundaries.
+                this.finishDragAndDrop(this.shapeBeingDraggedAndDropped, evt.currentTarget);
+            }
         }
     }
 
@@ -165,27 +171,25 @@ class MouseController {
     clearSelectedObject() {
         this.mouseDown = false;
         this.activeControllers = null;
-
-        // TODO: The idea here is to clear the surface selection if the user leaves the surface
-        // while dragging the surface.  This doesn't work too well.
-        //if (!this.clearing) {
-        //    this.clearing = true;
-        //    // Clears any anchors but also prevents recursion.
-        //    this.currentHoverControllers.map(c => c.onMouseLeave());
-        //    this.clearing = false;
-        //}
     }
 
     // Move the shape out of the toolbox group and into the objects group.
     // This requires dealing with surface translation.
     // Show the anchors, because the mouse is currently over the shape since it
     // is being drageed & dropped.
-    finishDragAndDrop(el) {
-        Helpers.getElement(Constants.SVG_TOOLBOX_ID).removeChild(el);
-        Helpers.getElement(Constants.SVG_OBJECTS_ID).appendChild(el);
-        var id = el.getAttribute("id");
-        this.currentHoverControllers = this.controllers[id];
-        this.currentHoverControllers.map(c => c.onMouseEnter());
+    finishDragAndDrop(elDropped, elCurrent) {
+        // Remove from toolbox group, translate, add to objects group.
+        Helpers.getElement(Constants.SVG_TOOLBOX_ID).removeChild(elDropped);
+        var id = elDropped.getAttribute("id");
+        this.controllers[id].map(c => c.model.translate(-surfaceModel.tx, -surfaceModel.ty));
+        Helpers.getElement(Constants.SVG_OBJECTS_ID).appendChild(elDropped);
+
+        // Only show anchors if mouse is actually on the dropped shape.
+        if (id == elCurrent.getAttribute("id")) {
+            this.currentHoverControllers = this.controllers[id];
+            this.currentHoverControllers.map(c => c.onMouseEnter());
+        }
+
         this.draggingToolboxShape = false;
     }
 }

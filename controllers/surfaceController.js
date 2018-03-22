@@ -3,7 +3,7 @@ class SurfaceController extends Controller {
         super(mouseController, surfaceView, surfaceModel);
     }
 
-    // overrides Controller.onDrag.
+    // overrides Controller.onDrag
     onDrag(dx, dy) {
         this.model.updateTranslation(dx, dy);
         var dx = this.model.tx % this.model.gridCellW;

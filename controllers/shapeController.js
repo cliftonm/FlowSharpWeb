@@ -30,17 +30,14 @@ class ShapeController extends Controller {
     }
 
     moveAnchor(anchor, dx, dy) {
-        anchor.updateTranslation(dx, dy);
-        anchor.setTranslate(anchor.tx, anchor.ty);
+        anchor.translate(dx, dy);
     }
 
     adjustAnchorX(anchor, dx) {
-        anchor.updateTranslation(dx, anchor.ty);
-        anchor.setTranslate(anchor.tx, anchor.ty);
+        anchor.translate(dx, 0);
     }
 
     adjustAnchorY(anchor, dy) {
-        anchor.updateTranslation(anchor.tx, dy);
-        anchor.setTranslate(anchor.tx, anchor.ty);
+        anchor.translate(0, dy);
     }
 }

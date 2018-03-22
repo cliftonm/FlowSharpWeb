@@ -40,13 +40,23 @@
         }
     }
 
-    // Update our internal translation and set the translation immediately.
-    setTranslation(x, y) {
+    translate(x, y) {
         this._tx += x;
         this._ty += y;
+        this.setTranslate(this._tx, this._ty);
+    }
+
+    // Update our internal translation and set the translation immediately.
+    setTranslation(x, y) {
+        this._tx = x;
+        this._ty = y;
         this.setTranslate(x, y);
     }
 
+    // Deferred translation -- this only updates _tx and _ty
+    // Used when we want to internally maintain the true _tx and _ty
+    // but set the translation to a modulus, as in when translating
+    // the grid.
     updateTranslation(dx, dy) {
         this._tx += dx;
         this._ty += dy;
