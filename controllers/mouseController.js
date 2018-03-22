@@ -67,9 +67,9 @@ class MouseController {
         });
     }
 
-    isClick(evt) {
-        var endDownX = evt.clientX;
-        var endDownY = evt.clientY;
+    isClick() {
+        var endDownX = this.x;
+        var endDownY = this.y;
 
         var isClick = Math.abs(this.startDownX - endDownX) < TOOLBOX_DRAG_MIN_MOVE &&
             Math.abs(this.startDownY - endDownY) < TOOLBOX_DRAG_MIN_MOVE;
@@ -108,7 +108,9 @@ class MouseController {
     onMouseUp(evt) {
         if (evt.button == LEFT_MOUSE_BUTTON && this.activeControllers != null) {
             evt.preventDefault();
-            var isClick = this.isClick(evt);
+            this.x = evt.clientX;
+            this.y = evt.clientY;
+            var isClick = this.isClick();
             this.activeControllers.map(c => c.onMouseUp(isClick));
             this.clearSelectedObject();
         }
