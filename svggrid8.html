@@ -38,6 +38,7 @@
     <script type="text/javascript" src="controllers/toolboxShapeController.js"></script>
     <script type="text/javascript" src="controllers/surfaceController.js"></script>
     <script type="text/javascript" src="controllers/objectsController.js"></script>
+    <script type="text/javascript" src="controllers/toolboxSurfaceController.js"></script>
 
     <script type="text/javascript" src="controllers/rectangleController.js"></script>
     <script type="text/javascript" src="controllers/circleController.js"></script>
@@ -173,24 +174,33 @@
         var svgSurface = Helpers.getElement(Constants.SVG_SURFACE_ID);
         var svgObjects = Helpers.getElement(Constants.SVG_OBJECTS_ID);
         var svgAnchors = Helpers.getElement(Constants.SVG_ANCHORS_ID);
+        var toolboxSurface = Helpers.getElement(Constants.SVG_TOOLBOX_SURFACE_ID);
 
         surfaceModel = new SurfaceModel();
         var objectsModel = new ObjectsModel();
         var anchorsModel = new Model();
+        var toolboxSurfaceModel = new Model();
 
         var surfaceView = new SurfaceView(svgSurface, surfaceModel);
         var objectsView = new ObjectsView(svgObjects, objectsModel);
         var anchorsView = new View(svgAnchors, anchorsModel);
+        var toolboxSurfaceView = new View(toolboxSurface, toolboxSurfaceModel);
 
         var surfaceController = new SurfaceController(mouseController, surfaceView, surfaceModel);
         var objectsController = new ObjectsController(mouseController, objectsView, objectsModel);
         anchorGroupController = new AnchorGroupController(mouseController, anchorsView, anchorsModel);
+
+        // We need a controller to handle mouse events when the user moves the mouse fast enough
+        // on the toolbox to leave the shape being dragged and dropped, but it also needs to override
+        // onDrag because the toolbox can't be moved around.  TODO: At least, not at the moment.
+        var toolboxSurfaceController = new ToolboxSurfaceController(mouseController, toolboxSurfaceView, toolboxSurfaceModel);
 
         // Attach both the surface and objects controller to the surface view so that events from the 
         // surface view are routed to both controllers, one for dealing with the grid, one for moving
         // the objects on the surface and the surface is translated.
         mouseController.attach(surfaceView, surfaceController);
         mouseController.attach(surfaceView, objectsController);
+        mouseController.attach(toolboxSurfaceView, toolboxSurfaceController);
 
         surfaceModel.resizeGrid(100, 100, 20, 20);
 

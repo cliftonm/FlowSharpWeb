@@ -28,6 +28,10 @@
             var controllers = this.attachToMouseController(emvc);
             // Hoist these controllers onto the mouse active controllers so it switches over to moving this shape.
             this.mouseController.activeControllers = controllers;
+            // Indiicate to the mouse controller that we're dragging a toolbox shape so that when it is dropped
+            // on the service, special things can happen - the shape is moved into the objects group and the
+            // anchors are shown.
+            this.mouseController.draggingToolboxShape = true;
         }
     }
 
@@ -48,15 +52,3 @@
         return [emvc.controller, anchorGroupController];
     }
 }
-
-
-/*
-    var el = this.activeController.createElementAt(endDownX, endDownY);
-    // Here, because we're dragging, the shape needs to be attached to both the toolbox controller and the surface's mouse controller
-    // so that if the user moves the shape too quickly, either the toolbox controller or the surface controller will pick it up.
-    var shape = this.activeController.createShape(this.mouseController, el);
-    this.setShapeName(el, shape);
-    shape.mouseController.mouseDownX = endDownX;
-    shape.mouseController.mouseDownY = endDownY + 30;   // Offset so shape is drawn under mouse.
-    this.createShapeForDragging(el, shape);
-*/

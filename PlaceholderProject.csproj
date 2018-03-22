@@ -47,6 +47,7 @@
     <Content Include="controllers\toolboxLineController.js" />
     <Content Include="controllers\toolboxRectangleController.js" />
     <Content Include="controllers\toolboxShapeController.js" />
+    <Content Include="controllers\toolboxSurfaceController.js" />
     <Content Include="fileSaver.js" />
     <Content Include="helpers.js" />
     <Content Include="models\shapeModel.js" />

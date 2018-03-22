@@ -8,6 +8,7 @@ class MouseController {
         this.activeControllers = null;
         this.currentHoverControllers = [];
         this.leavingId = -1;
+        this.draggingToolboxShape = false;
 
         // We really can't use movementX and movementY of the event because
         // when the user moves the mouse quickly, the move events switch from
@@ -106,11 +107,16 @@ class MouseController {
     }
 
     onMouseUp(evt) {
+        evt.preventDefault();
         if (evt.button == LEFT_MOUSE_BUTTON && this.activeControllers != null) {
-            evt.preventDefault();
             this.x = evt.clientX;
             this.y = evt.clientY;
             var isClick = this.isClick();
+
+            if (this.draggingToolboxShape) {
+                this.finishDragAndDrop(evt.currentTarget);
+            }
+
             this.activeControllers.map(c => c.onMouseUp(isClick));
             this.clearSelectedObject();
         }
@@ -168,6 +174,19 @@ class MouseController {
         //    this.currentHoverControllers.map(c => c.onMouseLeave());
         //    this.clearing = false;
         //}
+    }
+
+    // Move the shape out of the toolbox group and into the objects group.
+    // This requires dealing with surface translation.
+    // Show the anchors, because the mouse is currently over the shape since it
+    // is being drageed & dropped.
+    finishDragAndDrop(el) {
+        Helpers.getElement(Constants.SVG_TOOLBOX_ID).removeChild(el);
+        Helpers.getElement(Constants.SVG_OBJECTS_ID).appendChild(el);
+        var id = el.getAttribute("id");
+        this.currentHoverControllers = this.controllers[id];
+        this.currentHoverControllers.map(c => c.onMouseEnter());
+        this.draggingToolboxShape = false;
     }
 }
 
