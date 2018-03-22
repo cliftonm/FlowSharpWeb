@@ -58,20 +58,21 @@ class MouseController {
         this.controllers = {};
     }
 
-    /*
     destroyAllButSurface() {
         Object.entries(this.controllers).map(([key, val]) => {
-            if (!(val instanceof SurfaceController)) {
-                val.map(v => v.destroy());
-                // Hopefully deleting the dictionary entry while iterating won't be
-                // a disaster since we called Object.entries!
-                delete this.controllers[key];
-            }
+            val.map(v => {
+                // Don't remove surface, toolbox, objects group, or toolbox shapes.
+                if (!v.isSurfaceController && !v.isToolboxShapeController) {
+                    v.destroy();
+                    // Hopefully deleting the dictionary entry while iterating won't be
+                    // a disaster since we called Object.entries!
+                    delete this.controllers[key];
+                }
+            });
         });
     }
-    */
 
-    isClick() {
+    get isClick() {
         var endDownX = this.x;
         var endDownY = this.y;
 
@@ -115,7 +116,7 @@ class MouseController {
         if (evt.button == LEFT_MOUSE_BUTTON && this.activeControllers != null) {
             this.x = evt.clientX;
             this.y = evt.clientY;
-            var isClick = this.isClick();
+            var isClick = this.isClick;
 
             this.activeControllers.map(c => c.onMouseUp(isClick));
             this.clearSelectedObject();
@@ -146,7 +147,7 @@ class MouseController {
                 console.log("Leaving " + this.leavingId);
 
                 // If we're entering an anchor, don't leave anything as we want to preserve the anchors.
-                if (!this.controllers[id][0].isAnchorController()) {
+                if (!this.controllers[id][0].isAnchorController) {
                     this.currentHoverControllers.map(c => c.onMouseLeave());
                     console.log("Entering " + id + " => " + this.controllers[id]);
                     // Tell the new shape that we're entering.

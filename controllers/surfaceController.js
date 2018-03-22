@@ -3,6 +3,10 @@ class SurfaceController extends Controller {
         super(mouseController, surfaceView, surfaceModel);
     }
 
+    get isSurfaceController() {
+        return true;
+    }
+
     // overrides Controller.onDrag
     onDrag(dx, dy) {
         this.model.updateTranslation(dx, dy);

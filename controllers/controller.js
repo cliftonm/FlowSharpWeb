@@ -43,7 +43,15 @@
         this.registerEventListener(this.view.svgElement, "mouseleave", this.mouseController.onMouseLeave, this.mouseController);
     }
 
-    isAnchorController() {
+    get isSurfaceController() {
+        return false;
+    }
+
+    get isAnchorController() {
+        return false;
+    }
+
+    get isToolboxShapeController() {
         return false;
     }
 

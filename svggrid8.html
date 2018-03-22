@@ -83,6 +83,7 @@
     <div>
         <!-- https://stackoverflow.com/questions/1944267/how-to-change-the-button-text-of-input-type-file -->
         <!-- creates a hidden file input on routes the button to clicking on that tag -->
+        <button onclick="clearSvg()">Clear</button>
         <button onclick="saveSvg()">Save</button>
         <button onclick="document.getElementById('fileInput').click();">Load</button>
         <input type="file" id="fileInput" style="display:none;"/>
@@ -172,6 +173,9 @@
     // Global so we can access the surface translation.
     var surfaceModel = null;
 
+    // Global so clearSvg can reset the objects translation
+    var objectsModel = null;
+
     // AnchorGroupController is global for the moment because it's used by all shape controllers.
     var anchorGroupController = null;
 
@@ -195,7 +199,22 @@
 
     function loadComplete(e) {
         var contents = e.target.result;
+        // If we don't do this, it adds the elements, but they have to have unique ID's
+        clearSvg();         
         diagramModel.deserialize(contents);
+    }
+
+    function clearSvg() {
+        mouseController.destroyAllButSurface();
+        surfaceModel.setTranslation(0, 0);
+        objectsModel.setTranslation(0, 0);
+        diagramModel.clear();
+        var objects = Helpers.getElement(Constants.SVG_OBJECTS_ID);
+
+        // https://stackoverflow.com/questions/3955229/remove-all-child-elements-of-a-dom-node-in-javascript
+        while (objects.firstChild) {
+            objects.removeChild(objects.firstChild);
+        }
     }
 
     // https://stackoverflow.com/questions/23582101/generating-viewing-and-saving-svg-client-side-in-browser
@@ -234,7 +253,7 @@
         var toolboxSurface = Helpers.getElement(Constants.SVG_TOOLBOX_SURFACE_ID);
 
         surfaceModel = new SurfaceModel();
-        var objectsModel = new ObjectsModel();
+        objectsModel = new ObjectsModel();
         var anchorsModel = new Model();
         var toolboxSurfaceModel = new Model();
 

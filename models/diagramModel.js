@@ -11,6 +11,10 @@
         };
     }
 
+    clear() {
+        this.models = [];
+    }
+
     addModel(model, id) {
         this.models.push({ model: model, id: id });
     }
@@ -55,7 +59,8 @@
     deserialize(jsonString) {
         var models = JSON.parse(jsonString);
         var objectModels = [];
-        var smval;
+        surfaceModel.setTranslation(0, 0);
+        objectsModel.setTranslation(0, 0);
 
         models.map(model => {
             var key = Object.keys(model)[0];
@@ -63,8 +68,10 @@
 
             if (key == "Surface") {
                 // Special handler for surface, we keep the existing MVC objects.
-                // surfaceModel.deserialize(val);
-                smval = val;
+                // We set both the surface and objects translation, but the surface translation
+                // is mod'd by the gridCellW/H.
+                surfaceModel.deserialize(val);
+                objectsModel.setTranslation(surfaceModel.tx, surfaceModel.ty);
             }
             else {
                 var model = new this.mvc[key].model();
@@ -86,14 +93,6 @@
                 if (key != "Text") {
                     this.mouseController.attach(view, anchorGroupController);
                 }
-            }
-        });
-
-        // Fixup translations for all but path shapes:
-        surfaceModel.deserialize(smval);
-        objectModels.map(m => {
-            if (!(m instanceof PathModel)) {
-                m.translate(surfaceModel.tx, surfaceModel.ty);
             }
         });
     }

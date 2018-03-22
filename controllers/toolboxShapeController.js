@@ -3,6 +3,10 @@
         super(mouseController, view, model);
     }
 
+    get isToolboxShapeController() {
+        return true;
+    }
+
     // Check if click.  If so, create element on the surface.
     onMouseUp(isClick) {
         if (isClick) {
@@ -19,7 +23,7 @@
     // Dragging a toolbox shape has a custom implementation.
     onDrag(dx, dy) {
         // The user must move the mouse a wee bit.
-        if (!this.mouseController.isClick()) {
+        if (!this.mouseController.isClick) {
             console.log("toolbox shape onDrag");
             // TODO: Figure out where we place the element so the shape is created centered over the mouse!
             var emvc = this.createElementAt(this.mouseController.x, this.mouseController.y);

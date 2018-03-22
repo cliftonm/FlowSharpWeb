@@ -3,6 +3,10 @@
         super(mouseController, view, model);
     }
 
+    get isSurfaceController() {
+        return true;
+    }
+
     // toolbox surface doesn't move around!
     onDrag(dx, dy) { }
 }

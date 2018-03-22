@@ -3,7 +3,7 @@
         super(mouseController, view, model);
     }
 
-    isAnchorController() {
+    get isAnchorController() {
         return true;
     }
 }

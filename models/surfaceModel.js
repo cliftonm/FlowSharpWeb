@@ -18,12 +18,21 @@
     }
 
     deserialize(model, el) {
-        super.deserialize(model, el);
+        // DO NOT CALL BASE METHOD.  Surface translations are mod'd by the gridCellW/H
         this.gridCellW = model.gridCellW;
         this.gridCellH = model.gridCellH;
         this.cellW = model.cellW;
         this.cellH = model.cellH;
         this.resizeGrid(this.gridCellW, this.gridCellH, this.cellW, this.cellH);
+
+        // 
+        this._tx = model.tx;
+        this._ty = model.ty;
+
+        var dx = this.tx % this.gridCellW;
+        var dy = this.ty % this.gridCellH;
+
+        this.setTranslate(dx, dy);
     }
 
     // Programmatically change the grid spacing for the larger grid cells and smaller grid cells.
