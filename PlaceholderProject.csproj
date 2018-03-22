@@ -52,8 +52,14 @@
     <Content Include="controllers\toolboxTextController.js" />
     <Content Include="fileSaver.js" />
     <Content Include="helpers.js" />
+    <Content Include="models\circleModel.js" />
+    <Content Include="models\diamondModel.js" />
+    <Content Include="models\lineModel.js" />
+    <Content Include="models\pathModel.js" />
+    <Content Include="models\rectangleModel.js" />
     <Content Include="models\shapeModel.js" />
     <Content Include="models\objectsModel.js" />
+    <Content Include="models\textModel.js" />
     <Content Include="mouseController.js" />
     <Content Include="controllers\controller.js" />
     <Content Include="models\model.js" />

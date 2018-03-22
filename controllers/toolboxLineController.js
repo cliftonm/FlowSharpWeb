@@ -13,7 +13,7 @@
         el.appendChild(Helpers.createElement('line', { x1: x1, y1: y1, x2: x2, y2: y2, "stroke-width": 20, stroke: "black", "stroke-opacity": "0", "fill-opacity": "0" }));
         el.appendChild(Helpers.createElement('line', { x1: x1, y1: y1, x2: x2, y2: y2, fill: "#FFFFFF", stroke: "black", "stroke-width": 1 }));
 
-        var model = new ShapeModel();
+        var model = new LineModel();
         model._x1 = x1;
         model._y1 = y1;
         model._x2 = x2;

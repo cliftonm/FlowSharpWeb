@@ -5,7 +5,7 @@
 
     createElementAt(x, y) {
         var el = Helpers.createElement('rect', { x: x - 30, y: y - 30, width: 60, height: 60, fill: "#FFFFFF", stroke: "black", "stroke-width": 1 });
-        var model = new ShapeModel();
+        var model = new RectangleModel();
         model._x = x - 30;
         model._y = y - 30;
         model._width = 60;

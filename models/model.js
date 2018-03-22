@@ -5,36 +5,10 @@
         // Depending on associated the SVG element, not all of these parameters will be used.
         this._tx = 0;
         this._ty = 0;
-        this._x = 0;   
-        this._y = 0;
-        this._x1 = 0;
-        this._y1 = 0;
-        this._x2 = 0;
-        this._y2 = 0;
-        this._width = 0;
-        this._height = 0;
-        this._cx = 0;
-        this._cy = 0;
-        this._r = 0;
-        this._d = null;
-        this._text = "";
     }
 
     get tx() { return this._tx; }
     get ty() { return this._ty; }
-    get x() { return this._x; }
-    get y() { return this._y; }
-    get x1() { return this._x1; }
-    get y1() { return this._y1; }
-    get x2() { return this._x2; }
-    get y2() { return this._y2; }
-    get width() { return this._width; }
-    get height() { return this._height; }
-    get cx() { return this._cx; }
-    get cy() { return this._cy; }
-    get r() { return this._r; }
-    get d() { return this._d; }
-    get text() { return this._text; }
 
     propertyChanged(propertyName, value) {
         if (this.eventPropertyChanged != null) {
@@ -92,60 +66,5 @@
         this._ty = value;
         this.translation = "translate(" + this._tx + "," + this._ty + ")";
         this.transform = this.translation;
-    }
-
-    set r(value) {
-        this._r = value;
-        this.propertyChanged("r", value);
-    }
-
-    set d(value) {
-        this._d = value;
-        this.propertyChanged("d", value);
-    }
-
-    set x(value) {
-        this._x = value;
-        this.propertyChanged("x", value);
-    }
-
-    set y(value) {
-        this._y = value;
-        this.propertyChanged("y", value);
-    }
-
-    set x1(value) {
-        this._x1 = value;
-        this.propertyChanged("x1", value);
-    }
-
-    set y1(value) {
-        this._y1 = value;
-        this.propertyChanged("y1", value);
-    }
-
-    set x2(value) {
-        this._x2 = value;
-        this.propertyChanged("x2", value);
-    }
-
-    set y2(value) {
-        this._y2 = value;
-        this.propertyChanged("y2", value);
-    }
-
-    set width(value) {
-        this._width = value;
-        this.propertyChanged("width", value);
-    }
-
-    set height(value) {
-        this._height = value;
-        this.propertyChanged("height", value);
-    }
-
-    set text(value) {
-        this._text = value;
-        this.propertyChanged("text", value);
     }
 }
