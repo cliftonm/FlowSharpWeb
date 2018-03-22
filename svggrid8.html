@@ -28,6 +28,7 @@
     <script type="text/javascript" src="views/objectsView.js"></script>
     <script type="text/javascript" src="views/shapeView.js"></script>
     <script type="text/javascript" src="views/lineView.js"></script>
+    <script type="text/javascript" src="views/textView.js"></script>
     <script type="text/javascript" src="views/surfaceView.js"></script>
 
     <script type="text/javascript" src="controllers/controller.js"></script>
@@ -44,10 +45,12 @@
     <script type="text/javascript" src="controllers/circleController.js"></script>
     <script type="text/javascript" src="controllers/diamondController.js"></script>
     <script type="text/javascript" src="controllers/lineController.js"></script>
+    <script type="text/javascript" src="controllers/textController.js"></script>
     <script type="text/javascript" src="controllers/toolboxRectangleController.js"></script>
     <script type="text/javascript" src="controllers/toolboxCircleController.js"></script>
     <script type="text/javascript" src="controllers/toolboxDiamondController.js"></script>
     <script type="text/javascript" src="controllers/toolboxLineController.js"></script>
+    <script type="text/javascript" src="controllers/toolboxTextController.js"></script>
 
     <!--
     <script type="text/javascript" src="shapes/anchor.js"></script>
@@ -155,11 +158,22 @@
     // https://stackoverflow.com/a/6386486/2276361
     const SHAPE_NAME_ATTR = "shapename";
 
+    // Global so UI can set the text of a text shape.
+    var mouseController = null;
+
     // Global so we can access the surface translation.
     var surfaceModel = null;
 
     // AnchorGroupController is global for the moment because it's used by all shape controllers.
     var anchorGroupController = null;
+
+    // Update the selected shape's text.  Works only with text shapes right now.
+    function setText() {
+        if (mouseController.selectedShapeController != null) {
+            var text = document.getElementById("text").value;
+            mouseController.selectedShapeController.model.text = text;
+        }
+    }
 
     function registerToolboxItem(mouseController, elementId, fncCreateController) {
         var svgElement = Helpers.getElement(elementId);
@@ -170,7 +184,7 @@
     }
 
     (function initialize() {
-        var mouseController = new MouseController();
+        mouseController = new MouseController();
         var svgSurface = Helpers.getElement(Constants.SVG_SURFACE_ID);
         var svgObjects = Helpers.getElement(Constants.SVG_OBJECTS_ID);
         var svgAnchors = Helpers.getElement(Constants.SVG_ANCHORS_ID);
@@ -224,7 +238,7 @@
         registerToolboxItem(mouseController, Constants.TOOLBOX_CIRCLE_ID, (mc, view, model) => new ToolboxCircleController(mc, view, model));
         registerToolboxItem(mouseController, Constants.TOOLBOX_DIAMOND_ID, (mc, view, model) => new ToolboxDiamondController(mc, view, model));
         registerToolboxItem(mouseController, Constants.TOOLBOX_LINE_ID, (mc, view, model) => new ToolboxLineController(mc, view, model));
-        //registerToolboxItem(mouseController, Constants.TOOLBOX_TEXT_ID);
+        registerToolboxItem(mouseController, Constants.TOOLBOX_TEXT_ID, (mc, view, model) => new ToolboxTextController(mc, view, model));
 
         // mouseController.setSurface(surface);
 

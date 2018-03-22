@@ -17,6 +17,7 @@
         this._cy = 0;
         this._r = 0;
         this._d = null;
+        this._text = "";
     }
 
     get tx() { return this._tx; }
@@ -33,6 +34,7 @@
     get cy() { return this._cy; }
     get r() { return this._r; }
     get d() { return this._d; }
+    get text() { return this._text; }
 
     propertyChanged(propertyName, value) {
         if (this.eventPropertyChanged != null) {
@@ -140,5 +142,10 @@
     set height(value) {
         this._height = value;
         this.propertyChanged("height", value);
+    }
+
+    set text(value) {
+        this._text = value;
+        this.propertyChanged("text", value);
     }
 }

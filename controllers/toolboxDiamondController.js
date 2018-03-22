@@ -10,7 +10,7 @@
         path = path + " Z";
         var el = Helpers.createElement('path', { d: path, stroke: "black", "stroke-width": 1, fill: "#FFFFFF" });
 
-        var model = new Model();
+        var model = new ShapeModel();
         model._d = path;
         var view = new ShapeView(el, model);
         var controller = new DiamondController(this.mouseController, view, model);

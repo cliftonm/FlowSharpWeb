@@ -6,7 +6,7 @@
     createElementAt(x, y) {
         // var el = super.createElement('circle', { cx: x, cy: y, r: 30, stroke: "black", "stroke-width": 1, fill: "#FFFFFF" });
         var el = Helpers.createElement('circle', { cx: x, cy: y, r:30, fill: "#FFFFFF", stroke: "black", "stroke-width": 1 });
-        var model = new Model();
+        var model = new ShapeModel();
         model._cx = x;
         model._cy = y;
         model._r = 30;

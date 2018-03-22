@@ -10,6 +10,9 @@ class MouseController {
         this.leavingId = -1;
         this.draggingToolboxShape = false;
 
+        // Used by the TextController for now to interface with the UI for setting text.
+        this.selectedShapeController = null;
+
         // We really can't use movementX and movementY of the event because
         // when the user moves the mouse quickly, the move events switch from
         // the shape to the surface (or another shape) and this causes deviances

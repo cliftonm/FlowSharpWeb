@@ -42,12 +42,14 @@
     <Content Include="controllers\lineController.js" />
     <Content Include="controllers\objectsController.js" />
     <Content Include="controllers\rectangleController.js" />
+    <Content Include="controllers\textController.js" />
     <Content Include="controllers\toolboxCircleController.js" />
     <Content Include="controllers\toolboxDiamondController.js" />
     <Content Include="controllers\toolboxLineController.js" />
     <Content Include="controllers\toolboxRectangleController.js" />
     <Content Include="controllers\toolboxShapeController.js" />
     <Content Include="controllers\toolboxSurfaceController.js" />
+    <Content Include="controllers\toolboxTextController.js" />
     <Content Include="fileSaver.js" />
     <Content Include="helpers.js" />
     <Content Include="models\shapeModel.js" />
@@ -59,10 +61,12 @@
     <Content Include="controllers\shapeController.js" />
     <Content Include="controllers\surfaceController.js" />
     <Content Include="models\surfaceModel.js" />
+    <Content Include="svggrid7.html" />
     <Content Include="views\lineView.js" />
     <Content Include="views\objectsView.js" />
     <Content Include="views\shapeView.js" />
     <Content Include="views\surfaceView.js" />
+    <Content Include="views\textView.js" />
     <Content Include="views\view.js" />
     <Content Include="point.js" />
     <Content Include="shapes\anchor.js" />
