@@ -31,3 +31,15 @@
         console.log("toolbox shape onDrag");
     }
 }
+
+
+/*
+    var el = this.activeController.createElementAt(endDownX, endDownY);
+    // Here, because we're dragging, the shape needs to be attached to both the toolbox controller and the surface's mouse controller
+    // so that if the user moves the shape too quickly, either the toolbox controller or the surface controller will pick it up.
+    var shape = this.activeController.createShape(this.mouseController, el);
+    this.setShapeName(el, shape);
+    shape.mouseController.mouseDownX = endDownX;
+    shape.mouseController.mouseDownY = endDownY + 30;   // Offset so shape is drawn under mouse.
+    this.createShapeForDragging(el, shape);
+*/
