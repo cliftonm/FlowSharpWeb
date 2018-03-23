@@ -23,7 +23,7 @@
     getULCorner() {
         var rect = this.view.svgElement.getBoundingClientRect();
         var p = new Point(rect.left, rect.top);
-        p = this.translateToSvgCoordinate(p);
+        p = Helpers.translateToSvgCoordinate(p);
 
         return p;
     }
@@ -31,7 +31,7 @@
     getLRCorner() {
         var rect = this.view.svgElement.getBoundingClientRect();
         var p = new Point(rect.right, rect.bottom);
-        p = this.translateToSvgCoordinate(p);
+        p = Helpers.translateToSvgCoordinate(p);
 
         return p;
     }

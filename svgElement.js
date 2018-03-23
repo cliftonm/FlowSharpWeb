@@ -55,7 +55,6 @@ class SvgElement extends SvgObject {
         p.translate(offset.x, offset.y);
     }
 
-    // This may not be right.
     //translateToScreenCoordinate(p) {
     //    var svg = document.getElementById(SVG_ELEMENT_ID);
     //    var pt = svg.createSVGPoint();

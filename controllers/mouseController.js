@@ -10,6 +10,7 @@ class MouseController {
         this.leavingId = -1;
         this.draggingToolboxShape = false;
         this.selectedControllers = null;
+        this.currentShapeId = null;
 
         // We really can't use movementX and movementY of the event because
         // when the user moves the mouse quickly, the move events switch from
@@ -87,6 +88,7 @@ class MouseController {
         if (evt.button == LEFT_MOUSE_BUTTON) {
             evt.preventDefault();
             var id = evt.currentTarget.getAttribute("id");
+            this.currentShapeId = id;
             this.activeControllers = this.controllers[id];
             this.selectedControllers = this.controllers[id];
             this.selectedShape = id;
@@ -103,6 +105,11 @@ class MouseController {
     onMouseMove(evt) {
         evt.preventDefault();
         if (this.mouseDown && this.activeControllers != null) {
+            var p = new Point(evt.clientX, evt.clientY);
+            p = Helpers.translateToScreenCoordinate(p);
+            var nearbyShapes = Helpers.getNearbyShapes(p, this.currentShapeId);
+            nearbyShapes.map(s => console.log(s.outerHTML.split(" ")[0]));
+
             this.dx = evt.clientX - this.x;
             this.dy = evt.clientY - this.y;
             this.x = evt.clientX;

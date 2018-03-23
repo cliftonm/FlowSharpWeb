@@ -9,6 +9,10 @@ class ShapeController extends Controller {
         return [];
     }
 
+    getConnectionPoints() {
+        return [];
+    }
+
     getCorners() {
         return [this.getULCorner(), this.getLRCorner()];
     }

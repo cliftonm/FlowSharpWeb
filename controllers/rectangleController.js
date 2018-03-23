@@ -24,6 +24,27 @@
         return anchors;
     }
 
+    getConnectionPoints() {
+        var corners = this.getCorners();
+        var middleTop = new Point((corners[0].x + corners[1].x) / 2, corners[0].y);
+        var middleBottom = new Point((corners[0].x + corners[1].x) / 2, corners[1].y);
+        var middleLeft = new Point(corners[0].x, (corners[0].y + corners[1].y) / 2);
+        var middleRight = new Point(corners[1].x, (corners[0].y + corners[1].y) / 2);
+        //var upperRight = new Point(corners[1].X, corners[0].Y);
+        //var lowerLeft = new Point(corners[0].X, corners[1].Y);
+
+        // maybe later:
+        // var anchors = [corners[0], corners[1], middleTop, middleBottom, middleLeft, middleRight, upperRight, lowerLeft];
+        var connectionPoints = [
+            { connectionPoint: middleTop },
+            { connectionPoint: middleBottom },
+            { connectionPoint: middleLeft },
+            { connectionPoint: middleRight }
+        ];
+
+        return connectionPoints;
+    }
+
     getULCorner() {
         var p = new Point(this.model.x, this.model.y);
         p = this.getAbsoluteLocation(p);

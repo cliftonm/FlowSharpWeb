@@ -2065,7 +2065,7 @@ function setText() {
 }</pre>
 <p>It's a bit kludgy, using the global <code>mouseController</code> and so forth, but we can expand upon this later to have 
 all shapes include a text area.</p>
-<h2>Refactoring the Prototype</h2>
+<h2>Refactoring the Prototype to use an MVC Pattern</h2>
 <p>So far we've avoided having to maintain and persist a separate model.&nbsp; 
 The shape classes <code>Rectangle</code>, <code>Text</code>, <code>Circle</code>, and so forth are more controllers 
 than models, though there is a bit of entanglement evident in the 
@@ -2275,6 +2275,92 @@ mouseController.attach(rectView, rectController);
 // Most shapes also need an anchor controller
 mouseController.attach(rectView, anchorGroupController);</pre>
 <p>Also notice how the mouse controller now supports multiple shape controllers!</p>
+<h3>Serialization</h3>
+<p>It's probably worth taking a quick look at how serialization works now:</p>
+<pre>// Returns JSON of serialized models.
+serialize() {
+  var uberModel = [];
+  var model = surfaceModel.serialize();
+  model[Object.keys(model)[0]].id = Constants.SVG_SURFACE_ID;
+  uberModel.push(model);
+
+  this.models.map(m =&gt; {
+    var model = m.model.serialize();
+    model[Object.keys(model)[0]].id = m.id;
+    uberModel.push(model);
+  });
+
+  return JSON.stringify(uberModel);
+}</pre>
+<p>The concrete model is responsible for serializing itself.&nbsp; The 
+serializer tacks on the shape's ID which is actually not part of the model, it's 
+part of the view!&nbsp; This code looks a bit weird because when a shape is 
+dropped on to the surface, only the model and the shape's ID is registered in 
+the diagram controller like this:</p>
+<pre>addModel(model, id) {
+  this.models.push({ model: model, id: id });
+}</pre>
+<p>Hence this abomination of code: <code>model[Object.keys(model)[0]].id = m.id;</code>
+&nbsp;</p>
+<p>The model dictionary has only one entry, the key is the shape name, and the 
+value is the collection of attributes, to which we're adding &quot;id&quot;.&nbsp; For 
+example, a blank surface serializes like this:</p>
+<pre>[{&quot;Surface&quot;:{&quot;tx&quot;:0,&quot;ty&quot;:0,&quot;gridCellW&quot;:100,&quot;gridCellH&quot;:100,&quot;cellW&quot;:20,&quot;cellH&quot;:20,&quot;id&quot;:&quot;surface&quot;}}]</pre>
+<h3>Deserializing</h3>
+<p>Restoring the diagram is a bit more complicated because the appropriate 
+model, view, and controller classes must be created as well as the SVG element.&nbsp; 
+Deserializing the actual SVG element attributes is again left to the concrete 
+model.</p>
+<pre>// Creates an MVC for each model of the provided JSON.
+deserialize(jsonString) {
+  var models = JSON.parse(jsonString);
+  var objectModels = [];
+  surfaceModel.setTranslation(0, 0);
+  objectsModel.setTranslation(0, 0);
+
+  models.map(model =&gt; {
+    var key = Object.keys(model)[0];
+      var val = model[key];
+
+      if (key == &quot;Surface&quot;) {
+      // Special handler for surface, we keep the existing MVC objects.
+      // We set both the surface and objects translation, but the surface translation
+      // is mod'd by the gridCellW/H.
+      surfaceModel.deserialize(val);
+      objectsModel.setTranslation(surfaceModel.tx, surfaceModel.ty);
+    } else {
+      var model = new this.mvc[key].model();
+      objectModels.push(model);
+      var el = this.mvc[key].creator();
+      // Create the view first so it hooks into the model's property change event.
+      var view = new this.mvc[key].view(el, model);
+      model.deserialize(val, el);
+      view.id = val.id;
+      var controller = new this.mvc[key].controller(mouseController, view, model);
+
+      // Update our diagram's model collection.
+      this.models.push({ model: model, id: val.id });
+
+      Helpers.getElement(Constants.SVG_OBJECTS_ID).appendChild(el);
+      this.mouseController.attach(view, controller);
+
+      // Most shapes also need an anchor controller. An exception is the Text shape, at least for now.
+      if (controller.shouldShowAnchors) {
+        this.mouseController.attach(view, anchorGroupController);
+      }
+    }
+  });
+}</pre>
+<p>The whole process is driven by a table that determines what actual MVC 
+classes to instantiate, as well as any custom SVG element instantiation 
+requirements:</p>
+<pre>this.mvc = {
+  Rectangle: { model: RectangleModel, view: ShapeView, controller: RectangleController, creator : () =&gt; this.createElement(&quot;rect&quot;) },
+  Circle: { model: CircleModel, view: ShapeView, controller: CircleController, creator: () =&gt; this.createElement(&quot;circle&quot;) },
+  Diamond: { model: DiamondModel, view: ShapeView, controller: DiamondController, creator: () =&gt; this.createElement(&quot;path&quot;) },
+  Line: { model: LineModel, view: LineView, controller: LineController, creator: () =&gt; this.createLineElement() },
+  Text: { model: TextModel, view: TextView, controller: TextController, creator: () =&gt; this.createTextElement() },
+};</pre>
 <h2>Connecting Lines</h2>
 <p>Now that we have a solid MVC architecture, the additional glue required to 
 manage connected lines (lines endpoints connected to shapes) can be 
@@ -2307,7 +2393,10 @@ the full blown implementation, connection points can be added, removed, moved
 around, and so forth, so what <i>is </i>important is that we have some way to 
 associate a name (even if it's an auto-generated GUID) to a connection point so 
 there is something concrete to use as a reference between the line endpoint and 
-the shape connection point, rather than just an index into an array.</p>
+the shape connection point rather than just an index into an array.</p>
+<p>As with anchors, we have a function that returns the connection points 
+available to the shape.&nbsp; Custom connection points are currently not 
+supported.</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>

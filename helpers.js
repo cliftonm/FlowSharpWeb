@@ -47,4 +47,47 @@ class Helpers {
 
         return el;
     }
+
+    // https://stackoverflow.com/questions/22183727/how-do-you-convert-screen-coordinates-to-document-space-in-a-scaled-svg
+    static translateToSvgCoordinate(p) {
+        var svg = document.getElementById(Constants.SVG_ELEMENT_ID);
+        var pt = svg.createSVGPoint();
+        var offset = pt.matrixTransform(svg.getScreenCTM().inverse());
+        p = p.translate(offset.x, offset.y);
+
+        return p;
+    }
+
+    static translateToScreenCoordinate(p) {
+        var svg = document.getElementById(Constants.SVG_ELEMENT_ID);
+        var pt = svg.createSVGPoint();
+        var offset = pt.matrixTransform(svg.getScreenCTM());
+        p = p.translate(-offset.x, -offset.y);
+
+        return p;
+    }
+
+    static getNearbyShapes(p, excludeId) {
+        // https://stackoverflow.com/questions/2174640/hit-testing-svg-shapes
+        // var el = document.elementFromPoint(evt.clientX, evt.clientY);
+        // console.log(el);
+
+        var svg = document.getElementById("svg");
+        var hitRect = svg.createSVGRect();
+        hitRect.x = p.x - Constants.NEARBY_DELTA / 2;
+        hitRect.y = p.y - Constants.NEARBY_DELTA / 2;
+        hitRect.height = Constants.NEARBY_DELTA;
+        hitRect.width = Constants.NEARBY_DELTA;
+        var nodeList = svg.getIntersectionList(hitRect, null);
+
+        var nearShapes = [];
+
+        for (var i = 0; i < nodeList.length; i++) {
+            if (nodeList[i].getAttribute("class") == Constants.SHAPE_CLASS_NAME && nodeList[i].getAttribute("id") != excludeId) {
+                nearShapes.push(nodeList[i]);
+            }
+        }
+
+        return nearShapes;
+    }
 }

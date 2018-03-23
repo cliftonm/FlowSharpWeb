@@ -73,16 +73,6 @@
         return p;
     }
 
-    // https://stackoverflow.com/questions/22183727/how-do-you-convert-screen-coordinates-to-document-space-in-a-scaled-svg
-    translateToSvgCoordinate(p) {
-        var svg = document.getElementById(Constants.SVG_ELEMENT_ID);
-        var pt = svg.createSVGPoint();
-        var offset = pt.matrixTransform(svg.getScreenCTM().inverse());
-        p = p.translate(offset.x, offset.y);
-
-        return p;
-    }
-
     // Routed from mouse controller:
 
     onMouseEnter() { }

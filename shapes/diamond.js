@@ -23,7 +23,7 @@ class Diamond extends SvgElement {
     getULCorner() {
         var rect = this.svgElement.getBoundingClientRect();
         var p = new Point(rect.left, rect.top);
-        this.translateToSvgCoordinate(p);
+        Helpers.translateToSvgCoordinate(p);
 
         return p;
     }
@@ -31,7 +31,7 @@ class Diamond extends SvgElement {
     getLRCorner() {
         var rect = this.svgElement.getBoundingClientRect();
         var p = new Point(rect.right, rect.bottom);
-        this.translateToSvgCoordinate(p);
+        Helpers.translateToSvgCoordinate(p);
 
         return p;
     }

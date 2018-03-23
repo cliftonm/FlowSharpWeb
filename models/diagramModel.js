@@ -55,7 +55,7 @@
         return JSON.stringify(uberModel);
     }
 
-    // Creates MVC for each model of the provided JSON.
+    // Creates an MVC for each model of the provided JSON.
     deserialize(jsonString) {
         var models = JSON.parse(jsonString);
         var objectModels = [];
@@ -72,8 +72,7 @@
                 // is mod'd by the gridCellW/H.
                 surfaceModel.deserialize(val);
                 objectsModel.setTranslation(surfaceModel.tx, surfaceModel.ty);
-            }
-            else {
+            } else {
                 var model = new this.mvc[key].model();
                 objectModels.push(model);
                 var el = this.mvc[key].creator();
