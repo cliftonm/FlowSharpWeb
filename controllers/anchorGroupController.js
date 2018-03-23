@@ -5,6 +5,10 @@
         this.showingAnchors = false;
     }
 
+    get hasConnectionPoints() {
+        return false;
+    }
+
     // Override, as we don't have events on the anchor group.
     wireUpEvents() { }
 
@@ -63,8 +67,8 @@
             el.setAttribute("id", "anchor" + i);
 
             var anchorView = new View(el, anchorModels[i]);
-            var anchorController = new AnchorController(this.mouseController, anchorView, anchorModels[i]);
-            anchorController.onDrag = this.partialOnDrag(anchorModels, anchorModels[i], anchorDefinition.onDrag);
+            var anchorController = new AnchorController(this.mouseController, anchorView, anchorModels[i], shapeController);
+            anchorController.fncDragAnchor = this.partialOnDrag(anchorModels, anchorModels[i], anchorDefinition.onDrag);
             this.mouseController.attach(anchorView, anchorController);
             this.anchors.views.push(anchorView);     // Save the view for when we need to destroy the individual anchors.
         }

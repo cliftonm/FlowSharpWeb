@@ -105,11 +105,6 @@ class MouseController {
     onMouseMove(evt) {
         evt.preventDefault();
         if (this.mouseDown && this.activeControllers != null) {
-            var p = new Point(evt.clientX, evt.clientY);
-            p = Helpers.translateToScreenCoordinate(p);
-            var nearbyShapes = Helpers.getNearbyShapes(p, this.currentShapeId);
-            nearbyShapes.map(s => console.log(s.outerHTML.split(" ")[0]));
-
             this.dx = evt.clientX - this.x;
             this.dy = evt.clientY - this.y;
             this.x = evt.clientX;
@@ -178,6 +173,18 @@ class MouseController {
         var controllers = this.controllers[id];
 
         return controllers;
+    }
+
+    getControllersById(id) {
+        var controllers = this.controllers[id];
+
+        return controllers;
+    }
+
+    getControllersByElement(el) {
+        var id = el.getAttribute("id");
+
+        return this.getControllersById(id);
     }
 
     clearSelectedObject() {

@@ -7,6 +7,10 @@
         return true;
     }
 
+    get hasConnectionPoints() {
+        return false;
+    }
+
     // toolbox surface doesn't move around!
     onDrag(dx, dy) { }
 }

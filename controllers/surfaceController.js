@@ -7,6 +7,10 @@ class SurfaceController extends Controller {
         return true;
     }
 
+    get hasConnectionPoints() {
+        return false;
+    }
+
     // overrides Controller.onDrag
     onDrag(dx, dy) {
         this.model.updateTranslation(dx, dy);

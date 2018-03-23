@@ -9,6 +9,7 @@ class ShapeController extends Controller {
         return [];
     }
 
+    // Not all shapes have connection points.
     getConnectionPoints() {
         return [];
     }
@@ -21,8 +22,13 @@ class ShapeController extends Controller {
         super.onDrag(dx, dy);
     }
 
+    // Overrridden by the line controller.
+    get canConnectToShapes() {
+        return false;
+    }
+
     onMouseEnter() {
-        if (!this.mouseController.mouseDown) {
+        if (!this.mouseController.mouseDown && this.shouldShowAnchors) {
             anchorGroupController.showAnchors(this);
         }
     }
@@ -30,7 +36,9 @@ class ShapeController extends Controller {
     // If we're showing the anchors, moving the mouse on top of an anchor will cause the current shape to leave, which
     // will erase the anchors!  We handle this situation in the mouse controller.
     onMouseLeave() {
-        anchorGroupController.removeAnchors();
+        if (this.shouldShowAnchors) {
+            anchorGroupController.removeAnchors();
+        }
     }
 
     moveAnchor(anchor, dx, dy) {

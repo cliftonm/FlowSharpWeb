@@ -67,7 +67,7 @@ class Helpers {
         return p;
     }
 
-    static getNearbyShapes(p, excludeId) {
+    static getNearbyShapes(p) {
         // https://stackoverflow.com/questions/2174640/hit-testing-svg-shapes
         // var el = document.elementFromPoint(evt.clientX, evt.clientY);
         // console.log(el);
@@ -83,11 +83,19 @@ class Helpers {
         var nearShapes = [];
 
         for (var i = 0; i < nodeList.length; i++) {
-            if (nodeList[i].getAttribute("class") == Constants.SHAPE_CLASS_NAME && nodeList[i].getAttribute("id") != excludeId) {
+            // get only nodes that are shapes.
+            if (nodeList[i].getAttribute("class") == Constants.SHAPE_CLASS_NAME) {
                 nearShapes.push(nodeList[i]);
             }
         }
 
         return nearShapes;
+    }
+
+    // https://stackoverflow.com/questions/3955229/remove-all-child-elements-of-a-dom-node-in-javascript
+    static removeChildren(node) {
+        while (node.firstChild) {
+            node.removeChild(node.firstChild);
+        }
     }
 }

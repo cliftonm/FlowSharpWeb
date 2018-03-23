@@ -3,6 +3,10 @@
         super(mouseController, view, model);
     }
 
+    get canConnectToShapes() {
+        return true;
+    }
+
     getAnchors() {
         var corners = this.getCorners();        
         var anchors = [

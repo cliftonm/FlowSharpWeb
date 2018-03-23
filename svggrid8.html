@@ -16,6 +16,7 @@
     <script type="text/javascript" src="svgToolboxElement.js"></script>
     -->
 
+    <script type="text/javascript" src="prototypes.js"></script>
     <script type="text/javascript" src="helpers.js"></script>
     <script type="text/javascript" src="point.js"></script>
     <script type="text/javascript" src="fileSaver.js"></script>
@@ -121,6 +122,7 @@
                 <g id="objects" transform="translate(0, 0)"></g>
             </g>
             <g id="anchors"></g>
+            <g id="connectionPoints"></g>
             <g id="toolbox" x="0" y="0" width="200" height="480">
                 <rect id="toolboxSurface" x="0" y="0" width="200" height="480" fill="#FFFFFF" stroke="black" stroke-width="0.5" />
                 <rect id="toolboxRectangle" x="10" y="10" width="40" height="40" stroke="black" stroke-width="1" fill="#FFFFFF" />
@@ -149,6 +151,7 @@
         SVG_OBJECTS_ID : "objects",
         SVG_TOOLBOX_ID : "toolbox",
         SVG_ANCHORS_ID: "anchors",
+        SVG_CONNECTION_POINTS_ID: "anchors",
         SHAPE_CLASS_NAME : "svgShape",
         FILE_INPUT : "fileInput",
         OBJECT_GROUP_ID : "objectGroup",
@@ -211,12 +214,8 @@
         surfaceModel.setTranslation(0, 0);
         objectsModel.setTranslation(0, 0);
         diagramModel.clear();
-        var objects = Helpers.getElement(Constants.SVG_OBJECTS_ID);
-
-        // https://stackoverflow.com/questions/3955229/remove-all-child-elements-of-a-dom-node-in-javascript
-        while (objects.firstChild) {
-            objects.removeChild(objects.firstChild);
-        }
+        var node = Helpers.getElement(Constants.SVG_OBJECTS_ID);
+        Helpers.removeChildren(node);
     }
 
     // https://stackoverflow.com/questions/23582101/generating-viewing-and-saving-svg-client-side-in-browser

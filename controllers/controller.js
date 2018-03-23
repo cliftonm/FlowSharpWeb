@@ -7,6 +7,26 @@
         this.wireUpEvents();
     }
 
+    get isSurfaceController() {
+        return false;
+    }
+
+    get isAnchorController() {
+        return false;
+    }
+
+    get isToolboxShapeController() {
+        return false;
+    }
+
+    get shouldShowAnchors() {
+        return true;
+    }
+
+    get hasConnectionPoints() {
+        return true;
+    }
+
     registerEvent(element, eventName, callbackRef) {
         this.events.push({ element: element, eventName: eventName, callbackRef: callbackRef });
     }
@@ -41,22 +61,6 @@
         this.registerEventListener(this.view.svgElement, "mousemove", this.mouseController.onMouseMove, this.mouseController);
         this.registerEventListener(this.view.svgElement, "mouseenter", this.mouseController.onMouseEnter, this.mouseController);
         this.registerEventListener(this.view.svgElement, "mouseleave", this.mouseController.onMouseLeave, this.mouseController);
-    }
-
-    get isSurfaceController() {
-        return false;
-    }
-
-    get isAnchorController() {
-        return false;
-    }
-
-    get isToolboxShapeController() {
-        return false;
-    }
-
-    get shouldShowAnchors() {
-        return true;
     }
 
     getAbsoluteLocation(p) {

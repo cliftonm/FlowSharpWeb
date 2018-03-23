@@ -68,6 +68,7 @@
     <Content Include="controllers\shapeController.js" />
     <Content Include="controllers\surfaceController.js" />
     <Content Include="models\surfaceModel.js" />
+    <Content Include="prototypes.js" />
     <Content Include="svggrid7.html" />
     <Content Include="views\lineView.js" />
     <Content Include="views\objectsView.js" />
