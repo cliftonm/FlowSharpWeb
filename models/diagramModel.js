@@ -28,7 +28,7 @@
     }
 
     connect(shapeId, lineId, shapeCPIdx, lineAnchorIdx) {
-        this.connections.push({ shapeId: shapeId, lineId: lineId, shapeCPIdx: shapeCPIdx, lineAnchoridx: lineAnchorIdx });
+        this.connections.push({ shapeId: shapeId, lineId: lineId, shapeCPIdx: shapeCPIdx, lineAnchorIdx: lineAnchorIdx });
     }
 
     createElement(elName) {

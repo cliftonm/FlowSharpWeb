@@ -91,5 +91,15 @@
     onDrag(dx, dy)
     {
         this.model.translate(dx, dy);
+        this.adjustConnections(dx, dy);
+    }
+
+    adjustConnections(dx, dy) {
+        var connections = diagramModel.connections.filter(c => c.shapeId == this.view.id);
+        connections.map(c => {
+            // Sort of nasty assumption here that the first controller is the line controller
+            var lineController = this.mouseController.getControllersById(c.lineId)[0];
+            lineController.translateEndpoint(c.lineAnchorIdx, dx, dy);
+        });
     }
 }

@@ -21,6 +21,23 @@
         }
     }
 
+    translateEndpoint(idx, dx, dy) {
+        switch (idx) {
+            case 0:
+                var p = new Point(this.model.x1, this.model.y1);
+                p = p.translate(dx, dy);
+                this.model.x1 = p.x;
+                this.model.y1 = p.y;
+                break;
+            case 1:
+                var p = new Point(this.model.x2, this.model.y2);
+                p = p.translate(dx, dy);
+                this.model.x2 = p.x;
+                this.model.y2 = p.y;
+                break;
+        }
+    }
+
     getAnchors() {
         var corners = this.getCorners();        
         var anchors = [
