@@ -30,7 +30,10 @@
         // Call into the shape controller to handle
         // the specific anchor drag.
         this.fncDragAnchor(dx, dy);
+        this.showAnyConnectionPoints();
+    }
 
+    showAnyConnectionPoints() {
         if (this.shapeController.canConnectToShapes) {
             var changes = this.getNewNearbyShapes(this.mouseController.x, this.mouseController.y);
             this.createConnectionPoints(changes.newShapes);
