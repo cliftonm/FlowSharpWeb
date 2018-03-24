@@ -139,7 +139,7 @@
             for (var i = 0; i < scp.connectionPoints.length; i++) {
                 var cpStruct = scp.connectionPoints[i];
                 if (Helpers.isNear(cpStruct.connectionPoint, p, Constants.MAX_CP_NEAR)) {
-                    nearbyConnectionPoints.push({ shapeController: scp.controller, shapeAnchorIdx : i, connectionPoint : cpStruct.connectionPoint});
+                    nearbyConnectionPoints.push({ shapeController: scp.controller, shapeCPIdx : i, connectionPoint : cpStruct.connectionPoint});
                 }
             }
         });
@@ -154,6 +154,7 @@
             p = p.translate(-surfaceModel.tx, - surfaceModel.ty);
             // Move the endpoint of the shape from which we're connecting (the line) to this point.
             this.shapeController.connect(this.anchorIdx, p);
+            diagramModel.connect(ncp.shapeController.view.id, this.shapeController.view.id, ncp.shapeCPIdx, this.anchorIdx);
         }
     }
 }

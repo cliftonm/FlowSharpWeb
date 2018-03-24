@@ -27,6 +27,10 @@
         this.models.push({ model: model, id: id });
     }
 
+    connect(shapeId, lineId, shapeCPIdx, lineAnchorIdx) {
+        this.connections.push({ shapeId: shapeId, lineId: lineId, shapeCPIdx: shapeCPIdx, lineAnchoridx: lineAnchorIdx });
+    }
+
     createElement(elName) {
         var el = Helpers.createElement(elName, { fill: "#FFFFFF", stroke: "black", "stroke-width": 1 });
 
@@ -60,12 +64,14 @@
             uberModel.push(model);
         });
 
-        return JSON.stringify(uberModel);
+        return JSON.stringify({ model: uberModel, connections: this.connections });
     }
 
     // Creates an MVC for each model of the provided JSON.
     deserialize(jsonString) {
-        var models = JSON.parse(jsonString);
+        var modelData = JSON.parse(jsonString);
+        var models = modelData.model;
+        this.connections = modelData.connections;
         var objectModels = [];
         surfaceModel.setTranslation(0, 0);
         objectsModel.setTranslation(0, 0);
