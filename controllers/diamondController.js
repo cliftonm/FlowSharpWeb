@@ -20,6 +20,23 @@
         return anchors;
     }
 
+    getConnectionPoints() {
+        var corners = this.getCorners();
+        var middleTop = new Point((corners[0].x + corners[1].x) / 2, corners[0].y);
+        var middleBottom = new Point((corners[0].x + corners[1].x) / 2, corners[1].y);
+        var middleLeft = new Point(corners[0].x, (corners[0].y + corners[1].y) / 2);
+        var middleRight = new Point(corners[1].x, (corners[0].y + corners[1].y) / 2);
+
+        var connectionPoints = [
+            { connectionPoint: middleTop },
+            { connectionPoint: middleBottom },
+            { connectionPoint: middleLeft },
+            { connectionPoint: middleRight }
+        ];
+
+        return connectionPoints;
+    }
+
     getULCorner() {
         var rect = this.view.svgElement.getBoundingClientRect();
         var p = new Point(rect.left, rect.top);
