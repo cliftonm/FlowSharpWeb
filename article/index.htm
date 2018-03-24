@@ -2412,7 +2412,7 @@ an endpoint is approaching another shape's connection point.</p>
 <p>&nbsp;</p>
 <p>&nbsp;</p>
 <h2>Conclusion</h2>
-<p>There's so much more to do!&nbsp; Zooming, rotations, a &quot;properties&quot; window 
+<p>There's so much more to do!&nbsp; Undo/redo, zooming, rotations, a &quot;properties&quot; window 
 for setting colors and stroke widths, font and font sizes, arrow endpoints, 
 smart line connectors, grouping, moving shapes up/down the hierarchy, and so 
 forth.&nbsp; To a large degree, these are all bells and whistles (with some 
@@ -2420,6 +2420,12 @@ complexity, particularly with regards to rotations and connection points) which
 I'll continue to add.&nbsp; What this article has presented is a good baseline 
 for the core functionality of a web-based diagramming tool.&nbsp; Stay tuned for 
 Part II!</p>
+<p>One of the most annoying issues was dealing with mouse events not being 
+received by the intended shape.&nbsp; For example, rapid mouse movement by the 
+user causes the shape being moved to lag and the underlying SVG element to start 
+receiving mouse movement events.&nbsp; Mouse up events exactly on the connection 
+point results in the connection point receiving the event, which is why I moved 
+connection points to be below anchors.</p>
 
 </body>
 

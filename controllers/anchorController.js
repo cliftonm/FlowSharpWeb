@@ -1,10 +1,14 @@
 ﻿class AnchorController extends Controller {
-    constructor(mouseController, view, model, shapeController) {
+    constructor(mouseController, view, model, shapeController, fncDragAnchor, anchorIdx) {
         super(mouseController, view, model);
-        this.fncDragAnchor = null;
+        this.fncDragAnchor = fncDragAnchor;
+        this.anchorIdx = anchorIdx;
+
+        // Structure:
+        // { id: shapeId, controller: shapeController, connectionPoints: connectionPoints[] }
         this.shapeConnectionPoints = [];
 
-        // Save the controllers that are associated with the shape for which we're
+        // Save the controller that is associated with the shape for which we're
         // displaying the anchors, so we can later on see if any of the controllers allows
         // the anchors to be attached to connection points.  Currently only the line
         // controller allows this.
@@ -33,6 +37,13 @@
         this.showAnyConnectionPoints();
     }
 
+    onMouseUp(isClick) {
+        super.onMouseUp(isClick);
+        this.connectIfCloseToShapeConnectionPoint();
+        this.removeConnectionPoints();
+        this.shapeConnectionPoints = [];
+    }
+
     showAnyConnectionPoints() {
         if (this.shapeController.canConnectToShapes) {
             var changes = this.getNewNearbyShapes(this.mouseController.x, this.mouseController.y);
@@ -55,11 +66,6 @@
 
             console.log("scp: " + this.shapeConnectionPoints.length + ", new: " + changes.newShapes.length + ", existing: " + existingShapesId.length);
         }
-    }
-
-    onMouseUp(isClick) {
-        super.onMouseUp(isClick);
-        this.removeConnectionPoints();
     }
 
     getNewNearbyShapes(x, y) {
@@ -121,5 +127,33 @@
             // https://stackoverflow.com/a/33822526/2276361
             [...nodes].map(node => { node.parentNode.removeChild(node) });
         });
+    }
+
+    connectIfCloseToShapeConnectionPoint() {
+        var p = new Point(this.mouseController.x, this.mouseController.y);
+        p = Helpers.translateToScreenCoordinate(p);
+
+        var nearbyConnectionPoints = [];
+        
+        this.shapeConnectionPoints.filter(scp => {
+            for (var i = 0; i < scp.connectionPoints.length; i++) {
+                var cpStruct = scp.connectionPoints[i];
+                if (Helpers.isNear(cpStruct.connectionPoint, p, Constants.MAX_CP_NEAR)) {
+                    nearbyConnectionPoints.push({ shapeController: scp.controller, shapeAnchorIdx : i, connectionPoint : cpStruct.connectionPoint});
+                }
+            }
+        });
+
+        if (nearbyConnectionPoints.length == 1) {
+            var ncp = nearbyConnectionPoints[0];
+
+            // The location of the connection point of the shape to which we're connecting.
+            var p = ncp.connectionPoint;
+            // Physical location of endpoint is without line and surface translations.
+            p = p.translate(-this.shapeController.model.tx, -this.shapeController.model.ty);
+            p = p.translate(-surfaceModel.tx, - surfaceModel.ty);
+            // Move the endpoint of the shape from which we're connecting (the line) to this point.
+            this.shapeController.connect(this.anchorIdx, p);
+        }
     }
 }

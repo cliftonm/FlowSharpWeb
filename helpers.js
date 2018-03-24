@@ -98,4 +98,8 @@ class Helpers {
             node.removeChild(node.firstChild);
         }
     }
+
+    static isNear(p1, p2, delta) {
+        return Math.abs(p1.x - p2.x) <= delta && Math.abs(p1.y - p2.y) <= delta;
+    }
 }

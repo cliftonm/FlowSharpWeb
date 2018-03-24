@@ -121,8 +121,11 @@
             <g id="objectGroup">
                 <g id="objects" transform="translate(0, 0)"></g>
             </g>
-            <g id="anchors"></g>
+            <!-- connection points are under anchor so that if we mouse up exactly 
+                on a connection point line, it is the anchor object, being above, 
+                that receives the mouse up event. -->
             <g id="connectionPoints"></g>
+            <g id="anchors"></g>
             <g id="toolbox" x="0" y="0" width="200" height="480">
                 <rect id="toolboxSurface" x="0" y="0" width="200" height="480" fill="#FFFFFF" stroke="black" stroke-width="0.5" />
                 <rect id="toolboxRectangle" x="10" y="10" width="40" height="40" stroke="black" stroke-width="1" fill="#FFFFFF" />
@@ -145,24 +148,25 @@
     // TODO: Prepend "Constants."
     const Constants = {
         SVG_NS: "http://www.w3.org/2000/svg",
-        SVG_ELEMENT_ID : "svg",
-        SVG_SURFACE_ID : "surface",
-        SVG_TOOLBOX_SURFACE_ID : "toolboxSurface",
-        SVG_OBJECTS_ID : "objects",
-        SVG_TOOLBOX_ID : "toolbox",
+        SVG_ELEMENT_ID: "svg",
+        SVG_SURFACE_ID: "surface",
+        SVG_TOOLBOX_SURFACE_ID: "toolboxSurface",
+        SVG_OBJECTS_ID: "objects",
+        SVG_TOOLBOX_ID: "toolbox",
         SVG_ANCHORS_ID: "anchors",
         SVG_CONNECTION_POINTS_ID: "anchors",
-        SHAPE_CLASS_NAME : "svgShape",
-        FILE_INPUT : "fileInput",
-        OBJECT_GROUP_ID : "objectGroup",
-        FILENAME : "diagram.json",
-        TOOLBOX_RECTANGLE_ID : "toolboxRectangle",
-        TOOLBOX_CIRCLE_ID : "toolboxCircle",
-        TOOLBOX_DIAMOND_ID : "toolboxDiamond",
-        TOOLBOX_LINE_ID : "toolboxLine",
+        SHAPE_CLASS_NAME: "svgShape",
+        FILE_INPUT: "fileInput",
+        OBJECT_GROUP_ID: "objectGroup",
+        FILENAME: "diagram.json",
+        TOOLBOX_RECTANGLE_ID: "toolboxRectangle",
+        TOOLBOX_CIRCLE_ID: "toolboxCircle",
+        TOOLBOX_DIAMOND_ID: "toolboxDiamond",
+        TOOLBOX_LINE_ID: "toolboxLine",
         TOOLBOX_TEXT_ID: "toolboxText",
         DEFAULT_TEXT: "[text]",
-        NEARBY_DELTA : 40,
+        NEARBY_DELTA: 40,
+        MAX_CP_NEAR: 6,    // anchor must be +/- this value to a connection point to connect.
     };
 
     const START_OF_DIAGRAM_TAG = "<diagram>";

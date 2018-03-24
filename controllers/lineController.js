@@ -7,6 +7,20 @@
         return true;
     }
 
+    // Move the specified endpoint (by idx) to the point p.
+    connect(idx, p) {
+        switch (idx) {
+            case 0:
+                this.model.x1 = p.x;
+                this.model.y1 = p.y;
+                break;
+            case 1:
+                this.model.x2 = p.x;
+                this.model.y2 = p.y;
+                break;
+        }
+    }
+
     getAnchors() {
         var corners = this.getCorners();        
         var anchors = [

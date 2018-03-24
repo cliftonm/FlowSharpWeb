@@ -67,8 +67,8 @@
             el.setAttribute("id", "anchor" + i);
 
             var anchorView = new View(el, anchorModels[i]);
-            var anchorController = new AnchorController(this.mouseController, anchorView, anchorModels[i], shapeController);
-            anchorController.fncDragAnchor = this.partialOnDrag(anchorModels, anchorModels[i], anchorDefinition.onDrag);
+            var fncDragAnchor = this.partialOnDrag(anchorModels, anchorModels[i], anchorDefinition.onDrag);
+            var anchorController = new AnchorController(this.mouseController, anchorView, anchorModels[i], shapeController, fncDragAnchor, i);
             this.mouseController.attach(anchorView, anchorController);
             this.anchors.views.push(anchorView);     // Save the view for when we need to destroy the individual anchors.
         }

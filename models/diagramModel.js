@@ -9,6 +9,14 @@
             Line: { model: LineModel, view: LineView, controller: LineController, creator: () => this.createLineElement() },
             Text: { model: TextModel, view: TextView, controller: TextController, creator: () => this.createTextElement() },
         };
+
+        // For the moment we'll use array indices into the shape's connection points.
+        // This is problematic when the feature is added so that the user can add/remove connection points.
+        // In that case, each shape should create its default connection points with associated id's.
+        // As for the line, it should be OK to always use the endpoint index.
+        // Connection structure:
+        // shapeId, lineId, shapeConnectionPointIndex, lineEndpointIndex
+        this.connections = [];
     }
 
     clear() {

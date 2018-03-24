@@ -27,6 +27,10 @@ class ShapeController extends Controller {
         return false;
     }
 
+    connect(idx, p) {
+        throw "Shape appears to be capable of connecting to other shapes but doesn't implement connect(idx, p).";
+    }
+
     onMouseEnter() {
         if (!this.mouseController.mouseDown && this.shouldShowAnchors) {
             anchorGroupController.showAnchors(this);
