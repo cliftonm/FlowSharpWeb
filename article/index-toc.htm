@@ -11,10 +11,107 @@
 <p>FlowSharpWeb - Build a Prototype Client-Side Diagramming App with SVG and Javascript<br>
 Learning about to programmatically manipulate SVG in Javascript</p>
 <p><img border="0" src="screenshot1.png" width="577" height="348"></p>
-<p>&nbsp;</p>
-<!-- INSERT contents -->
-<p>&nbsp;</p>
-<h2>Introduction</h2>
+<h2>Contents</h2><ul>
+<li><a href="#Introduction0">Introduction</a></li>
+<ul>
+<li><a href="#NoThirdPartyLibraries1">No Third Party Libraries</a></li>
+<li><a href="#DescribingWhyandHow2">Describing Why and How</a></li>
+<li><a href="#draw.io3">draw.io</a></li>
+</ul>
+<li><a href="#PrototypeBuild4">Prototype Build</a></li>
+<li><a href="#CreatingaScrollableGrid5">Creating a Scrollable Grid</a></li>
+<ul>
+<li><a href="#SimulatingaVirtualSurface6">Simulating a Virtual Surface</a></li>
+<li><a href="#ScrollingtheGrid-MouseEvents7">Scrolling the Grid - Mouse Events</a></li>
+<ul>
+<li><a href="#WiringuptheMouseEvents8">Wiring up the Mouse Events</a></li>
+<li><a href="#BestPractice9">Best Practice</a></li>
+<li><a href="#TheEventHandlers10">The Event Handlers</a></li>
+<li><a href="#HandlingMovingtheMouseofftheGrid11">Handling Moving the Mouse off the Grid</a></li>
+</ul>
+</ul>
+<li><a href="#ResizingtheGrid-OurFirstDynamicSVG12">Resizing the Grid - Our First Dynamic SVG</a></li>
+<li><a href="#AddingSomeStaticShapes13">Adding Some Static Shapes</a></li>
+<li><a href="#MovingShapesAround14">Moving Shapes Around</a></li>
+<ul>
+<li><a href="#TheMouseController15">The Mouse Controller</a></li>
+<li><a href="#TheShapeObjectModel16">The Shape Object Model</a></li>
+<ul>
+<li><a href="#TheSvgObjectClass17">The SvgObject Class</a></li>
+<li><a href="#TheSvgElementClass18">The SvgElement Class</a></li>
+<li><a href="#TheCircleClass19">The Circle Class</a></li>
+<li><a href="#TheSurfaceClass20">The Surface Class</a></li>
+</ul>
+<li><a href="#WrappingUpMovingShapes21">Wrapping Up Moving Shapes</a></li>
+</ul>
+<li><a href="#AToolboxandDynamicShapeCreation22">A Toolbox and Dynamic Shape Creation</a></li>
+<ul>
+<li><a href="#SupportingClasses23">Supporting Classes</a></li>
+<li><a href="#Initialization24">Initialization</a></li>
+<li><a href="#TheToolboxShapes25">The Toolbox Shapes</a></li>
+<li><a href="#TheSvgToolboxElementClass26">The SvgToolboxElement Class</a></li>
+<li><a href="#TheToolboxControllerClass27">The ToolboxController Class</a></li>
+<ul>
+<li><a href="#Constructor28">Constructor</a></li>
+<li><a href="#ToolboxControlleronMouseDown29">Toolbox Controller onMouseDown</a></li>
+<li><a href="#DeterminingaClickEvent30">Determining a Click Event</a></li>
+<li><a href="#ToolboxControlleronMouseUp31">Toolbox Controller onMouseUp</a></li>
+<li><a href="#ToolboxControlleronMouseMove32">Toolbox Controller onMouseMove</a></li>
+<li><a href="#MouseControlleronMouseUp33">Mouse Controller onMouseUp</a></li>
+</ul>
+</ul>
+<li><a href="#SavingandRestoringtheDiagramLocally34">Saving and Restoring the Diagram Locally</a></li>
+<ul>
+<li><a href="#SavingtheDiagram35">Saving the Diagram</a></li>
+<li><a href="#LoadingtheDiagram36">Loading the Diagram</a></li>
+</ul>
+<li><a href="#LinesandAnchorPoints37">Lines and Anchor Points</a></li>
+<ul>
+<li><a href="#TheComplexitiesofSelectingALine38">The Complexities of Selecting A Line</a></li>
+<li><a href="#PointClassandShapeRectangle39">Point Class and Shape Rectangle</a></li>
+</ul>
+<li><a href="#Anchors40">Anchors</a></li>
+<ul>
+<li><a href="#LineLengthandOrientation41">Line Length and Orientation</a></li>
+</ul>
+<li><a href="#AnchorDragOperationsforOtherShapes42">Anchor Drag Operations for Other Shapes</a></li>
+<ul>
+<li><a href="#Circles43">Circles</a></li>
+<li><a href="#Diamonds44">Diamonds</a></li>
+<li><a href="#Rectangles45">Rectangles</a></li>
+</ul>
+<li><a href="#Text46">Text</a></li>
+<ul>
+<li><a href="#ChangingText47">Changing Text</a></li>
+</ul>
+<li><a href="#RefactoringthePrototypetouseanMVCPattern48">Refactoring the Prototype to use an MVC Pattern</a></li>
+<ul>
+<li><a href="#Models,Views,andControllers49">Models, Views, and Controllers</a></li>
+<li><a href="#TheTextModel50">The Text Model</a></li>
+<li><a href="#TheTextController51">The Text Controller</a></li>
+<li><a href="#TheTextView52">The Text View</a></li>
+<li><a href="#TheBaseModel53">The Base Model</a></li>
+<li><a href="#TheBaseView54">The Base View</a></li>
+<li><a href="#CreatingaShapeProgrammatically55">Creating a Shape Programmatically</a></li>
+<li><a href="#Serialization56">Serialization</a></li>
+<li><a href="#Deserializing57">Deserializing</a></li>
+</ul>
+<li><a href="#ConnectingLines58">Connecting Lines</a></li>
+<ul>
+<li><a href="#ConnectionPoints59">Connection Points</a></li>
+<li><a href="#DetectingShapesThatWe'reNear60">Detecting Shapes That We're Near</a></li>
+<li><a href="#ShowingConnectionPoints61">Showing Connection Points</a></li>
+<li><a href="#RemovingConnectionPoints62">Removing Connection Points</a></li>
+<li><a href="#ConnectingtoaShape63">Connecting to a Shape</a></li>
+<li><a href="#UpdatingConnectionswhentheShapeisMoved64">Updating Connections when the Shape is Moved</a></li>
+<li><a href="#UpdatingConnectionswhentheShapeisResized65">Updating Connections when the Shape is Resized</a></li>
+<li><a href="#DisconnectingConnections66">Disconnecting Connections</a></li>
+</ul>
+<li><a href="#RemovingAShape67">Removing A Shape</a></li>
+<li><a href="#Conclusion68">Conclusion</a></li>
+</ul>
+
+<h2><a name="Introduction0">Introduction</a></h2>
 <p>I've been wanting to learn about SVG for a while now, and there are certainly 
 any number of helpful websites on creating SVG drawings and animations.&nbsp; 
 But I didn't want to learn how to create static (or even animated) SVG drawings, 
@@ -30,7 +127,7 @@ Javascript in so far as to achieve the goals outlined above.&nbsp; However, what
 it will teach you is how to create dynamic SVG drawings, and what better way to 
 do this than to actually create a simple drawing program.&nbsp; Then again, I 
 learned a lot about both SVG and modern Javascript writing this article.</p>
-<h3>No Third Party Libraries</h3>
+<h3><a name="NoThirdPartyLibraries1">No Third Party Libraries</a></h3>
 <p><u>No third party libraries are used in this code.</u>&nbsp; There were a few 
 useful Javascript functions (in particular, the FileSaver) that I included in 
 the source here that came from elsewhere (see the article for where), but there 
@@ -38,13 +135,13 @@ are no dependencies on any SVG manipulation frameworks.&nbsp; This code doesn't
 even use jQuery.&nbsp; In my opinion, this makes it a lot easier to learn SVG 
 from the ground up -- you're <u>not</u> dealing with SVG + YAF (Yet Another 
 Framework.)</p>
-<h3>Describing Why and How</h3>
+<h3><a name="DescribingWhyandHow2">Describing Why and How</a></h3>
 <p>The point of this code and the code comments is to describe why I'm doing 
 things in a certain way, and how I'm doing them.&nbsp; As this was a learning 
 experience for myself, any time I had to reach out to the web to figure 
 something out, I reference the source of the information -- this turns out to 
 mostly be StackOverflow references!</p>
-<h3>draw.io</h3>
+<h3><a name="draw.io3">draw.io</a></h3>
 <p>One of the best online SVG drawing programs is <a href="https://www.draw.io/">
 draw.io</a> and I'm not going to attempt to recreate it.&nbsp; However, like 
 many things, it is often useful to &quot;roll your own&quot; to understand how the 
@@ -57,7 +154,7 @@ looking for a polished drawing program, similar to Visio, look at draw.io.&nbsp;
 If you want to<i> learn</i> about how 
 this stuff is done, that's what this article is for.<i>&nbsp; </i></p>
 <p>That said, let's begin!</p>
-<h2>Prototype Build</h2>
+<h2><a name="PrototypeBuild4">Prototype Build</a></h2>
 <p>The first two-thirds of this article is a prototype build.&nbsp; It vets the 
 basic functionality and manipulation of the SVG DOM with UI interaction and 
 diagram persistence.&nbsp; In particular, I implemented a very shallow 
@@ -68,7 +165,7 @@ that you'll see here.&nbsp; Making the transition wasn't that painful -- 90% of
 the code was re-used in a proper MVC model, with the most significant changes 
 occurring in the mouse controller and toolbox controller.&nbsp; And all cases of 
 <code>instanceof</code> have been removed, something I considered quite a kludge in itself.</p>
-<h2>Creating a Scrollable Grid</h2>
+<h2><a name="CreatingaScrollableGrid5">Creating a Scrollable Grid</a></h2>
 <p><img border="0" src="grid1.png" width="276" height="200"></p>
 <p>The first thing I wanted to learn how to do was create a grid that scrolls.&nbsp; 
 It was easy enough to find an example on the Internet which I used as a starting 
@@ -102,7 +199,7 @@ out the core features:</p>
 	<li>The initial transform is a placeholder -- &quot;translate(0, 0)&quot; doesn't 
 	actually do anything.</li>
 </ul>
-<h3>Simulating a Virtual Surface</h3>
+<h3><a name="SimulatingaVirtualSurface6">Simulating a Virtual Surface</a></h3>
 <p><img border="0" src="bufferzone.png" width="217" height="163"></p>
 <p>Notice that the rectangle is drawn with an off-screen buffer zone of (-80, 
 -80) and (width + 80*2, height + 80*2).&nbsp; This is an old trick from which I 
@@ -112,7 +209,7 @@ done simply by performing a translate (or on the C64, changing the screen memory
 pointer.)&nbsp; When scrolling a repeating pattern, one &quot;translates&quot; the 
 viewable area +/- 80 mod 80 (the width and height of the grid) and it appears to 
 the user as if there is an infinite virtual surface.</p>
-<h3>Scrolling the Grid - Mouse Events</h3>
+<h3><a name="ScrollingtheGrid-MouseEvents7">Scrolling the Grid - Mouse Events</a></h3>
 <p>The user scrolls the grid with a &quot;drag&quot; operation:</p>
 <ul>
 	<li>Mouse down to start.</li>
@@ -125,7 +222,7 @@ var mouseDownX = 0;
 var mouseDownY = 0;
 var gridX = 0;
 var gridY = 0;</pre>
-<h4>Wiring up the Mouse Events</h4>
+<h4><a name="WiringuptheMouseEvents8">Wiring up the Mouse Events</a></h4>
 <p>This is very simple (but we'll see later that it gets more complicated 
 because for actual shapes that may be removed from the drawing, we will want to 
 unhook the event handlers):</p>
@@ -139,14 +236,14 @@ unhook the event handlers):</p>
 } 
 
 initializeSurface();</pre>
-<h4>Best Practice</h4>
+<h4><a name="BestPractice9">Best Practice</a></h4>
 <p>Technically, we could just get the surface element directly from the 
 document:</p>
 <pre>var svgSurface = document.getElementById(&quot;surface&quot;);</pre>
 <p>but I suppose using the <code>svg</code> element helps to prevent the 
 possibility that the HTML has an element of the same name, particularly since we 
 don't know how the programmer might create additional HTML.</p>
-<h4>The Event Handlers</h4>
+<h4><a name="TheEventHandlers10">The Event Handlers</a></h4>
 <p>Here we handle the <code>mousedown</code>, <code>mouseup</code>, and <code>mousemove</code> events:</p>
 <pre>const LEFT_MOUSE_BUTTON = 0;
 
@@ -198,7 +295,7 @@ function onMouseMove(evt) {
 	value (as well as right and middle values) are consistent across these two 
 	browsers.</li>
 </ul>
-<h4>Handling Moving the Mouse off the Grid</h4>
+<h4><a name="HandlingMovingtheMouseofftheGrid11">Handling Moving the Mouse off the Grid</a></h4>
 <p>There is no concept of &quot;mouse capture,&quot; so when the user drags the surface 
 and the mouse moves outside of the SVG element, events, such as <code>mouseup</code>, are no 
 longer received.&nbsp; If the user stops dragging <i>outside of the SVG element</i> 
@@ -216,7 +313,7 @@ function onMouseLeave(evt) {
   evt.preventDefault();
   mouseDown = false;
 }</pre>
-<h2>Resizing the Grid - Our First Dynamic SVG</h2>
+<h2><a name="ResizingtheGrid-OurFirstDynamicSVG12">Resizing the Grid - Our First Dynamic SVG</a></h2>
 <p><img border="0" src="grid2.png" width="363" height="248"></p>
 <p>Of course, all the code above is hard-coded for a grid of dimensions 80x80 
 with inner grid spacing of 8x8.&nbsp; We would like this to actually be user 
@@ -301,7 +398,7 @@ function resizeGrid(lw, lh, sw, sh) {
 	dimensions.</li>
 	<li>Resizing the buffer zone and surface dimensions.</li>
 </ul>
-<h2>Adding Some Static Shapes</h2>
+<h2><a name="AddingSomeStaticShapes13">Adding Some Static Shapes</a></h2>
 <p><img border="0" src="grid3.png" width="326" height="227"></p>
 <p>Remember the group that I added around the grid rectangle?&nbsp; We'll now 
 add another group that is used for shapes, and we'll put a couple static shapes 
@@ -343,7 +440,7 @@ offset.</li>
 <p>If we don't keep the two regions separate, we get the strange effect that the 
 shapes return to their original positions as a result of the modulus operation.&nbsp; 
 Obviously we don't want that.</p>
-<h2>Moving Shapes Around</h2>
+<h2><a name="MovingShapesAround14">Moving Shapes Around</a></h2>
 <p>At this point, we have to start getting more sophisticated about how mouse 
 events are captured -- each shape (including the surface) must handle its own 
 mouse events.&nbsp; However, what the event does is not always the same -- for 
@@ -356,7 +453,7 @@ resizing it, rotating it, etc.?</p>
 different shapes.&nbsp; If we do this now, it becomes a lot easier to continue 
 expanding the capabilities of what so far has just been a playground to test 
 things out.</p>
-<h3>The Mouse Controller</h3>
+<h3><a name="TheMouseController15">The Mouse Controller</a></h3>
 <p>The <code>MouseController</code> class does a few things for us:</p>
 <ul>
 	<li>It tracks the shape being dragged.&nbsp; This is important because the 
@@ -436,10 +533,10 @@ class MouseController {
     this.activeController = null;
   }
 }</pre>
-<h3>The Shape Object Model</h3>
+<h3><a name="TheShapeObjectModel16">The Shape Object Model</a></h3>
 <p><img border="0" src="svgmodel.png" width="539" height="226"></p>
 <p>The diagram above illustrates the shape object model I've put together.</p>
-<h4>The SvgObject Class</h4>
+<h4><a name="TheSvgObjectClass17">The SvgObject Class</a></h4>
 <p>This is the root class which keeps track of:</p>
 <ul>
 	<li>The mouse controller (a shared object between all shapes).</li>
@@ -521,7 +618,7 @@ instance.</li>
 
   onMouseLeave(evt) { }
 }</pre>
-<h4>The SvgElement Class</h4>
+<h4><a name="TheSvgElementClass18">The SvgElement Class</a></h4>
 <p>This class extends the <code>SvgObject</code> class, providing default mouse event 
 registration and shape drag implementation:</p>
 <pre>class SvgElement extends SvgObject {
@@ -543,7 +640,7 @@ handling class instance will be the mouse controller, but the functionality has
 been provided to use the class instance registering the event (this is the 
 default behavior) or some other class instance to which we want to bind the 
 handler.</p>
-<h4>The Circle Class</h4>
+<h4><a name="TheCircleClass19">The Circle Class</a></h4>
 <p>The <code>Circle</code> class demonstrates the most basic of elements in which all the 
 default behaviors can be utilized.&nbsp; It merely extends the <code>SvgElement</code> class.</p>
 <pre>class Circle extends SvgElement {
@@ -551,7 +648,7 @@ default behaviors can be utilized.&nbsp; It merely extends the <code>SvgElement<
     super(mouseController, svgElement);
   }
 }</pre>
-<h4>The Surface Class</h4>
+<h4><a name="TheSurfaceClass20">The Surface Class</a></h4>
 <p>This class is much more complicated as it has to handle all the things we 
 talked about before regarding scrolling the grid and objects on the grid.&nbsp; 
 Note how it extends the <code>mouseleave</code> event.&nbsp; We want this to 
@@ -632,7 +729,7 @@ catch up to mouse position.</li>
     elSurface.setAttribute(&quot;height&quot;, svgH + lh * 2);
   }
 }</pre>
-<h3>Wrapping Up Moving Shapes</h3>
+<h3><a name="WrappingUpMovingShapes21">Wrapping Up Moving Shapes</a></h3>
 <p><img border="0" src="grid4.png" width="263" height="195"></p>
 <p>To get this all to work, we need to add ID's to the two static circles in the 
 &quot;objects&quot; group:</p>
@@ -672,7 +769,7 @@ around the surface.&nbsp; For example, we'll add a rectangle:</p>
 <pre>new Rectangle(mouseController, document.getElementById(&quot;nose&quot;));</pre>
 <p>and we get (after moving the shapes around):</p>
 <p><img border="0" src="grid5.png" width="256" height="209"></p>
-<h2>A Toolbox and Dynamic Shape Creation</h2>
+<h2><a name="AToolboxandDynamicShapeCreation22">A Toolbox and Dynamic Shape Creation</a></h2>
 <p>Let's make what we're doing more useful by adding a toolbox so we can drag 
 and drop new shapes on the surface.&nbsp; The toolbox will be the third group, 
 making it the topmost group so that everything else (grid and objects) are 
@@ -684,10 +781,10 @@ always rendered <i>behind</i> the toolbox:</p>
   &lt;path id=&quot;toolboxDiamond&quot; d=&quot;M 140 10 L 115 30 L 140 50 L 165 30 Z&quot; stroke=&quot;black&quot; stroke-width=&quot;1&quot; fill=&quot;#FFFFFF&quot; /&gt;
 &lt;/g&gt;</pre>
 <p><img border="0" src="toolbox1.png" width="446" height="217"></p>
-<h3>Supporting Classes</h3>
+<h3><a name="SupportingClasses23">Supporting Classes</a></h3>
 <p>We're going to need a some additional classes (indicated with the red text):</p>
 <p><img border="0" src="toolbox2.png" width="709" height="331"></p>
-<h3>Initialization</h3>
+<h3><a name="Initialization24">Initialization</a></h3>
 <p>Here's the entire initialization code (I've removed the static shapes we had 
 previously):</p>
 <pre>const SVG_ELEMENT_ID = &quot;svg&quot;;
@@ -741,7 +838,7 @@ but is less typing:</p>
 }</pre>
 <p>Also, the better practice here is that the we're looking for element ID's in 
 the &quot;svg&quot; element, not the document.</p>
-<h3>The Toolbox Shapes</h3>
+<h3><a name="TheToolboxShapes25">The Toolbox Shapes</a></h3>
 <p>The toolbox shapes all implement the following functions:</p>
 <ul>
 	<li>createElement - this creates an element with a starting location to 
@@ -787,7 +884,7 @@ the &quot;svg&quot; element, not the document.</p>
   }
 }</pre>
 <p>All the toolbox shapes follow the above template.</p>
-<h3>The SvgToolboxElement Class</h3>
+<h3><a name="TheSvgToolboxElementClass26">The SvgToolboxElement Class</a></h3>
 <p>The base class for all toolbox elements wires up the mouse events for toolbox 
 shape elements to the <i>toolboxController</i>.&nbsp; It also provides a common 
 method for creating an element and setting its attributes, including creating a 
@@ -826,12 +923,12 @@ unique ID for the element:</p>
       (c ^ crypto.getRandomValues(new Uint8Array(1))[0] &amp; 15 &gt;&gt; c / 4).toString(16))
   }
 }</pre>
-<h3>The ToolboxController Class</h3>
+<h3><a name="TheToolboxControllerClass27">The ToolboxController Class</a></h3>
 <p>Most of how the &quot;click and drop&quot; and &quot;drag and drop&quot; behavior is handled 
 here.&nbsp; Remember that this class derives from MouseController, however it 
 also needs to be initialized with the <i>surface</i> mouse controller -- it gets 
 interesting (or perhaps confusing) to have two mouse controllers in this class!</p>
-<h4>Constructor</h4>
+<h4><a name="Constructor28">Constructor</a></h4>
 <pre>class ToolboxController extends MouseController {
   // We pass in the mouse controller that the surface is using so we can 
   // pass control over to the surface mouse controller when dragging a shape.
@@ -850,13 +947,13 @@ the shape is dropped onto the surface, the events would have to be detached from
 the toolbox controller and attached to the surface mouse controller.&nbsp; So it 
 merely shoves the problem around.&nbsp; Still, there might be a better way to do 
 this.</p>
-<h4>Toolbox Controller onMouseDown</h4>
+<h4><a name="ToolboxControlleronMouseDown29">Toolbox Controller onMouseDown</a></h4>
 <pre>onMouseDown(evt) {
   super.onMouseDown(evt);
 }</pre>
 <p>We let the base class handle this behavior.&nbsp; The event is wired up to 
 the toolbox controller.</p>
-<h4>Determining a Click Event</h4>
+<h4><a name="DeterminingaClickEvent30">Determining a Click Event</a></h4>
 <pre>isClick(evt) {
   var endDownX = evt.clientX;
   var endDownY = evt.clientY;
@@ -871,7 +968,7 @@ don't want to deal with whether the click event fires after a mouse up &quot;cli
 and drag&quot; vs. a mouse up &quot;drag and drop.&quot;&nbsp; OK, I still have to worry about 
 that, but it makes more sense (to me at least) to just handle this in the mouse 
 up event.</p>
-<h4>Toolbox Controller onMouseUp</h4>
+<h4><a name="ToolboxControlleronMouseUp31">Toolbox Controller onMouseUp</a></h4>
 <pre>// If this is a &quot;click&quot;, create the shape in a fixed location on the surface.
 // If this is the end of a drag operation, place the shape on the surface at
 // the current mouse position.
@@ -908,7 +1005,7 @@ by a mouse up event occurring within a motion &quot;window.&quot;&nbsp; After th
   getElement(groupName).appendChild(svgElement);
   this.mouseController.attach(svgElement, shapeController);
 }</pre>
-<h4>Toolbox Controller onMouseMove</h4>
+<h4><a name="ToolboxControlleronMouseMove32">Toolbox Controller onMouseMove</a></h4>
 <pre>// If the user is dragging, we create a new shape that can be dragged onto
 // the surface. When the drag operation ends, the shape is transferred to the surface.
 onMouseMove(evt) {
@@ -981,7 +1078,7 @@ createShapeForDragging(el, shape) {
   this.mouseController.mouseDown = true;
 }</pre>
 <p>At this point, the surface mouse controller has control!</p>
-<h4>Mouse Controller onMouseUp</h4>
+<h4><a name="MouseControlleronMouseUp33">Mouse Controller onMouseUp</a></h4>
 <pre>// Any dragging is now done.
 onMouseUp(evt) {
   if (evt.button == LEFT_MOUSE_BUTTON &amp;&amp; this.activeController != null) {
@@ -1023,7 +1120,7 @@ controller's state:</p>
 <pre><img border="0" src="toolbox3.png" width="532" height="363"></pre>
 <p>Phew!&nbsp; All done!&nbsp; (Except maybe getting the shapes to click &amp; drop 
 at more uniform location.)</p>
-<h2>Saving and Restoring the Diagram Locally</h2>
+<h2><a name="SavingandRestoringtheDiagramLocally34">Saving and Restoring the Diagram Locally</a></h2>
 <p>We have enough happening now that before doing anything else, I think it's a 
 good idea to look at how shapes are saved and loaded locally.&nbsp; The 
 implementation I present here is very rudimentary -- it automatically initiates 
@@ -1050,7 +1147,7 @@ fixing bugs, this took two days!</p>
 &lt;/div&gt;</pre>
 <p>The trick here, to avoid the default behavior of a file input element, was to 
 hide the input element, as to SO link showed me.</p>
-<h3>Saving the Diagram</h3>
+<h3><a name="SavingtheDiagram35">Saving the Diagram</a></h3>
 <p>Saving the SVG <i>locally</i> took some research and resulted n this code:</p>
 <pre>document.getElementById(FILE_INPUT).addEventListener('change', readSingleFile, false);</pre>
 <pre>// https://stackoverflow.com/questions/23582101/generating-viewing-and-saving-svg-client-side-in-browser
@@ -1096,7 +1193,7 @@ serialize() {
 }</pre>
 <p>That was the easy part -- the file is <i>downloaded</i> into the browser's 
 default download location.</p>
-<h3>Loading the Diagram</h3>
+<h3><a name="LoadingtheDiagram36">Loading the Diagram</a></h3>
 <p>The first step is to actually read the file data locally:</p>
 <pre>// https://w3c.github.io/FileAPI/
 // https://stackoverflow.com/questions/3582671/how-to-open-a-local-disk-file-with-javascript
@@ -1312,7 +1409,7 @@ function parseTransform(transform) {
 <p>We now have a simple mechanism for saving and loading a diagram.&nbsp; When 
 new shapes are added, only the <code>elementNameShapeMap</code> needs to be updated.</p>
 
-<h2>Lines and Anchor Points</h2>
+<h2><a name="LinesandAnchorPoints37">Lines and Anchor Points</a></h2>
 <p>The last thing I want to create for this article is the ability to draw 
 simple lines that can connect shapes.&nbsp; Easier said than done, as this means 
 we will need some additional diagram state information so that we know what 
@@ -1320,7 +1417,7 @@ lines are attached to what shapes so that when the shape moves, the line is
 updated as well.&nbsp; I'm not even going to deal with
 <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/Arrow_functions">
 arrows</a> yet!</p>
-<h3>The Complexities of Selecting A Line</h3>
+<h3><a name="TheComplexitiesofSelectingALine38">The Complexities of Selecting A Line</a></h3>
 <p>After creating the <code>Line</code> and <code>ToolboxLine</code> classes following the same template as the other 
 shape controller classes, adding a line element to the toolbox 
 group and wiring up the shape controller:</p>
@@ -1405,7 +1502,7 @@ want these child elements to be mapped to the shape controllers -- only the oute
 <p><img border="0" src="line4.png" width="175" height="141"></p>
 <p>We can now click &amp; drop and drag &amp; drop a line onto the surface and then drag 
 the line around.</p>
-<h3>Point Class and Shape Rectangle</h3>
+<h3><a name="PointClassandShapeRectangle39">Point Class and Shape Rectangle</a></h3>
 <p>At this point, I'm going to digress briefly -- it's time to create a Point 
 class and functions that help us get the diagonal corners of a shape.&nbsp; Each 
 shape has nuances.&nbsp; Lines have (x1,y1) and (x2,y2) attributes, rectangles 
@@ -1515,7 +1612,7 @@ translateToSvgCoordinate(p) {
   var offset = pt.matrixTransform(svg.getScreenCTM().inverse());
   p.translate(offset.x, offset.y);
 }</pre>
-<h2>Anchors</h2>
+<h2><a name="Anchors40">Anchors</a></h2>
 <p>Next, we want to be able to change the line length and its orientation.&nbsp; 
 This will be a useful exercise as the behavior is similar to resizing a shape.&nbsp; 
 In WinForm app <a href="https://www.codeproject.com/Articles/1136050/FlowSharp">
@@ -1656,7 +1753,7 @@ of the anchors once the shape is dropped after a drag &amp; drop operation:</p>
 <p>Shapes now have anchors!&nbsp; We also have the visual side-effect of now 
 showing the user what shape is about to be selected if the user wants to drag 
 the shape.</p>
-<h3>Line Length and Orientation</h3>
+<h3><a name="LineLengthandOrientation41">Line Length and Orientation</a></h3>
 <p>Now that we have anchors displaying, we have to get the anchors working.&nbsp; 
 We'll focus on the line shape.&nbsp; Notice in the above picture that the anchor 
 is drawn on top of the line.&nbsp; This helps us select the anchor for dragging 
@@ -1803,7 +1900,7 @@ partialCall(anchorElement, onDrag) {
   })(anchorElement, onDrag);
 }</pre>
 <p><img border="0" src="line5.png" width="196" height="162"></p>
-<h2>Anchor Drag Operations for Other Shapes</h2>
+<h2><a name="AnchorDragOperationsforOtherShapes42">Anchor Drag Operations for Other Shapes</a></h2>
 <p>Circles and other shapes that need to maintain their aspect ratio are 
 annoying because all the anchor points have to move!&nbsp; We have this issue 
 with other shapes as well (such as resizing a rectangle or diamond), as sizing a 
@@ -1854,7 +1951,7 @@ showAnchors(anchors) {
     }
   }
 }</pre>
-<h3>Circles</h3>
+<h3><a name="Circles43">Circles</a></h3>
 <p><img border="0" src="circles1.png" width="230" height="202"></p>
 <p>The circle anchor points are the top, bottom, middle and right:</p>
 <pre>getAnchors() {
@@ -1910,7 +2007,7 @@ changeRadius(amt) {
   var r = +this.svgElement.getAttribute(&quot;r&quot;) + amt;
   this.svgElement.setAttribute(&quot;r&quot;, r)
 }</pre>
-<h3>Diamonds</h3>
+<h3><a name="Diamonds44">Diamonds</a></h3>
 <p><img border="0" src="diamonds1.png" width="237" height="214"></p>
 <p>Diamonds are resized symmetrically top-bottom and left-right.&nbsp; This 
 means that only the positions of the top-bottom or left-right anchors need to be 
@@ -1957,7 +2054,7 @@ leftMove(anchors, anchor, evt) {
   this.moveAnchor(anchors[2], evt.movementX, 0);
   this.moveAnchor(anchors[3], -evt.movementX, 0);
 }</pre>
-<h3>Rectangles</h3>
+<h3><a name="Rectangles45">Rectangles</a></h3>
 <p><img border="0" src="rectangles1.png" width="274" height="223"></p>
 <p>&nbsp;</p>
 <p>For simplicity, we'll just use create the four anchors we've been using for 
@@ -2010,7 +2107,7 @@ moved <i>into</i> the shape and then back <i>out</i> to the edge to select the
 anchor.&nbsp; This issue exists with connection points as well.&nbsp; One way to 
 deal with this is that each shape needs to be in a group with a transparent but 
 slightly larger mirror shape.&nbsp; It's on the todo list.</p>
-<h2>Text</h2>
+<h2><a name="Text46">Text</a></h2>
 <p><img border="0" src="text1.png" width="424" height="202"></p>
 <p>One last thing in this article to make this application at least minimally 
 useful - the ability to add some text to the diagram.&nbsp; At the moment, 
@@ -2035,7 +2132,7 @@ over a text element, so our first (and only) CSS:</p>
 <pre>&lt;style&gt;
   text {cursor:default}
 &lt;/style&gt;</pre>
-<h3>Changing Text</h3>
+<h3><a name="ChangingText47">Changing Text</a></h3>
 <p>As I mentioned earlier, I'm less interested in a fancy UI at the moment and 
 more interested in getting the basic behaviors ironed out.&nbsp; So to set the 
 text, one selects the shape and then enters the text in the edit box at the top 
@@ -2070,7 +2167,7 @@ function setText() {
 }</pre>
 <p>It's a bit kludgy, using the global <code>mouseController</code> and so forth, but we can expand upon this later to have 
 all shapes include a text area.</p>
-<h2>Refactoring the Prototype to use an MVC Pattern</h2>
+<h2><a name="RefactoringthePrototypetouseanMVCPattern48">Refactoring the Prototype to use an MVC Pattern</a></h2>
 <p>So far we've avoided having to maintain and persist a separate model.&nbsp; 
 The shape classes <code>Rectangle</code>, <code>Text</code>, <code>Circle</code>, and so forth are more controllers 
 than models, though there is a bit of entanglement evident in the 
@@ -2107,12 +2204,12 @@ considered.</p>
 </ul>
 <p>At the end of the day, I think the preferred approach is the serialize the <i>
 model</i> and reconstruct the SVG object graph <i>from the model</i>.</p>
-<h3>Models, Views, and Controllers</h3>
+<h3><a name="Models,Views,andControllers49">Models, Views, and Controllers</a></h3>
 <p>Here's the basic MVC pattern:</p>
 <p><img border="0" src="mvc1.png" width="524" height="409"></p>
 <p>Each shape implements its own specific model, view, and controller.&nbsp; For 
 example (because it's interesting) here are the MVC classes for the text shape:</p>
-<h3>The Text Model</h3>
+<h3><a name="TheTextModel50">The Text Model</a></h3>
 <pre>class TextModel extends ShapeModel {
   constructor() {
     super();
@@ -2140,7 +2237,7 @@ example (because it's interesting) here are the MVC classes for the text shape:<
     this.propertyChanged(&quot;text&quot;, value);
   }
 }</pre>
-<h3>The Text Controller</h3>
+<h3><a name="TheTextController51">The Text Controller</a></h3>
 <pre>class TextController extends Controller {
   constructor(mouseController, view, model) {
     super(mouseController, view, model);
@@ -2154,7 +2251,7 @@ example (because it's interesting) here are the MVC classes for the text shape:<
     this.mouseController.selectedShapeController = this;
   }
 }</pre>
-<h3>The Text View</h3>
+<h3><a name="TheTextView52">The Text View</a></h3>
 <pre>class TextView extends View{
   constructor(svgElement, model) {
     super(svgElement, model);
@@ -2169,7 +2266,7 @@ example (because it's interesting) here are the MVC classes for the text shape:<
     }
   }
 }</pre>
-<h3>The Base Model</h3>
+<h3><a name="TheBaseModel53">The Base Model</a></h3>
 <p>Every shape requires translation, so the base <code>Model</code> class handles these 
 properties and provides some helper methods:</p>
 <pre>class Model {
@@ -2241,7 +2338,7 @@ properties and provides some helper methods:</p>
   this.transform = this.translation;
   }
 }</pre>
-<h3>The Base View</h3>
+<h3><a name="TheBaseView54">The Base View</a></h3>
 <p>The base <code>View</code> class has a helper function for acquiring the ID of the SVG 
 element and sets the attribute of the associated SVG element:</p>
 <pre>class View {
@@ -2260,7 +2357,7 @@ element and sets the attribute of the associated SVG element:</p>
 }</pre>
 <p>Also notice that the constructor wires up the property changed &quot;event&quot; that 
 the model fires.</p>
-<h3>Creating a Shape Programmatically</h3>
+<h3><a name="CreatingaShapeProgrammatically55">Creating a Shape Programmatically</a></h3>
 <p>Given the new MVC architecture, here's how a shape is created 
 programmatically.&nbsp; Notice that the model must be initialized to match the 
 shape attribute values.&nbsp; Also notice that right now, our model doesn't 
@@ -2280,7 +2377,7 @@ mouseController.attach(rectView, rectController);
 // Most shapes also need an anchor controller
 mouseController.attach(rectView, anchorGroupController);</pre>
 <p>Also notice how the mouse controller now supports multiple shape controllers!</p>
-<h3>Serialization</h3>
+<h3><a name="Serialization56">Serialization</a></h3>
 <p>It's probably worth taking a quick look at how serialization works now:</p>
 <pre>// Returns JSON of serialized models.
 serialize() {
@@ -2311,7 +2408,7 @@ the diagram controller like this:</p>
 value is the collection of attributes, to which we're adding &quot;id&quot;.&nbsp; For 
 example, a blank surface serializes like this:</p>
 <pre>[{&quot;Surface&quot;:{&quot;tx&quot;:0,&quot;ty&quot;:0,&quot;gridCellW&quot;:100,&quot;gridCellH&quot;:100,&quot;cellW&quot;:20,&quot;cellH&quot;:20,&quot;id&quot;:&quot;surface&quot;}}]</pre>
-<h3>Deserializing</h3>
+<h3><a name="Deserializing57">Deserializing</a></h3>
 <p>Restoring the diagram is a bit more complicated because the appropriate 
 model, view, and controller classes must be created as well as the SVG element.&nbsp; 
 Deserializing the actual SVG element attributes is again left to the concrete 
@@ -2366,7 +2463,7 @@ requirements:</p>
   Line: { model: LineModel, view: LineView, controller: LineController, creator: () =&gt; this.createLineElement() },
   Text: { model: TextModel, view: TextView, controller: TextController, creator: () =&gt; this.createTextElement() },
 };</pre>
-<h2>Connecting Lines</h2>
+<h2><a name="ConnectingLines58">Connecting Lines</a></h2>
 <p><img border="0" src="cp1.png" width="182" height="192"></p>
 <p>Now that we have a solid MVC architecture, the additional glue required to 
 manage connected lines (lines endpoints connected to shapes) can be 
@@ -2386,7 +2483,7 @@ accomplished.&nbsp; This involves:</p>
 </ul>
 <p>That's a lot!&nbsp; Hopefully we can be efficient about how we implement all 
 this.</p>
-<h3>Connection Points</h3>
+<h3><a name="ConnectionPoints59">Connection Points</a></h3>
 <p>For the moment, I'm going to keep connection points simple, meaning that for 
 circles and diamonds, there's no 45 / 135 / 225 / 315 degree points (or even 
 others.)&nbsp; For rectangles, there's no intermediate connection points between 
@@ -2427,7 +2524,7 @@ are defined (it will look very similar to anchors):</p>
 <p>The <code>connectionPoints</code> array is a dictionary of just one key-value pair -- this 
 is overkill at the moment, but I suspect that like with anchors, some additional 
 data will at some point be necessary.</p>
-<h3>Detecting Shapes That We're Near</h3>
+<h3><a name="DetectingShapesThatWe'reNear60">Detecting Shapes That We're Near</a></h3>
 <p><img border="0" src="cp2.png" width="178" height="179"></p>
 <p>The logical place to put the code that controls connecting / disconnecting 
 from shapes is the <code>AnchorController</code>, which is created for each anchor when the 
@@ -2511,7 +2608,7 @@ ID, controller, connection points}</code> and existing shapes is just the struct
 concatenated an the common shape ID is mapped into the collection of shapes 
 currently showing connection points:</p>
 <pre>var currentShapesId = changes.newShapes.concat(changes.existingShapes).map(ns =&gt; ns.id);</pre>
-<h3>Showing Connection Points</h3>
+<h3><a name="ShowingConnectionPoints61">Showing Connection Points</a></h3>
 <pre>// &quot;shapes&quot; is a {id, controller, connectionPoints} structure
 createConnectionPoints(shapes) {
   var cpGroup = Helpers.getElement(Constants.SVG_CONNECTION_POINTS_ID);
@@ -2532,7 +2629,7 @@ createConnectionPoints(shapes) {
 lines that form an X to the connection points group.&nbsp; Notice the attribute 
 <code>connectingToShapeId</code> that sets the shape ID for the associated shape.&nbsp; 
 We use this information next to remove connection points for a particular shape.</p>
-<h3>Removing Connection Points</h3>
+<h3><a name="RemovingConnectionPoints62">Removing Connection Points</a></h3>
 <pre>// &quot;shapes&quot; is a {id, controller, connectionPoints} structure
 removeExpiredShapeConnectionPoints(shapes) {
   shapes.map(shape =&gt; {
@@ -2546,7 +2643,7 @@ removeExpiredShapeConnectionPoints(shapes) {
 <p>Removing connection points involves a document query to get all the 
 connection point SVG groups associated with the shape and removing the child 
 node.</p>
-<h3>Connecting to a Shape</h3>
+<h3><a name="ConnectingtoaShape63">Connecting to a Shape</a></h3>
 <p>Connecting to a shape involves finding the connection point (assuming we find 
 only one) that the mouse is closest too and snapping the anchor point of the 
 line to the connection point of the shape.&nbsp; We also tell the diagram model 
@@ -2583,7 +2680,7 @@ used to track the actual connection point on the shape.</p>
 <p>A drawback with this approach is that it only works when dragging the 
 endpoint anchor.&nbsp; If you're dragging the line, we're not detecting whether 
 an endpoint is approaching another shape's connection point.</p>
-<h3>Updating Connections when the Shape is Moved</h3>
+<h3><a name="UpdatingConnectionswhentheShapeisMoved64">Updating Connections when the Shape is Moved</a></h3>
 <p><img border="0" src="cp3.png" width="233" height="160"></p>
 <p>This was a simple addition to the <code>Controller</code> class <code>onDrag</code> function:</p>
 <pre> // Default behavior
@@ -2622,7 +2719,7 @@ but quite sufficient for the current implementation:</p>
 }</pre>
 <p>Moving a line's endpoint is a simple matter of updating the endpoint based on 
 the movement of the shape.</p>
-<h3>Updating Connections when the Shape is Resized</h3>
+<h3><a name="UpdatingConnectionswhentheShapeisResized65">Updating Connections when the Shape is Resized</a></h3>
 <p><img border="0" src="cp4.png" width="240" height="154"></p>
 <p>The <code>Controller</code> class implements the common function to translate line 
 endpoints attached to the shape being resized:</p>
@@ -2657,7 +2754,7 @@ switching of anchor-dx-dy and dx-dy-anchorIndex parameter order is also
 annoying.&nbsp; But it illustrates the point that each anchor &quot;drag&quot; function is 
 responsible for figuring out how connection points (which also happen to be the 
 anchor coordinates and in the same order) are adjusted.</p>
-<h3>Disconnecting Connections</h3>
+<h3><a name="DisconnectingConnections66">Disconnecting Connections</a></h3>
 <p>When the entire line is moved, both endpoints are disconnected from any 
 potential connections:</p>
 <pre>onDrag(dx, dy) {
@@ -2689,7 +2786,7 @@ moveLRCorner(anchors, anchor, dx, dy) {
   this.moveAnchor(anchor, dx, dy);
   diagramModel.disconnect(this.view.id, 1);
 }</pre>
-<h2>Removing A Shape</h2>
+<h2><a name="RemovingAShape67">Removing A Shape</a></h2>
 <p>I almost forgot this!&nbsp; Removing a shape is an involved process of:</p>
 <ul>
 	<li>detaching the shape from the mouse controller</li>
@@ -2722,7 +2819,7 @@ case Constants.KEY_DELETE:
   handled = true;
   break;
 ...</pre>
-<h2>Conclusion</h2>
+<h2><a name="Conclusion68">Conclusion</a></h2>
 <p>There's so much more to do!&nbsp; Undo/redo, zooming, rotations, a &quot;properties&quot; window 
 for setting colors and stroke widths, font and font sizes, arrow endpoints, 
 smart line connectors, grouping, moving shapes up/down the hierarchy, shape 
