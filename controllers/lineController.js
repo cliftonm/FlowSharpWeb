@@ -7,6 +7,13 @@
         return true;
     }
 
+    onDrag(dx, dy) {
+        super.onDrag(dx, dy);
+        // When the entire line is being dragged, we disconnect any connections.
+        diagramModel.disconnect(this.view.id, 0);
+        diagramModel.disconnect(this.view.id, 1);
+    }
+
     // Move the specified endpoint (by idx) to the point p.
     connect(idx, p) {
         switch (idx) {
@@ -66,6 +73,7 @@
         this.model.x1 = this.model.x1 + dx;
         this.model.y1 = this.model.y1 + dy;
         this.moveAnchor(anchor, dx, dy);
+        diagramModel.disconnect(this.view.id, 0);
     }
 
     // Move the (x2, y2) coordinate.
@@ -73,5 +81,6 @@
         this.model.x2 = this.model.x2 + dx;
         this.model.y2 = this.model.y2 + dy;
         this.moveAnchor(anchor, dx, dy);
+        diagramModel.disconnect(this.view.id, 1);
     }
 }

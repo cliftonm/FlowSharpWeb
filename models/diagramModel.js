@@ -21,6 +21,7 @@
 
     clear() {
         this.models = [];
+        this.connections = [];
     }
 
     addModel(model, id) {
@@ -29,6 +30,11 @@
 
     connect(shapeId, lineId, shapeCPIdx, lineAnchorIdx) {
         this.connections.push({ shapeId: shapeId, lineId: lineId, shapeCPIdx: shapeCPIdx, lineAnchorIdx: lineAnchorIdx });
+    }
+
+    // Disconnect any connections associated with the line and anchor index.
+    disconnect(lineId, lineAnchorIdx) {
+        this.connections = this.connections.filter(c => !(c.lineId == lineId && c.lineAnchorIdx == lineAnchorIdx));
     }
 
     createElement(elName) {
