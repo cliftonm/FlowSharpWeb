@@ -59,6 +59,8 @@
         this.changeHeight(ulCorner, lrCorner, -dy);
         this.moveAnchor(anchors[0], 0, dy);          // top
         this.moveAnchor(anchors[1], 0, -dy);         // bottom
+        this.adjustConnectorsAttachedToConnectionPoint(0, dy, 0);
+        this.adjustConnectorsAttachedToConnectionPoint(0, -dy, 1);
     }
 
     bottomMove(anchors, anchor, dx, dy) {
@@ -67,6 +69,8 @@
         this.changeHeight(ulCorner, lrCorner, dy);
         this.moveAnchor(anchors[0], 0, -dy);
         this.moveAnchor(anchors[1], 0, dy);
+        this.adjustConnectorsAttachedToConnectionPoint(0, -dy, 0);
+        this.adjustConnectorsAttachedToConnectionPoint(0, dy, 1);
     }
 
     leftMove(anchors, anchor, dx, dy) {
@@ -75,6 +79,8 @@
         this.changeWidth(ulCorner, lrCorner, -dx);
         this.moveAnchor(anchors[2], dx, 0);
         this.moveAnchor(anchors[3], -dx, 0);
+        this.adjustConnectorsAttachedToConnectionPoint(dx, 0, 2);
+        this.adjustConnectorsAttachedToConnectionPoint(-dx, 0, 3);
     }
 
     rightMove(anchors, anchor, dx, dy) {
@@ -83,6 +89,8 @@
         this.changeWidth(ulCorner, lrCorner, dx);
         this.moveAnchor(anchors[2], -dx, 0);
         this.moveAnchor(anchors[3], dx, 0);
+        this.adjustConnectorsAttachedToConnectionPoint(-dx, 0, 2);
+        this.adjustConnectorsAttachedToConnectionPoint(dx, 0, 3);
     }
 
     changeWidth(ulCorner, lrCorner, dx) {

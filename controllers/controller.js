@@ -94,10 +94,21 @@
         this.adjustConnections(dx, dy);
     }
 
+    // Adjust all connectors connecting to this shape.
     adjustConnections(dx, dy) {
         var connections = diagramModel.connections.filter(c => c.shapeId == this.view.id);
         connections.map(c => {
-            // Sort of nasty assumption here that the first controller is the line controller
+            // TODO: Sort of nasty assumption here that the first controller is the line controller
+            var lineController = this.mouseController.getControllersById(c.lineId)[0];
+            lineController.translateEndpoint(c.lineAnchorIdx, dx, dy);
+        });
+    }
+
+    // Adjust the connectors connecting to this shape's connection point.
+    adjustConnectorsAttachedToConnectionPoint(dx, dy, cpIdx) {
+        var connections = diagramModel.connections.filter(c => c.shapeId == this.view.id && c.shapeCPIdx == cpIdx);
+        connections.map(c => {
+            // TODO: Sort of nasty assumption here that the first controller is the line controller
             var lineController = this.mouseController.getControllersById(c.lineId)[0];
             lineController.translateEndpoint(c.lineAnchorIdx, dx, dy);
         });

@@ -68,6 +68,9 @@
         this.moveAnchor(anchors[0], 0, dy);
         this.adjustAnchorY(anchors[2], dy / 2);
         this.adjustAnchorY(anchors[3], dy / 2);
+        this.adjustConnectorsAttachedToConnectionPoint(0, dy, 0);
+        this.adjustConnectorsAttachedToConnectionPoint(0, dy / 2, 2);
+        this.adjustConnectorsAttachedToConnectionPoint(0, dy / 2, 3);
     }
 
     bottomMove(anchors, anchor, dx, dy) {
@@ -77,6 +80,9 @@
         this.moveAnchor(anchors[1], 0, dy);
         this.adjustAnchorY(anchors[2], dy / 2);
         this.adjustAnchorY(anchors[3], dy / 2);
+        this.adjustConnectorsAttachedToConnectionPoint(0, dy, 1);
+        this.adjustConnectorsAttachedToConnectionPoint(0, dy / 2, 2);
+        this.adjustConnectorsAttachedToConnectionPoint(0, dy / 2, 3);
     }
 
     leftMove(anchors, anchor, dx, dy) {
@@ -88,6 +94,9 @@
         this.moveAnchor(anchors[2], dx, 0);
         this.adjustAnchorX(anchors[0], dx / 2);
         this.adjustAnchorX(anchors[1], dx / 2);
+        this.adjustConnectorsAttachedToConnectionPoint(dx, 0, 2);
+        this.adjustConnectorsAttachedToConnectionPoint(dx / 2, 0, 0);
+        this.adjustConnectorsAttachedToConnectionPoint(dx / 2, 0, 1);
     }
 
     rightMove(anchors, anchor, dx, dy) {
@@ -97,5 +106,8 @@
         this.moveAnchor(anchors[3], dx, 0);
         this.adjustAnchorX(anchors[0], dx / 2);
         this.adjustAnchorX(anchors[1], dx / 2);
+        this.adjustConnectorsAttachedToConnectionPoint(dx, 0, 3);
+        this.adjustConnectorsAttachedToConnectionPoint(dx / 2, 0, 0);
+        this.adjustConnectorsAttachedToConnectionPoint(dx / 2, 0, 1);
     }
 }
