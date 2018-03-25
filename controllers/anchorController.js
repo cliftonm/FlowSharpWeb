@@ -73,26 +73,28 @@
         var existingShapes = [];
         var p = new Point(x, y);
         p = Helpers.translateToScreenCoordinate(p);
-        var nearbyShapeEls = Helpers.getNearbyShapes(p).filter(s => s.outerHTML.split(" ")[0].substring(1) != "line");
+        var nearbyShapeEls = Helpers.getNearbyShapes(p); // .filter(s => s.outerHTML.split(" ")[0].substring(1) != "line");
         // logging:
         // nearbyShapesEls.map(s => console.log(s.outerHTML.split(" ")[0].substring(1)));
 
         nearbyShapeEls.map(el => {
             var controllers = this.mouseController.getControllersByElement(el);
 
-            controllers.map(ctrl => {
-                if (ctrl.hasConnectionPoints) {
-                    var shapeId = ctrl.view.id;
+            if (controllers) {
+                controllers.map(ctrl => {
+                    if (ctrl.hasConnectionPoints) {
+                        var shapeId = ctrl.view.id;
 
-                    // If it already exists in the list, don't add it again.
-                    if (!this.shapeConnectionPoints.any(cp => cp.id == shapeId)) {
-                        var connectionPoints = ctrl.getConnectionPoints();
-                        newShapes.push({ id: shapeId, controller: ctrl, connectionPoints: connectionPoints });
-                    } else {
-                        existingShapes.push({ id: shapeId });
+                        // If it already exists in the list, don't add it again.
+                        if (!this.shapeConnectionPoints.any(cp => cp.id == shapeId)) {
+                            var connectionPoints = ctrl.getConnectionPoints();
+                            newShapes.push({ id: shapeId, controller: ctrl, connectionPoints: connectionPoints });
+                        } else {
+                            existingShapes.push({ id: shapeId });
+                        }
                     }
-                }
-            });
+                });
+            }
         });
 
         return { newShapes : newShapes, existingShapes: existingShapes };

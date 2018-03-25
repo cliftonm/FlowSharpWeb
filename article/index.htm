@@ -2362,6 +2362,7 @@ requirements:</p>
   Text: { model: TextModel, view: TextView, controller: TextController, creator: () =&gt; this.createTextElement() },
 };</pre>
 <h2>Connecting Lines</h2>
+<p><img border="0" src="cp1.png" width="182" height="192"></p>
 <p>Now that we have a solid MVC architecture, the additional glue required to 
 manage connected lines (lines endpoints connected to shapes) can be 
 accomplished.&nbsp; This involves:</p>
@@ -2396,25 +2397,331 @@ there is something concrete to use as a reference between the line endpoint and
 the shape connection point rather than just an index into an array.</p>
 <p>As with anchors, we have a function that returns the connection points 
 available to the shape.&nbsp; Custom connection points are currently not 
-supported.</p>
-<p>&nbsp;</p>
+supported.&nbsp; I also compromise on the implementation in that instead of 
+giving a connection point an actual ID, I'm &quot;remembering&quot; connection points by 
+their index in the list of connection points.&nbsp; This is not idea for the 
+future where the user should be able to add/remove connection points on the 
+shape.&nbsp; That said, here's how the connection points for the rectangle shape 
+are defined (it will look very similar to anchors):</p>
+<pre>getConnectionPoints() {
+  var corners = this.getCorners();
+  var middleTop = new Point((corners[0].x + corners[1].x) / 2, corners[0].y);
+  var middleBottom = new Point((corners[0].x + corners[1].x) / 2, corners[1].y);
+  var middleLeft = new Point(corners[0].x, (corners[0].y + corners[1].y) / 2);
+  var middleRight = new Point(corners[1].x, (corners[0].y + corners[1].y) / 2);
+
+  var connectionPoints = [
+    { connectionPoint: middleTop },
+    { connectionPoint: middleBottom },
+    { connectionPoint: middleLeft },
+    { connectionPoint: middleRight }
+  ];
+
+  return connectionPoints;
+}</pre>
+<p>The <code>connectionPoints</code> array is a dictionary of just one key-value pair -- this 
+is overkill at the moment, but I suspect that like with anchors, some additional 
+data will at some point be necessary.</p>
+<h3>Detecting Shapes That We're Near</h3>
+<p><img border="0" src="cp2.png" width="178" height="179"></p>
+<p>The logical place to put the code that controls connecting / disconnecting 
+from shapes is the <code>AnchorController</code>, which is created for each anchor when the 
+mouse hovers over a shape.&nbsp; Also, only certain shapes (like lines) can 
+connect to other shapes.&nbsp; So in the <code>AnchorController</code>, the <code>onDrag</code> function 
+gets to also handle showing connection points of nearyby shapes:</p>
+<pre>onDrag(dx, dy) {
+  // Call into the shape controller to handle
+  // the specific anchor drag.
+  this.fncDragAnchor(dx, dy);
+  this.showAnyConnectionPoints();
+}
+</pre>
+<p>Where the function <code>showAnyConnectionPoints</code> manages both the list of shapes currently displaying connection 
+points as well as calling functions to show or remove the connection points of 
+nearby shapes:</p>
+<pre>showAnyConnectionPoints() {
+  if (this.shapeController.canConnectToShapes) {
+    var changes = this.getNewNearbyShapes(this.mouseController.x, this.mouseController.y);
+    this.createConnectionPoints(changes.newShapes);
+
+    // Other interesting approaches:
+    // https://stackoverflow.com/questions/1885557/simplest-code-for-array-intersection-in-javascript
+    // [...new Set(a)].filter(x =&gt; new Set(b).has(x));
+    var currentShapesId = changes.newShapes.concat(changes.existingShapes).map(ns =&gt; ns.id);
+
+    var noLongerNearShapes = this.shapeConnectionPoints.filter(s =&gt; currentShapesId.indexOf(s.id) &lt; 0);
+    this.removeExpiredShapeConnectionPoints(noLongerNearShapes);
+
+    // Remove any shapes from the shapeConnectionPoints that do not exist anymore.
+    var existingShapesId = changes.existingShapes.map(ns =&gt; ns.id);
+    this.shapeConnectionPoints = this.shapeConnectionPoints.filter(s =&gt; existingShapesId.indexOf(s.id) &gt;= 0);
+
+    // Add in the new shapes.
+    this.shapeConnectionPoints = this.shapeConnectionPoints.concat(changes.newShapes);
+
+    console.log(&quot;scp: &quot; + this.shapeConnectionPoints.length + &quot;, new: &quot; + changes.newShapes.length + &quot;, existing: &quot; + existingShapesId.length);
+  }
+}
+</pre>
+<p>This is really just a bunch of map and filter calls to add new shapes to the 
+current shape connection points and remove old shapes that no longer should be 
+showing connection points.</p>
+<p>With <code>getNewNearbyShapes</code>, it's useful to return both new shapes to which we're near 
+and any existing shapes to which we're still near:</p>
+<pre>getNewNearbyShapes(x, y) {
+  var newShapes = [];
+  var existingShapes = [];
+  var p = new Point(x, y);
+  p = Helpers.translateToScreenCoordinate(p);
+  var nearbyShapeEls = Helpers.getNearbyShapes(p);
+
+  // logging:
+  // nearbyShapesEls.map(s =&gt; console.log(s.outerHTML.split(&quot; &quot;)[0].substring(1)));
+
+  nearbyShapeEls.map(el =&gt; {
+    var controllers = this.mouseController.getControllersByElement(el);
+</pre>
+<pre>    if (controllers) {
+      controllers.map(ctrl =&gt; {
+        if (ctrl.hasConnectionPoints) {
+          var shapeId = ctrl.view.id;
+
+          // If it already exists in the list, don't add it again.
+          if (!this.shapeConnectionPoints.any(cp =&gt; cp.id == shapeId)) {
+            var connectionPoints = ctrl.getConnectionPoints();
+            newShapes.push({ id: shapeId, controller: ctrl, connectionPoints: connectionPoints });
+          } else {
+            existingShapes.push({ id: shapeId });
+          }
+        }
+      });
+    }
+  });
+
+  return { newShapes : newShapes, existingShapes: existingShapes };
+}</pre>
+<p>The salient part of this is that new shapes consist of the structure <code>{shape 
+ID, controller, connection points}</code> and existing shapes is just the structure 
+<code>{shape ID}</code>.&nbsp; In the previous function, these two lists are 
+concatenated an the common shape ID is mapped into the collection of shapes 
+currently showing connection points:</p>
+<pre>var currentShapesId = changes.newShapes.concat(changes.existingShapes).map(ns =&gt; ns.id);</pre>
+<h3>Showing Connection Points</h3>
+<pre>// &quot;shapes&quot; is a {id, controller, connectionPoints} structure
+createConnectionPoints(shapes) {
+  var cpGroup = Helpers.getElement(Constants.SVG_CONNECTION_POINTS_ID);
+
+  shapes.map(shape =&gt; {
+    shape.connectionPoints.map(cpStruct =&gt; {
+      var cp = cpStruct.connectionPoint;
+      var el = Helpers.createElement(&quot;g&quot;, { connectingToShapeId: shape.id });
+      el.appendChild(Helpers.createElement(&quot;line&quot;, 
+        { x1: cp.x - 5, y1: cp.y - 5, x2: cp.x + 5, y2: cp.y + 5, fill: &quot;#FFFFFF&quot;, stroke: &quot;#000080&quot;, &quot;stroke-width&quot;: 1 }));
+      el.appendChild(Helpers.createElement(&quot;line&quot;, 
+        { x1: cp.x + 5, y1: cp.y - 5, x2: cp.x - 5, y2: cp.y + 5, fill: &quot;#FFFFFF&quot;, stroke: &quot;#000080&quot;, &quot;stroke-width&quot;: 1 }));
+      cpGroup.appendChild(el);
+    });
+  });
+}</pre>
+<p>Any shapes for which we want to show connection points adds a group with two 
+lines that form an X to the connection points group.&nbsp; Notice the attribute 
+<code>connectingToShapeId</code> that sets the shape ID for the associated shape.&nbsp; 
+We use this information next to remove connection points for a particular shape.</p>
+<h3>Removing Connection Points</h3>
+<pre>// &quot;shapes&quot; is a {id, controller, connectionPoints} structure
+removeExpiredShapeConnectionPoints(shapes) {
+  shapes.map(shape =&gt; {
+    // <a href="https://stackoverflow.com/a/16775485/2276361">https://stackoverflow.com/a/16775485/2276361</a>
+    var nodes = document.querySelectorAll('[connectingtoshapeid=&quot;' + shape.id + '&quot;]');
+    // or: Array.from(nodes); <a href="https://stackoverflow.com/a/36249012/2276361">https://stackoverflow.com/a/36249012/2276361</a>
+    // <a href="https://stackoverflow.com/a/33822526/2276361">https://stackoverflow.com/a/33822526/2276361</a>
+    [...nodes].map(node =&gt; { node.parentNode.removeChild(node) });
+  });
+}</pre>
+<p>Removing connection points involves a document query to get all the 
+connection point SVG groups associated with the shape and removing the child 
+node.</p>
+<h3>Connecting to a Shape</h3>
+<p>Connecting to a shape involves finding the connection point (assuming we find 
+only one) that the mouse is closest too and snapping the anchor point of the 
+line to the connection point of the shape.&nbsp; We also tell the diagram model 
+about the new connection.&nbsp; Here we see how the connection point index is 
+used to track the actual connection point on the shape.</p>
+<pre>connectIfCloseToShapeConnectionPoint() {
+  var p = new Point(this.mouseController.x, this.mouseController.y);
+  p = Helpers.translateToScreenCoordinate(p);
+
+  var nearbyConnectionPoints = [];
+
+  this.shapeConnectionPoints.filter(scp =&gt; {
+    for (var i = 0; i &lt; scp.connectionPoints.length; i++) {
+      var cpStruct = scp.connectionPoints[i];
+      if (Helpers.isNear(cpStruct.connectionPoint, p, Constants.MAX_CP_NEAR)) {
+        nearbyConnectionPoints.push({ shapeController: scp.controller, shapeCPIdx : i, connectionPoint : cpStruct.connectionPoint});
+      }
+    }
+  });
+
+  if (nearbyConnectionPoints.length == 1) {
+    var ncp = nearbyConnectionPoints[0];
+
+    // The location of the connection point of the shape to which we're connecting.
+    var p = ncp.connectionPoint;
+    // Physical location of endpoint is without line and surface translations.
+    p = p.translate(-this.shapeController.model.tx, -this.shapeController.model.ty);
+    p = p.translate(-surfaceModel.tx, - surfaceModel.ty);
+    // Move the endpoint of the shape from which we're connecting (the line) to this point.
+    this.shapeController.connect(this.anchorIdx, p);
+    diagramModel.connect(ncp.shapeController.view.id, this.shapeController.view.id, ncp.shapeCPIdx, this.anchorIdx);
+  }
+}</pre>
 <p>A drawback with this approach is that it only works when dragging the 
 endpoint anchor.&nbsp; If you're dragging the line, we're not detecting whether 
 an endpoint is approaching another shape's connection point.</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
+<h3>Updating Connections when the Shape is Moved</h3>
+<p><img border="0" src="cp3.png" width="233" height="160"></p>
+<p>This was a simple addition to the <code>Controller</code> class <code>onDrag</code> function:</p>
+<pre> // Default behavior
+onDrag(dx, dy)
+{
+  this.model.translate(dx, dy);
+  this.adjustConnections(dx, dy);
+}
+
+// Adjust all connectors connecting to this shape.
+adjustConnections(dx, dy) {
+  var connections = diagramModel.connections.filter(c =&gt; c.shapeId == this.view.id);
+  connections.map(c =&gt; {
+    // TODO: Sort of nasty assumption here that the first controller is the line controller
+    var lineController = this.mouseController.getControllersById(c.lineId)[0];
+    lineController.translateEndpoint(c.lineAnchorIdx, dx, dy);
+  });
+}</pre>
+<p>Notice how translateEndpoint relies on the anchor index -- again, not ideal 
+but quite sufficient for the current implementation:</p>
+<pre>translateEndpoint(idx, dx, dy) {
+  switch (idx) {
+    case 0:
+      var p = new Point(this.model.x1, this.model.y1);
+      p = p.translate(dx, dy);
+      this.model.x1 = p.x;
+      this.model.y1 = p.y;
+      break;
+    case 1:
+      var p = new Point(this.model.x2, this.model.y2);
+      p = p.translate(dx, dy);
+      this.model.x2 = p.x;
+      this.model.y2 = p.y;
+      break;
+  }
+}</pre>
+<p>Moving a line's endpoint is a simple matter of updating the endpoint based on 
+the movement of the shape.</p>
+<h3>Updating Connections when the Shape is Resized</h3>
+<p><img border="0" src="cp4.png" width="240" height="154"></p>
+<p>The <code>Controller</code> class implements the common function to translate line 
+endpoints attached to the shape being resized:</p>
+<pre>// Adjust the connectors connecting to this shape's connection point.
+adjustConnectorsAttachedToConnectionPoint(dx, dy, cpIdx) {
+  var connections = diagramModel.connections.filter(c =&gt; c.shapeId == this.view.id &amp;&amp; c.shapeCPIdx == cpIdx);
+  connections.map(c =&gt; {
+    // TODO: Sort of nasty assumption here that the first controller is the line controller
+    var lineController = this.mouseController.getControllersById(c.lineId)[0];
+    lineController.translateEndpoint(c.lineAnchorIdx, dx, dy);
+  });
+}</pre>
+<p>When the anchor point (which at the moment always an associated connection 
+point) is moved, the shape controller itself is responsible for calling the 
+method to adjust any connections to that anchor/connection point.&nbsp; Here's 
+an example of what happens when the top anchor of the rectangle shape is moved:</p>
+<pre>topMove(anchors, anchor, dx, dy) {
+  // Moving the top affects &quot;y&quot; and &quot;height&quot;
+  var y = this.model.y + dy;
+  var height = this.model.height - dy;
+  this.model.y = y;
+  this.model.height = height;
+  this.moveAnchor(anchors[0], 0, dy);
+  this.adjustAnchorY(anchors[2], dy / 2);
+  this.adjustAnchorY(anchors[3], dy / 2);
+  this.adjustConnectorsAttachedToConnectionPoint(0, dy, 0);
+  this.adjustConnectorsAttachedToConnectionPoint(0, dy / 2, 2);
+  this.adjustConnectorsAttachedToConnectionPoint(0, dy / 2, 3);
+}</pre>
+<p>Certainly the code can be improved, the use of indices is annoying, and the 
+switching of anchor-dx-dy and dx-dy-anchorIndex parameter order is also 
+annoying.&nbsp; But it illustrates the point that each anchor &quot;drag&quot; function is 
+responsible for figuring out how connection points (which also happen to be the 
+anchor coordinates and in the same order) are adjusted.</p>
+<h3>Disconnecting Connections</h3>
+<p>When the entire line is moved, both endpoints are disconnected from any 
+potential connections:</p>
+<pre>onDrag(dx, dy) {
+  super.onDrag(dx, dy);
+  // When the entire line is being dragged, we disconnect any connections.
+  diagramModel.disconnect(this.view.id, 0);
+  diagramModel.disconnect(this.view.id, 1);
+}</pre>
+<p>This is a simple filter operation in the diagram controller:</p>
+<pre>// Disconnect any connections associated with the line and anchor index.
+disconnect(lineId, lineAnchorIdx) {
+  this.connections = this.connections.filter(c =&gt; !(c.lineId == lineId &amp;&amp; c.lineAnchorIdx == lineAnchorIdx));
+}</pre>
+<p>Similarly, whenever one of the endpoints of the line is moved, it is 
+disconnected from any shape to which it might be connected.&nbsp; Note the use 
+of indexing the connection point (aka the anchor index):</p>
+<pre>// Move the (x1, y1) coordinate.
+moveULCorner(anchors, anchor, dx, dy) {
+  this.model.x1 = this.model.x1 + dx;
+  this.model.y1 = this.model.y1 + dy;
+  this.moveAnchor(anchor, dx, dy);
+  diagramModel.disconnect(this.view.id, 0);
+}
+
+// Move the (x2, y2) coordinate.
+moveLRCorner(anchors, anchor, dx, dy) {
+  this.model.x2 = this.model.x2 + dx;
+  this.model.y2 = this.model.y2 + dy;
+  this.moveAnchor(anchor, dx, dy);
+  diagramModel.disconnect(this.view.id, 1);
+}</pre>
 <h2>Removing A Shape</h2>
-<p>I almost forgot this!</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
-<p>&nbsp;</p>
+<p>I almost forgot this!&nbsp; Removing a shape is an involved process of:</p>
+<ul>
+	<li>detaching the shape from the mouse controller</li>
+	<li>unwiring events</li>
+	<li>removing anchors (as the shape is currently being hovered over)</li>
+	<li>removing it from the model</li>
+	<li>disconnecting any connections to the shape.</li>
+	<li>removing it from the &quot;objects&quot; collection so it's gone from the diagram</li>
+</ul>
+<p>Fortunately, these are mostly one-line calls into various controllers and 
+models:</p>
+<pre>...
+case Constants.KEY_DELETE:
+  // Mouse is &quot;leaving&quot; this control, this removes any anchors.
+  this.currentHoverControllers.map(c =&gt; c.onMouseLeave());
+
+  // Remove shape from diagram model, and all connections of this shape.
+  diagramModel.removeShape(this.hoverShapeId);
+
+  // Remove shape from mouse controller and detach events.
+  this.destroyShapeById(this.hoverShapeId);
+
+  // Remove from &quot;objects&quot; collection.
+  var el = Helpers.getElement(this.hoverShapeId);
+  el.parentNode.removeChild(el);
+
+  // Cleanup.
+  this.currentHoverControllers = [];
+  this.hoverShapeId = null;
+  handled = true;
+  break;
+...</pre>
 <h2>Conclusion</h2>
 <p>There's so much more to do!&nbsp; Undo/redo, zooming, rotations, a &quot;properties&quot; window 
 for setting colors and stroke widths, font and font sizes, arrow endpoints, 
-smart line connectors, grouping, moving shapes up/down the hierarchy, and so 
+smart line connectors, grouping, moving shapes up/down the hierarchy, shape 
+templates, and so 
 forth.&nbsp; To a large degree, these are all bells and whistles (with some 
 complexity, particularly with regards to rotations and connection points) which 
 I'll continue to add.&nbsp; What this article has presented is a good baseline 
@@ -2426,6 +2733,11 @@ user causes the shape being moved to lag and the underlying SVG element to start
 receiving mouse movement events.&nbsp; Mouse up events exactly on the connection 
 point results in the connection point receiving the event, which is why I moved 
 connection points to be below anchors.</p>
+
+<p>One thing I noticed was that once I implemented a true MVC pattern, a lot of 
+the complexity of managing the mouse state went away.&nbsp; In fact, with the 
+MVC pattern in place, adding the line connections and updating the persistence 
+to include connections was a breeze.</p>
 
 </body>
 
