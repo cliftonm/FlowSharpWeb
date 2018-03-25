@@ -3,7 +3,7 @@
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="utf-8" />
-    <title>SVG</title>
+    <title>FlowSharpWeb</title>
     <!--
     <script type="text/javascript" src="fileSaver.js"></script>
     <script type="text/javascript" src="xmlToJson.js"></script>
@@ -199,9 +199,15 @@
     document.getElementById(Constants.FILE_INPUT).addEventListener('change', readSingleFile, false);
     document.onkeydown = onKeyDown;
 
+    // https://stackoverflow.com/a/1648854/2276361
+    // Read that regarding the difference between handling the event as a function
+    // vs in the HTML attribute definition.  Sigh.
     function onKeyDown(evt) {
-        mouseController.onKeyDown(evt);
-        return false;   
+        var handled = mouseController.onKeyDown(evt);
+
+        if (handled) {
+            evt.preventDefault();
+        }
     }
 
     // https://w3c.github.io/FileAPI/
