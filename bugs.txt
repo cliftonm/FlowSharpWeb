@@ -2,6 +2,11 @@ Sometimes an anchor (or two) disappears in when sizing the rectangle.
 
 -width & -height results in no rectangle appearing.
 
+keyboard l/r/u/d movement sort of works, until shape leaves mouse area and connection points appear in the wrong place after moving a line, so
+there's all sorts of weird side effects going on.
+
+
+
 ==========================
 
 scrolling surface quickly which causes the mouse to go over an element fires the surface leave event which stops scrolling.

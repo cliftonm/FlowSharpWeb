@@ -37,6 +37,12 @@
         this.connections = this.connections.filter(c => !(c.lineId == lineId && c.lineAnchorIdx == lineAnchorIdx));
     }
 
+    // remove connections of this shape as both the "connected to" shape (shapeId) and the "connecting" shape (lineId).
+    removeShape(shapeId) {
+        this.connections = this.connections.filter(c => !(c.shapeId == shapeId || c.lineId == shapeId));
+        this.models = this.models.filter(m => m.id != shapeId);
+    }
+
     createElement(elName) {
         var el = Helpers.createElement(elName, { fill: "#FFFFFF", stroke: "black", "stroke-width": 1 });
 

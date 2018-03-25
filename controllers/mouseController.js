@@ -10,7 +10,8 @@ class MouseController {
         this.leavingId = -1;
         this.draggingToolboxShape = false;
         this.selectedControllers = null;
-        this.currentShapeId = null;
+        this.selectedShapeId = null;
+        this.hoverShapeId = null;
 
         // We really can't use movementX and movementY of the event because
         // when the user moves the mouse quickly, the move events switch from
@@ -53,6 +54,11 @@ class MouseController {
         delete this.controllers[id];
     }
 
+    destroyShapeById(id) {
+        this.controllers[id].map(controller => controller.destroy());
+        delete this.controllers[id];
+    }
+
     // Detaches all controllers and unwires events associated with the controller.
     destroyAll() {
         Object.entries(this.controllers).map(([key, val]) => val.map(v => v.destroy()));
@@ -83,15 +89,57 @@ class MouseController {
         return isClick;
     }
 
+    onKeyDown(evt) {
+        var isOverShape = this.hoverShapeId != null;
+        var handled = false;
+
+        if (isOverShape) {
+            switch (evt.keyCode) {
+                case Constants.KEY_RIGHT:
+                    this.currentHoverControllers.map(c => c.onDrag(1, 0));
+                    handled = true;
+                    break;
+                case Constants.KEY_UP:
+                    this.currentHoverControllers.map(c => c.onDrag(0, -1));
+                    handled = true;
+                    break;
+                case Constants.KEY_LEFT:
+                    this.currentHoverControllers.map(c => c.onDrag(-1, 0));
+                    handled = true;
+                    break;
+                case Constants.KEY_DOWN:
+                    this.currentHoverControllers.map(c => c.onDrag(0, 1));
+                    handled = true;
+                    break;
+                case Constants.KEY_DELETE:
+                    // Mouse is "leaving" this control, this removes any anchors.
+                    this.currentHoverControllers.map(c => c.onMouseLeave());
+                    // Remove shape from diagram model, and all connections of this shape.
+                    diagramModel.removeShape(this.hoverShapeId);
+                    // Remove shape from mouse controller and detach events.
+                    this.destroyShapeById(this.hoverShapeId);
+                    // Remove from "objects" collection.
+                    var el = Helpers.getElement(this.hoverShapeId);
+                    el.parentNode.removeChild(el);
+                    // Cleanup.
+                    this.currentHoverControllers = [];
+                    this.hoverShapeId = null;
+                    handled = true;
+                    break;
+            }
+        }
+
+        return isOverShape && handled;
+    }
+
     // Get the controller associated with the event and remember where the user clicked.
     onMouseDown(evt) {
         if (evt.button == LEFT_MOUSE_BUTTON) {
             evt.preventDefault();
             var id = evt.currentTarget.getAttribute("id");
-            this.currentShapeId = id;
+            this.selectedShapeId = id;
             this.activeControllers = this.controllers[id];
             this.selectedControllers = this.controllers[id];
-            this.selectedShape = id;
             this.mouseDown = true;
             this.startDownX = evt.clientX;
             this.startDownY = evt.clientY;
@@ -116,6 +164,7 @@ class MouseController {
     onMouseUp(evt) {
         evt.preventDefault();
         if (evt.button == LEFT_MOUSE_BUTTON && this.activeControllers != null) {
+            this.selectedShapeId = null;
             this.x = evt.clientX;
             this.y = evt.clientY;
             var isClick = this.isClick;
@@ -138,6 +187,7 @@ class MouseController {
     onMouseEnter(evt) {
         evt.preventDefault();
         var id = evt.currentTarget.getAttribute("id");
+        this.hoverShapeId = id;
 
         if (this.mouseDown) {
             // Doing a drag operation, so ignore shapes we enter and leave so
@@ -151,7 +201,7 @@ class MouseController {
                 // If we're entering an anchor, don't leave anything as we want to preserve the anchors.
                 if (!this.controllers[id][0].isAnchorController) {
                     this.currentHoverControllers.map(c => c.onMouseLeave());
-                    console.log("Entering " + id + " => " + this.controllers[id]);
+                    console.log("Entering " + id + " => " + this.controllers[id].map(ctrl=>ctrl.constructor.name).join(", "));
                     // Tell the new shape that we're entering.
                     this.currentHoverControllers = this.controllers[id];
                     this.currentHoverControllers.map(c => c.onMouseEnter());
@@ -165,6 +215,7 @@ class MouseController {
     onMouseLeave(evt) {
         evt.preventDefault();
         this.leavingId = evt.currentTarget.getAttribute("id");
+        this.hoverShapeId = null;
     }
 
     // Returns the controllers associated with the SVG element.

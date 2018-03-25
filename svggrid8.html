@@ -167,6 +167,11 @@
         DEFAULT_TEXT: "[text]",
         NEARBY_DELTA: 40,
         MAX_CP_NEAR: 6,    // anchor must be +/- this value to a connection point to connect.
+        KEY_RIGHT: 39,
+        KEY_UP: 38,
+        KEY_LEFT: 37,
+        KEY_DOWN: 40,
+        KEY_DELETE: 46,
     };
 
     const START_OF_DIAGRAM_TAG = "<diagram>";
@@ -192,6 +197,12 @@
     var diagramModel = null;
 
     document.getElementById(Constants.FILE_INPUT).addEventListener('change', readSingleFile, false);
+    document.onkeydown = onKeyDown;
+
+    function onKeyDown(evt) {
+        mouseController.onKeyDown(evt);
+        return false;   
+    }
 
     // https://w3c.github.io/FileAPI/
     // https://stackoverflow.com/questions/3582671/how-to-open-a-local-disk-file-with-javascript
