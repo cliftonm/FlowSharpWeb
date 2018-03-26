@@ -11,6 +11,7 @@
         return false;
     }
 
-    // toolbox surface doesn't move around!
-    onDrag(dx, dy) { }
+    onDrag(dx, dy) {
+        toolboxGroupController.onDrag(dx, dy);
+    }
 }

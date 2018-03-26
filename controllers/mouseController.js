@@ -251,7 +251,7 @@ class MouseController {
         // Remove from toolbox group, translate, add to objects group.
         Helpers.getElement(Constants.SVG_TOOLBOX_ID).removeChild(elDropped);
         var id = elDropped.getAttribute("id");
-        this.controllers[id].map(c => c.model.translate(-surfaceModel.tx, -surfaceModel.ty));
+        this.controllers[id].map(c => c.model.translate(-surfaceModel.tx + toolboxGroupController.model.tx, -surfaceModel.ty + toolboxGroupController.model.ty));
         Helpers.getElement(Constants.SVG_OBJECTS_ID).appendChild(elDropped);
 
         // Only show anchors if mouse is actually on the dropped shape.
