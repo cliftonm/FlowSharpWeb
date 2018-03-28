@@ -71,6 +71,7 @@
     <Content Include="models\surfaceModel.js" />
     <Content Include="prototypes.js" />
     <Content Include="svggrid7.html" />
+    <Content Include="views\anchorView.js" />
     <Content Include="views\lineView.js" />
     <Content Include="views\objectsView.js" />
     <Content Include="views\shapeView.js" />

@@ -34,6 +34,7 @@
     <script type="text/javascript" src="models/textModel.js"></script>
 
     <script type="text/javascript" src="views/view.js"></script>
+    <script type="text/javascript" src="views/anchorView.js"></script>
     <script type="text/javascript" src="views/objectsView.js"></script>
     <script type="text/javascript" src="views/shapeView.js"></script>
     <script type="text/javascript" src="views/lineView.js"></script>
@@ -286,7 +287,7 @@
 
         var surfaceView = new SurfaceView(svgSurface, surfaceModel);
         var objectsView = new ObjectsView(svgObjects, objectsModel);
-        var anchorsView = new View(svgAnchors, anchorsModel);
+        var anchorsView = new AnchorView(svgAnchors, anchorsModel);
         var toolboxSurfaceView = new View(toolboxSurface, toolboxSurfaceModel);
 
         var surfaceController = new SurfaceController(mouseController, surfaceView, surfaceModel);

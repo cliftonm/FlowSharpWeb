@@ -13,6 +13,12 @@
     }
 
     onPropertyChange(property, value) {
-        this.svgElement.setAttribute(property, value);
+        // Every shape is grouped, so we want to update the property of the first child in the group.
+        // firstElementChild ignores text and comment nodes.
+        if (this.svgElement.firstElementChild == null) {
+            this.svgElement.setAttribute(property, value);
+        } else {
+            this.svgElement.firstElementChild.setAttribute(property, value);
+        }
     }
 }
