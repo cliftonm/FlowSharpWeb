@@ -4,7 +4,9 @@
 <head>
     <meta charset="utf-8" />
     <title>FlowSharpWeb</title>
-    <!--<script type="text/javascript" src="flowSharpWeb.all.js.min"></script>-->
+    <!-- use https://www.minifier.org/ (https://github.com/matthiasmullie/minify)to minimize, as it is the only minizer that I tested that actually works. -->
+    <script type="text/javascript" src="flowSharpWeb.all.js"></script>
+    <!--
     <script type="text/javascript" src="prototypes.js"></script>
     <script type="text/javascript" src="helpers.js"></script>
     <script type="text/javascript" src="point.js"></script>
@@ -51,72 +53,73 @@
     <script type="text/javascript" src="controllers/toolboxDiamondController.js"></script>
     <script type="text/javascript" src="controllers/toolboxLineController.js"></script>
     <script type="text/javascript" src="controllers/toolboxTextController.js"></script>
+    -->
 </head>
 <body>
     <style>
         text {cursor:default}
     </style>
-    <div>
-        <!-- https://stackoverflow.com/questions/1944267/how-to-change-the-button-text-of-input-type-file -->
-        <!-- creates a hidden file input on routes the button to clicking on that tag -->
-        <button onclick="clearSvg()">Clear</button>
-        <button onclick="saveSvg()">Save</button>
-        <button onclick="document.getElementById('fileInput').click();">Load</button>
-        <input type="file" id="fileInput" style="display:none;"/>
-        &nbsp; Text:
-        <input id="text" type="text" onchange="setText()" />
-    </div>
-    <div>
-        <svg id="svg" width="801" height="481" xmlns="http://www.w3.org/2000/svg">
-            <defs>
-                <pattern id="smallGrid" width="8" height="8" patternUnits="userSpaceOnUse">
-                    <path id="smallGridPath" d="M 8 0 H 0 V 8" fill="none" stroke="gray" stroke-width="0.5" />
-                </pattern>
-                <pattern id="largeGrid" width="80" height="80" patternUnits="userSpaceOnUse">
-                    <rect id="largeGridRect" width="80" height="80" fill="url(#smallGrid)" />
-                    <!-- draw from upper right to upper left, then down to lower left -->
-                    <!-- This creates the appearance of an 80x80 grid when stacked -->
-                    <path id="largeGridPath" d="M 80 0 H 0 V 80" fill="none" stroke="gray" stroke-width="2" />
-                </pattern>
-            </defs>
+        <div>
+            <!-- https://stackoverflow.com/questions/1944267/how-to-change-the-button-text-of-input-type-file -->
+            <!-- creates a hidden file input on routes the button to clicking on that tag -->
+            <button onclick="clearSvg()">Clear</button>
+            <button onclick="saveSvg()">Save</button>
+            <button onclick="document.getElementById('fileInput').click();">Load</button>
+            <input type="file" id="fileInput" style="display:none;" />
+            &nbsp; Text:
+            <input id="text" type="text" onchange="setText()" />
+        </div>
+        <div>
+            <svg id="svg" width="801" height="481" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <pattern id="smallGrid" width="8" height="8" patternUnits="userSpaceOnUse">
+                        <path id="smallGridPath" d="M 8 0 H 0 V 8" fill="none" stroke="gray" stroke-width="0.5" />
+                    </pattern>
+                    <pattern id="largeGrid" width="80" height="80" patternUnits="userSpaceOnUse">
+                        <rect id="largeGridRect" width="80" height="80" fill="url(#smallGrid)" />
+                        <!-- draw from upper right to upper left, then down to lower left -->
+                        <!-- This creates the appearance of an 80x80 grid when stacked -->
+                        <path id="largeGridPath" d="M 80 0 H 0 V 80" fill="none" stroke="gray" stroke-width="2" />
+                    </pattern>
+                </defs>
 
-            <!-- A trick from sprite animations is to extend the scrolling region beyond the viewport
-                and use mod W/H to reset the position to simulate a virtual space. -->
-            <!-- Creating a group is structural only.  One would think that elements could
-                be added to the group and they would be moved as the group is transformed.
-                This is true, but when the mod operator resets the translation to (0, 0), any elements
-                in this group will be reset to it's starting position as well. -->
-            <g id="surface" transform="translate(0, 0)" x="-80" y="-80" width="961" height="641">
-                <rect id="grid" x="-80" y="-80" width="961" height="641" fill="url(#largeGrid)" />
-            </g>
-            <!-- Instead, create a group just for the objects and transform this group without any
-                modulus operation on the (x,y) position. -->
-            <!-- Also, we create an outer group so that on file load, we can remove
-                the "objectGroup" and replace it with what got loaded. -->
-            <g id="objectGroup">
-                <g id="objects" transform="translate(0, 0)"></g>
-            </g>
-            <!-- connection points are under anchor so that if we mouse up exactly 
-                on a connection point line, it is the anchor object, being above, 
-                that receives the mouse up event. -->
-            <g id="connectionPoints"></g>
-            <g id="anchors"></g>
-            <g id="toolbox" x="0" y="0" width="200" height="150">
-                <rect id="toolboxSurface" x="0" y="0" width="200" height="150" fill="#FFFFFF" stroke="black" stroke-width="0.5" />
-                <rect id="toolboxRectangle" x="10" y="10" width="40" height="40" stroke="black" stroke-width="1" fill="#FFFFFF" />
-                <circle id="toolboxCircle" cx="85" cy="29" r="21" stroke="black" stroke-width="1" fill="#FFFFFF" />
-                <path id="toolboxDiamond" d="M 140 10 L 115 30 L 140 50 L 165 30 Z" stroke="black" stroke-width="1" fill="#FFFFFF" />
-                <g id="toolboxLine">
-                    <rect id="lineHiddenSelectionArea" x="10" y="70" width="40" height="40" stroke-opacity="0" fill-opacity="0" />
-                    <!--<line id="lineSelection" x1="10" y1="70" x2="50" y2="110" stroke="#FFA0A0" stroke-width="20" fill="#FFFFFF" stroke-opacity="0" fill-opacity="0" />-->
-                    <!--<rect id="endpoint1" transform="translate(10, 70)" x="-5" y="-5" width="10" height="10" stroke="red" stroke-width="1" fill="#FFFFFF"/>
-                        <rect id="endpoint2" transform="translate(50, 110)" x="-5" y="-5" width="10" height="10" stroke="red" stroke-width="1" fill="#FFFFFF" />-->
-                    <line id="line" x1="10" y1="70" x2="50" y2="110" fill="#FFFFFF" stroke="black" stroke-width="1" />
+                <!-- A trick from sprite animations is to extend the scrolling region beyond the viewport
+                    and use mod W/H to reset the position to simulate a virtual space. -->
+                <!-- Creating a group is structural only.  One would think that elements could
+                    be added to the group and they would be moved as the group is transformed.
+                    This is true, but when the mod operator resets the translation to (0, 0), any elements
+                    in this group will be reset to it's starting position as well. -->
+                <g id="surface" transform="translate(0, 0)" x="-80" y="-80" width="961" height="641">
+                    <rect id="grid" x="-80" y="-80" width="961" height="641" fill="url(#largeGrid)" />
                 </g>
-                <text id="toolboxText" x="73" y="100" font-size="32" font-family="Verdana">A</text>
-            </g>
-        </svg>
-    </div>
+                <!-- Instead, create a group just for the objects and transform this group without any
+                    modulus operation on the (x,y) position. -->
+                <!-- Also, we create an outer group so that on file load, we can remove
+                    the "objectGroup" and replace it with what got loaded. -->
+                <g id="objectGroup">
+                    <g id="objects" transform="translate(0, 0)"></g>
+                </g>
+                <!-- connection points are under anchor so that if we mouse up exactly
+                    on a connection point line, it is the anchor object, being above,
+                    that receives the mouse up event. -->
+                <g id="connectionPoints"></g>
+                <g id="anchors"></g>
+                <g id="toolbox" x="0" y="0" width="200" height="150">
+                    <rect id="toolboxSurface" x="0" y="0" width="200" height="150" fill="#FFFFFF" stroke="black" stroke-width="0.5" />
+                    <rect id="toolboxRectangle" x="10" y="10" width="40" height="40" stroke="black" stroke-width="1" fill="#FFFFFF" />
+                    <circle id="toolboxCircle" cx="85" cy="29" r="21" stroke="black" stroke-width="1" fill="#FFFFFF" />
+                    <path id="toolboxDiamond" d="M 140 10 L 115 30 L 140 50 L 165 30 Z" stroke="black" stroke-width="1" fill="#FFFFFF" />
+                    <g id="toolboxLine">
+                        <rect id="lineHiddenSelectionArea" x="10" y="70" width="40" height="40" stroke-opacity="0" fill-opacity="0" />
+                        <!--<line id="lineSelection" x1="10" y1="70" x2="50" y2="110" stroke="#FFA0A0" stroke-width="20" fill="#FFFFFF" stroke-opacity="0" fill-opacity="0" />-->
+                        <!--<rect id="endpoint1" transform="translate(10, 70)" x="-5" y="-5" width="10" height="10" stroke="red" stroke-width="1" fill="#FFFFFF"/>
+                            <rect id="endpoint2" transform="translate(50, 110)" x="-5" y="-5" width="10" height="10" stroke="red" stroke-width="1" fill="#FFFFFF" />-->
+                        <line id="line" x1="10" y1="70" x2="50" y2="110" fill="#FFFFFF" stroke="black" stroke-width="1" />
+                    </g>
+                    <text id="toolboxText" x="73" y="100" font-size="32" font-family="Verdana">A</text>
+                </g>
+            </svg>
+        </div>
 </body>
 </html>
 <script type="text/javascript">
