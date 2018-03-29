@@ -5,8 +5,7 @@
     <meta charset="utf-8" />
     <title>FlowSharpWeb</title>
     <!-- use https://www.minifier.org/ (https://github.com/matthiasmullie/minify)to minimize, as it is the only minizer that I tested that actually works. -->
-    <script type="text/javascript" src="flowSharpWeb.all.js"></script>
-    <!--
+    <!--<script type="text/javascript" src="flowSharpWeb.all.js"></script>-->
     <script type="text/javascript" src="prototypes.js"></script>
     <script type="text/javascript" src="helpers.js"></script>
     <script type="text/javascript" src="point.js"></script>
@@ -31,6 +30,8 @@
     <script type="text/javascript" src="views/lineView.js"></script>
     <script type="text/javascript" src="views/textView.js"></script>
     <script type="text/javascript" src="views/surfaceView.js"></script>
+    <script type="text/javascript" src="views/toolboxView.js"></script>
+    <!--<script type="text/javascript" src="views/toolboxSurfaceView.js"></script>-->
 
     <script type="text/javascript" src="controllers/controller.js"></script>
     <script type="text/javascript" src="controllers/anchorController.js"></script>
@@ -53,7 +54,6 @@
     <script type="text/javascript" src="controllers/toolboxDiamondController.js"></script>
     <script type="text/javascript" src="controllers/toolboxLineController.js"></script>
     <script type="text/javascript" src="controllers/toolboxTextController.js"></script>
-    -->
 </head>
 <body>
     <style>
@@ -283,7 +283,7 @@
         mouseController.attach(toolboxSurfaceView, toolboxSurfaceController);
 
         var toolboxModel = new Model();
-        var toolboxView = new View(toolbox, toolboxModel);
+        var toolboxView = new ToolboxView(toolbox, toolboxModel);
         toolboxGroupController = new ToolboxGroupController(mouseController, toolboxView, toolboxModel);
         // mouseController.attach(toolboxView, toolboxController);
 

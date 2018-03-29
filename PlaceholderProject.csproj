@@ -77,6 +77,7 @@
     <Content Include="views\shapeView.js" />
     <Content Include="views\surfaceView.js" />
     <Content Include="views\textView.js" />
+    <Content Include="views\toolboxSurfaceView.js" />
     <Content Include="views\view.js" />
     <Content Include="point.js" />
     <Content Include="shapes\anchor.js" />

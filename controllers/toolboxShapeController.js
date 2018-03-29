@@ -25,9 +25,10 @@
         // The user must move the mouse a wee bit.
         if (!this.mouseController.isClick) {
             console.log("toolbox shape onDrag");
-            // TODO: Figure out where we place the element so the shape is created centered over the mouse!
-            // Account for the translation of the toolbox group.
-            var emvc = this.createElementAt(this.mouseController.x - toolboxGroupController.model.tx, this.mouseController.y - toolboxGroupController.model.ty);
+            // Account for the translation of the toolbox group and SVG location on the client screen.
+            var p = new Point(this.mouseController.x - toolboxGroupController.model.tx, this.mouseController.y - toolboxGroupController.model.ty);
+            p = Helpers.translateToScreenCoordinate(p);
+            var emvc = this.createElementAt(p.x, p.y);
             diagramModel.addModel(emvc.model, emvc.view.id);
             // Add the shape to the toolbox group for now so it is topmost, rather than adding
             // it to the objects group.
