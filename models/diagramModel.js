@@ -44,23 +44,30 @@
     }
 
     createElement(elName) {
+        var group = Helpers.createElement("g", {});
         var el = Helpers.createElement(elName, { fill: "#FFFFFF", stroke: "black", "stroke-width": 1 });
+        group.appendChild(el);
 
-        return el;
+        return group;
     }
 
     createTextElement() {
+        var group = Helpers.createElement("g", {});
         var el = Helpers.createElement('text', { "font-size": 12, "font-family": "Verdana" });
+        el.innerHTML = Constants.DEFAULT_TEXT;
+        group.appendChild(el);
 
-        return el;
+        return group;
     }
 
     createLineElement(elName) {
+        var group = Helpers.createElement("g", {});
         var el = Helpers.createElement('g', {});
         el.appendChild(Helpers.createElement('line', {"stroke-width": 20, stroke: "black", "stroke-opacity": "0", "fill-opacity": "0" }));
         el.appendChild(Helpers.createElement('line', {fill: "#FFFFFF", stroke: "black", "stroke-width": 1 }));
+        group.appendChild(el);
 
-        return el;
+        return group;
     }
 
     // Returns JSON of serialized models.

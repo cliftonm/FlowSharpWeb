@@ -2,4 +2,8 @@
     constructor() {
         super();
     }
+
+    get actualElement() {
+        return this.svgElement;
+    }
 }

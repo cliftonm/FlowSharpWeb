@@ -7,6 +7,10 @@
         this.cellH = 8;
     }
 
+    get actualElement() {
+        return this.svgElement;
+    }
+
     serialize() {
         var model = super.serialize();
         model.gridCellW = this.gridCellW;

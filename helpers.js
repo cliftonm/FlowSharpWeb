@@ -31,16 +31,18 @@ class Helpers {
     }
 
     // Create the specified element with the attributes provided in a key-value dictionary.
-    static createElement(elementName, attributes) {
+    static createElement(elementName, attributes, createClass = true) {
         var el = document.createElementNS(Constants.SVG_NS, elementName);
 
         // Create a unique ID for the element so we can acquire the correct shape controller
         // when the user drags the shape.
         el.setAttributeNS(null, "id", Helpers.uuidv4());
 
-        // Create a class common to all shapes so that, on file load, we can get them all and re-attach them
-        // to the mouse controller.
-        el.setAttributeNS(null, "class", Constants.SHAPE_CLASS_NAME);
+        if (createClass) {
+            // Create a class common to all shapes so that, on file load, we can get them all and re-attach them
+            // to the mouse controller.
+            el.setAttributeNS(null, "class", Constants.SHAPE_CLASS_NAME);
+        }
 
         // Add the attributes to the element.
         Object.entries(attributes).map(([key, val]) => el.setAttributeNS(null, key, val));

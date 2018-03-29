@@ -78,12 +78,13 @@
         // nearbyShapesEls.map(s => console.log(s.outerHTML.split(" ")[0].substring(1)));
 
         nearbyShapeEls.map(el => {
-            var controllers = this.mouseController.getControllersByElement(el);
+            // We use the parentElement because that's the ID of the shape controller in the mouseController.
+            var controllers = this.mouseController.getControllersByElement(el.parentElement);
 
             if (controllers) {
                 controllers.map(ctrl => {
                     if (ctrl.hasConnectionPoints) {
-                        var shapeId = ctrl.view.id;
+                        var shapeId = ctrl.view.actualId;
 
                         // If it already exists in the list, don't add it again.
                         if (!this.shapeConnectionPoints.any(cp => cp.id == shapeId)) {
