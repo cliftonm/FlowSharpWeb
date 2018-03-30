@@ -1,6 +1,8 @@
 # FlowSharpWeb
 Build a Prototype Web-Based Diagramming App with SVG and Javascript
 
+![Screenshot](article/screenshot1.png?raw=true "Screenshot")
+
 This is an early prototype intended to be a learning excerise for how to create a web-based diagramming tool.
 At this stage, learning about how to use SVG dynamically is explored:
 
