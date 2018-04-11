@@ -7,6 +7,8 @@
             Circle: { model: CircleModel, view: ShapeView, controller: CircleController, creator: () => this.createElement("circle") },
             Diamond: { model: DiamondModel, view: ShapeView, controller: DiamondController, creator: () => this.createElement("path") },
             Line: { model: LineModel, view: LineView, controller: LineController, creator: () => this.createLineElement() },
+            LineWithStart: { model: LineModelWithStart, view: LineView, controller: LineController, creator: () => this.createLineWithStartElement() },
+            LineWithStartEnd: { model: LineModelWithStartEnd, view: LineView, controller: LineController, creator: () => this.createLineWithStartEndElement() },
             Text: { model: TextModel, view: TextView, controller: TextController, creator: () => this.createTextElement() },
         };
 
@@ -65,6 +67,26 @@
         var el = Helpers.createElement('g', {});
         el.appendChild(Helpers.createElement('line', {"stroke-width": 20, stroke: "black", "stroke-opacity": "0", "fill-opacity": "0" }));
         el.appendChild(Helpers.createElement('line', {fill: "#FFFFFF", stroke: "black", "stroke-width": 1 }));
+        group.appendChild(el);
+
+        return group;
+    }
+
+    createLineWithStartElement(elName) {
+        var group = Helpers.createElement("g", {});
+        var el = Helpers.createElement('g', {});
+        el.appendChild(Helpers.createElement('line', { "stroke-width": 20, stroke: "black", "stroke-opacity": "0", "fill-opacity": "0" }));
+        el.appendChild(Helpers.createElement('line', { fill: "#FFFFFF", stroke: "black", "stroke-width": 1, "marker-start": "url(#trianglestart)" }));
+        group.appendChild(el);
+
+        return group;
+    }
+
+    createLineWithStartEndElement(elName) {
+        var group = Helpers.createElement("g", {});
+        var el = Helpers.createElement('g', {});
+        el.appendChild(Helpers.createElement('line', { "stroke-width": 20, stroke: "black", "stroke-opacity": "0", "fill-opacity": "0" }));
+        el.appendChild(Helpers.createElement('line', { fill: "#FFFFFF", stroke: "black", "stroke-width": 1, "marker-start": "url(#trianglestart)", "marker-end": "url(#triangleend)" }));
         group.appendChild(el);
 
         return group;

@@ -81,6 +81,14 @@
                         <!-- This creates the appearance of an 80x80 grid when stacked -->
                         <path id="largeGridPath" d="M 80 0 H 0 V 80" fill="none" stroke="gray" stroke-width="2" />
                     </pattern>
+                    <marker id="trianglestart" viewBox="0 0 10 10" refX="0" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+                        <!-- path looks like < but closed -->
+                        <path d="M 10 0 L 0 5 L 10 10 z" />
+                    </marker>
+                    <marker id="triangleend" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+                        <!-- path looks like > but closed -->
+                        <path d="M 0 0 L 10 5 L 0 10 z" />
+                    </marker>
                 </defs>
 
                 <!-- A trick from sprite animations is to extend the scrolling region beyond the viewport
@@ -104,19 +112,24 @@
                     that receives the mouse up event. -->
                 <g id="connectionPoints"></g>
                 <g id="anchors"></g>
-                <g id="toolbox" x="0" y="0" width="200" height="150">
-                    <rect id="toolboxSurface" x="0" y="0" width="200" height="150" fill="#FFFFFF" stroke="black" stroke-width="0.5" />
+                <g id="toolbox" x="0" y="0">
+                    <rect id="toolboxSurface" x="0" y="0" width="200" height="170" fill="#FFFFFF" stroke="black" stroke-width="0.5" />
                     <rect id="toolboxRectangle" x="10" y="10" width="40" height="40" stroke="black" stroke-width="1" fill="#FFFFFF" />
                     <circle id="toolboxCircle" cx="85" cy="29" r="21" stroke="black" stroke-width="1" fill="#FFFFFF" />
                     <path id="toolboxDiamond" d="M 140 10 L 115 30 L 140 50 L 165 30 Z" stroke="black" stroke-width="1" fill="#FFFFFF" />
                     <g id="toolboxLine">
                         <rect id="lineHiddenSelectionArea" x="10" y="70" width="40" height="40" stroke-opacity="0" fill-opacity="0" />
-                        <!--<line id="lineSelection" x1="10" y1="70" x2="50" y2="110" stroke="#FFA0A0" stroke-width="20" fill="#FFFFFF" stroke-opacity="0" fill-opacity="0" />-->
-                        <!--<rect id="endpoint1" transform="translate(10, 70)" x="-5" y="-5" width="10" height="10" stroke="red" stroke-width="1" fill="#FFFFFF"/>
-                            <rect id="endpoint2" transform="translate(50, 110)" x="-5" y="-5" width="10" height="10" stroke="red" stroke-width="1" fill="#FFFFFF" />-->
                         <line id="line" x1="10" y1="70" x2="50" y2="110" fill="#FFFFFF" stroke="black" stroke-width="1" />
                     </g>
-                    <text id="toolboxText" x="73" y="100" font-size="32" font-family="Verdana">A</text>
+                    <g id="toolboxLineWithStart">
+                        <rect id="lineHiddenSelectionArea" x="65" y="70" width="40" height="40" stroke-opacity="0" fill-opacity="0" />
+                        <line id="line" x1="65" y1="70" x2="105" y2="110" fill="#FFFFFF" stroke="black" stroke-width="1" marker-start="url(#trianglestart)" />
+                    </g>
+                    <g id="toolboxLineWithStartEnd">
+                        <rect id="lineHiddenSelectionArea" x="120" y="70" width="40" height="40" stroke-opacity="0" fill-opacity="0" />
+                        <line id="line" x1="120" y1="70" x2="160" y2="110" fill="#FFFFFF" stroke="black" stroke-width="1" marker-start="url(#trianglestart)" marker-end="url(#triangleend)" />
+                    </g>
+                    <text id="toolboxText" x="20" y="150" font-size="32" font-family="Verdana">A</text>
                 </g>
             </svg>
         </div>
@@ -141,6 +154,8 @@
         TOOLBOX_CIRCLE_ID: "toolboxCircle",
         TOOLBOX_DIAMOND_ID: "toolboxDiamond",
         TOOLBOX_LINE_ID: "toolboxLine",
+        TOOLBOX_LINE_WITH_START_ID: "toolboxLineWithStart",
+        TOOLBOX_LINE_WITH_START_END_ID: "toolboxLineWithStartEnd",
         TOOLBOX_TEXT_ID: "toolboxText",
         DEFAULT_TEXT: "[text]",
         NEARBY_DELTA: 40,
@@ -310,6 +325,8 @@
         registerToolboxItem(mouseController, Constants.TOOLBOX_CIRCLE_ID, (mc, view, model) => new ToolboxCircleController(mc, view, model));
         registerToolboxItem(mouseController, Constants.TOOLBOX_DIAMOND_ID, (mc, view, model) => new ToolboxDiamondController(mc, view, model));
         registerToolboxItem(mouseController, Constants.TOOLBOX_LINE_ID, (mc, view, model) => new ToolboxLineController(mc, view, model));
+        registerToolboxItem(mouseController, Constants.TOOLBOX_LINE_WITH_START_ID, (mc, view, model) => new ToolboxLineWithStartController(mc, view, model));
+        registerToolboxItem(mouseController, Constants.TOOLBOX_LINE_WITH_START_END_ID, (mc, view, model) => new ToolboxLineWithStartEndController(mc, view, model));
         registerToolboxItem(mouseController, Constants.TOOLBOX_TEXT_ID, (mc, view, model) => new ToolboxTextController(mc, view, model));
     })();
 

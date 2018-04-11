@@ -50,3 +50,29 @@
         this.propertyChanged("y2", value);
     }
 }
+
+// Overrides so we can specify the key for the model.
+
+class LineModelWithStart extends LineModel {
+    serialize() {
+        var model = this.baseSerialize();
+        model.x1 = this._x1;
+        model.y1 = this._y1;
+        model.x2 = this._x2;
+        model.y2 = this._y2;
+
+        return { LineWithStart: model };
+    }
+}
+
+class LineModelWithStartEnd extends LineModel {
+    serialize() {
+        var model = this.baseSerialize();
+        model.x1 = this._x1;
+        model.y1 = this._y1;
+        model.x2 = this._x2;
+        model.y2 = this._y2;
+
+        return { LineWithStartEnd: model };
+    }
+}

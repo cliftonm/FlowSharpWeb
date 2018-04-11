@@ -19,6 +19,12 @@
         return { tx: this._tx, ty: this._ty };
     }
 
+    // Used to skip the ShapeModel's serializer in derived Line classes with start/end arrows.
+    // Sort of annoying to have to do this.
+    baseSerialize() {
+        return { tx: this._tx, ty: this._ty };
+    }
+
     deserialize(model, el) {
         this._tx = model.tx;
         this._ty = model.ty;
