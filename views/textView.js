@@ -6,7 +6,7 @@
     // Custom handling for property "text"
     onPropertyChange(property, value) {
         if (property == "text") {
-            this.svgElement.innerHTML = value;
+            this.actualElement.innerHTML = value;
         } else {
             super.onPropertyChange(property, value);
         }

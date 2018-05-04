@@ -1,0 +1,380 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>FlowSharpWeb</title>
+    <!-- use https://www.minifier.org/ (https://github.com/matthiasmullie/minify)to minimize, as it is the only minizer that I tested that actually works. -->
+    <!--<script type="text/javascript" src="flowSharpWeb.all.js"></script>-->
+    <script type="text/javascript" src="prototypes.js"></script>
+    <script type="text/javascript" src="helpers.js"></script>
+    <script type="text/javascript" src="point.js"></script>
+    <script type="text/javascript" src="fileSaver.js"></script>
+
+    <script type="text/javascript" src="models/model.js"></script>
+    <script type="text/javascript" src="models/diagramModel.js"></script>
+    <script type="text/javascript" src="models/objectsModel.js"></script>
+    <script type="text/javascript" src="models/shapeModel.js"></script>
+    <script type="text/javascript" src="models/surfaceModel.js"></script>
+    <script type="text/javascript" src="models/rectangleModel.js"></script>
+    <script type="text/javascript" src="models/circleModel.js"></script>
+    <script type="text/javascript" src="models/pathModel.js"></script>
+    <script type="text/javascript" src="models/diamondModel.js"></script>
+    <script type="text/javascript" src="models/lineModel.js"></script>
+    <script type="text/javascript" src="models/textModel.js"></script>
+
+    <script type="text/javascript" src="views/view.js"></script>
+    <script type="text/javascript" src="views/anchorView.js"></script>
+    <script type="text/javascript" src="views/objectsView.js"></script>
+    <script type="text/javascript" src="views/shapeView.js"></script>
+    <script type="text/javascript" src="views/lineView.js"></script>
+    <script type="text/javascript" src="views/textView.js"></script>
+    <script type="text/javascript" src="views/surfaceView.js"></script>
+    <script type="text/javascript" src="views/toolboxView.js"></script>
+    <!--<script type="text/javascript" src="views/toolboxSurfaceView.js"></script>-->
+
+    <script type="text/javascript" src="controllers/controller.js"></script>
+    <script type="text/javascript" src="controllers/anchorController.js"></script>
+    <script type="text/javascript" src="controllers/anchorGroupController.js"></script>
+    <script type="text/javascript" src="controllers/mouseController.js"></script>
+    <script type="text/javascript" src="controllers/shapeController.js"></script>
+    <script type="text/javascript" src="controllers/toolboxShapeController.js"></script>
+    <script type="text/javascript" src="controllers/surfaceController.js"></script>
+    <script type="text/javascript" src="controllers/objectsController.js"></script>
+    <script type="text/javascript" src="controllers/toolboxGroupController.js"></script>
+    <script type="text/javascript" src="controllers/toolboxSurfaceController.js"></script>
+
+    <script type="text/javascript" src="controllers/rectangleController.js"></script>
+    <script type="text/javascript" src="controllers/circleController.js"></script>
+    <script type="text/javascript" src="controllers/diamondController.js"></script>
+    <script type="text/javascript" src="controllers/lineController.js"></script>
+    <script type="text/javascript" src="controllers/textController.js"></script>
+    <script type="text/javascript" src="controllers/toolboxRectangleController.js"></script>
+    <script type="text/javascript" src="controllers/toolboxCircleController.js"></script>
+    <script type="text/javascript" src="controllers/toolboxDiamondController.js"></script>
+    <script type="text/javascript" src="controllers/toolboxLineController.js"></script>
+    <script type="text/javascript" src="controllers/toolboxTextController.js"></script>
+</head>
+<body>
+    <style>
+        text {cursor:default}
+    </style>
+        <div>
+            <!-- https://stackoverflow.com/questions/1944267/how-to-change-the-button-text-of-input-type-file -->
+            <!-- creates a hidden file input on routes the button to clicking on that tag -->
+            <button onclick="clearSvg()">Clear</button>
+            <button onclick="saveSvg()">Save</button>
+            <button onclick="document.getElementById('fileInput').click();">Load</button>
+            <input type="file" id="fileInput" style="display:none;" />
+            &nbsp; Text:
+            <input id="text" type="text" onchange="setText()" />
+        </div>
+        <div>
+            <svg id="svg" width="801" height="481" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <pattern id="smallGrid" width="8" height="8" patternUnits="userSpaceOnUse">
+                        <path id="smallGridPath" d="M 8 0 H 0 V 8" fill="none" stroke="gray" stroke-width="0.5" />
+                    </pattern>
+                    <pattern id="largeGrid" width="80" height="80" patternUnits="userSpaceOnUse">
+                        <rect id="largeGridRect" width="80" height="80" fill="url(#smallGrid)" />
+                        <!-- draw from upper right to upper left, then down to lower left -->
+                        <!-- This creates the appearance of an 80x80 grid when stacked -->
+                        <path id="largeGridPath" d="M 80 0 H 0 V 80" fill="none" stroke="gray" stroke-width="2" />
+                    </pattern>
+                    <marker id="trianglestart" viewBox="0 0 10 10" refX="0" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+                        <!-- path looks like < but closed -->
+                        <path d="M 10 0 L 0 5 L 10 10 z" />
+                    </marker>
+                    <marker id="triangleend" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+                        <!-- path looks like > but closed -->
+                        <path d="M 0 0 L 10 5 L 0 10 z" />
+                    </marker>
+                </defs>
+
+                <!-- A trick from sprite animations is to extend the scrolling region beyond the viewport
+                    and use mod W/H to reset the position to simulate a virtual space. -->
+                <!-- Creating a group is structural only.  One would think that elements could
+                    be added to the group and they would be moved as the group is transformed.
+                    This is true, but when the mod operator resets the translation to (0, 0), any elements
+                    in this group will be reset to it's starting position as well. -->
+                <g id="surface" transform="translate(0, 0)" x="-80" y="-80" width="961" height="641">
+                    <rect id="grid" x="-80" y="-80" width="961" height="641" fill="url(#largeGrid)" />
+                </g>
+                <!-- Instead, create a group just for the objects and transform this group without any
+                    modulus operation on the (x,y) position. -->
+                <!-- Also, we create an outer group so that on file load, we can remove
+                    the "objectGroup" and replace it with what got loaded. -->
+                <g id="objectGroup">
+                    <g id="objects" transform="translate(0, 0)"></g>
+                </g>
+                <!-- connection points are under anchor so that if we mouse up exactly
+                    on a connection point line, it is the anchor object, being above,
+                    that receives the mouse up event. -->
+                <g id="connectionPoints"></g>
+                <g id="anchors"></g>
+                <g id="toolbox" x="0" y="0">
+                    <rect id="toolboxSurface" x="0" y="0" width="200" height="170" fill="#FFFFFF" stroke="black" stroke-width="0.5" />
+                    <rect id="toolboxRectangle" x="10" y="10" width="40" height="40" stroke="black" stroke-width="1" fill="#FFFFFF" />
+                    <circle id="toolboxCircle" cx="85" cy="29" r="21" stroke="black" stroke-width="1" fill="#FFFFFF" />
+                    <path id="toolboxDiamond" d="M 140 10 L 115 30 L 140 50 L 165 30 Z" stroke="black" stroke-width="1" fill="#FFFFFF" />
+                    <g id="toolboxLine">
+                        <rect id="lineHiddenSelectionArea" x="10" y="70" width="40" height="40" stroke-opacity="0" fill-opacity="0" />
+                        <line id="line" x1="10" y1="70" x2="50" y2="110" fill="#FFFFFF" stroke="black" stroke-width="1" />
+                    </g>
+                    <g id="toolboxLineWithStart">
+                        <rect id="lineHiddenSelectionArea" x="65" y="70" width="40" height="40" stroke-opacity="0" fill-opacity="0" />
+                        <line id="line" x1="65" y1="70" x2="105" y2="110" fill="#FFFFFF" stroke="black" stroke-width="1" marker-start="url(#trianglestart)" />
+                    </g>
+                    <g id="toolboxLineWithStartEnd">
+                        <rect id="lineHiddenSelectionArea" x="120" y="70" width="40" height="40" stroke-opacity="0" fill-opacity="0" />
+                        <line id="line" x1="120" y1="70" x2="160" y2="110" fill="#FFFFFF" stroke="black" stroke-width="1" marker-start="url(#trianglestart)" marker-end="url(#triangleend)" />
+                    </g>
+                    <text id="toolboxText" x="20" y="150" font-size="32" font-family="Verdana">A</text>
+                </g>
+            </svg>
+        </div>
+</body>
+</html>
+<script type="text/javascript">
+    // TODO: Prepend "Constants."
+    const Constants = {
+        SVG_NS: "http://www.w3.org/2000/svg",
+        SVG_ELEMENT_ID: "svg",
+        SVG_SURFACE_ID: "surface",
+        SVG_TOOLBOX_SURFACE_ID: "toolboxSurface",
+        SVG_OBJECTS_ID: "objects",
+        SVG_TOOLBOX_ID: "toolbox",
+        SVG_ANCHORS_ID: "anchors",
+        SVG_CONNECTION_POINTS_ID: "connectionPoints",
+        SHAPE_CLASS_NAME: "svgShape",
+        FILE_INPUT: "fileInput",
+        OBJECT_GROUP_ID: "objectGroup",
+        FILENAME: "diagram.json",
+        TOOLBOX_RECTANGLE_ID: "toolboxRectangle",
+        TOOLBOX_CIRCLE_ID: "toolboxCircle",
+        TOOLBOX_DIAMOND_ID: "toolboxDiamond",
+        TOOLBOX_LINE_ID: "toolboxLine",
+        TOOLBOX_LINE_WITH_START_ID: "toolboxLineWithStart",
+        TOOLBOX_LINE_WITH_START_END_ID: "toolboxLineWithStartEnd",
+        TOOLBOX_TEXT_ID: "toolboxText",
+        DEFAULT_TEXT: "[text]",
+        NEARBY_DELTA: 40,
+        MAX_CP_NEAR: 6,    // anchor must be +/- this value to a connection point to connect.
+        KEY_RIGHT: 39,
+        KEY_UP: 38,
+        KEY_LEFT: 37,
+        KEY_DOWN: 40,
+        KEY_DELETE: 46,
+    };
+
+    const START_OF_DIAGRAM_TAG = "<diagram>";
+    const END_OF_DIAGRAM_TAG = "</diagram>";
+
+    // Must be lowercase "shapename" - "shapeName", as set in the toolbox controller, the DOM adds elements as lowercase!
+    // https://stackoverflow.com/a/6386486/2276361
+    const SHAPE_NAME_ATTR = "shapename";
+
+    // Global so UI can set the text of a text shape.
+    var mouseController = null;
+
+    // Global so we can access the surface translation.
+    var surfaceModel = null;
+
+    // Global so clearSvg can reset the objects translation
+    var objectsModel = null;
+
+    // AnchorGroupController is global for the moment because it's used by all shape controllers.
+    var anchorGroupController = null;
+
+    // Global so we can add/remove shape models as they are dropped / removed from the diagram.
+    var diagramModel = null;
+
+    // Global so we can move the toolbox around.
+    var toolboxGroupController = null;
+
+    document.getElementById(Constants.FILE_INPUT).addEventListener('change', readSingleFile, false);
+    document.onkeydown = onKeyDown;
+
+    // https://stackoverflow.com/a/1648854/2276361
+    // Read that regarding the difference between handling the event as a function
+    // vs in the HTML attribute definition.  Sigh.
+    function onKeyDown(evt) {
+        var handled = mouseController.onKeyDown(evt);
+
+        if (handled) {
+            evt.preventDefault();
+        }
+    }
+
+    // https://w3c.github.io/FileAPI/
+    // https://stackoverflow.com/questions/3582671/how-to-open-a-local-disk-file-with-javascript
+    // Loading the file after it has been loaded doesn't trigger this event again because it's
+    // hooked up to "change", and the filename hasn't changed!
+    function readSingleFile(e) {
+        var file = e.target.files[0];
+        var reader = new FileReader();
+        reader.onload = loadComplete;
+        reader.readAsText(file);
+        // Clears the last filename(s) so loading the same file will work again.
+        document.getElementById(Constants.FILE_INPUT).value = "";
+    }
+
+    function loadComplete(e) {
+        var contents = e.target.result;
+        // If we don't do this, it adds the elements, but they have to have unique ID's
+        clearSvg();         
+        diagramModel.deserialize(contents);
+    }
+
+    function clearSvg() {
+        mouseController.destroyAllButSurface();
+        surfaceModel.setTranslation(0, 0);
+        objectsModel.setTranslation(0, 0);
+        diagramModel.clear();
+        var node = Helpers.getElement(Constants.SVG_OBJECTS_ID);
+        Helpers.removeChildren(node);
+    }
+
+    // https://stackoverflow.com/questions/23582101/generating-viewing-and-saving-svg-client-side-in-browser
+    function saveSvg() {
+        var json = diagramModel.serialize();
+        var blob = new Blob([json], { 'type': "image/json" });
+
+        // We're using https://github.com/eligrey/FileSaver.js/
+        // but with the "export" (a require node.js thing) removed.
+        // There are several forks of this, not sure if there's any improvements in the forks.
+        saveAs(blob, Constants.FILENAME);
+    }
+
+    // Update the selected shape's text.  Works only with text shapes right now.
+    function setText() {
+        if (mouseController.selectedControllers != null) {
+            var text = document.getElementById("text").value;
+            mouseController.selectedControllers.map(c => c.model.text = text);
+        }
+    }
+
+    function registerToolboxItem(mouseController, elementId, fncCreateController) {
+        var svgElement = Helpers.getElement(elementId);
+        var model = new Model();
+        var view = new View(svgElement, model);
+        var controller = fncCreateController(mouseController, view, model);
+        mouseController.attach(view, controller);
+    }
+
+    (function initialize() {
+        mouseController = new MouseController();
+        diagramModel = new DiagramModel(mouseController);
+        var svgSurface = Helpers.getElement(Constants.SVG_SURFACE_ID);
+        var svgObjects = Helpers.getElement(Constants.SVG_OBJECTS_ID);
+        var svgAnchors = Helpers.getElement(Constants.SVG_ANCHORS_ID);
+        var toolboxSurface = Helpers.getElement(Constants.SVG_TOOLBOX_SURFACE_ID);
+        var toolbox = Helpers.getElement(Constants.SVG_TOOLBOX_ID);
+
+        surfaceModel = new SurfaceModel();
+        objectsModel = new ObjectsModel();
+        var anchorsModel = new Model();
+        var toolboxSurfaceModel = new Model();
+
+        var surfaceView = new SurfaceView(svgSurface, surfaceModel);
+        var objectsView = new ObjectsView(svgObjects, objectsModel);
+        var anchorsView = new AnchorView(svgAnchors, anchorsModel);
+        var toolboxSurfaceView = new View(toolboxSurface, toolboxSurfaceModel);
+
+        var surfaceController = new SurfaceController(mouseController, surfaceView, surfaceModel);
+        var objectsController = new ObjectsController(mouseController, objectsView, objectsModel);
+        anchorGroupController = new AnchorGroupController(mouseController, anchorsView, anchorsModel);
+
+        // We need a controller to handle mouse events when the user moves the mouse fast enough
+        // on the toolbox to leave the shape being dragged and dropped, but it also needs to override
+        // onDrag because the toolbox can't be moved around.  TODO: At least, not at the moment.
+        var toolboxSurfaceController = new ToolboxSurfaceController(mouseController, toolboxSurfaceView, toolboxSurfaceModel);
+
+        // Attach both the surface and objects controller to the surface view so that events from the 
+        // surface view are routed to both controllers, one for dealing with the grid, one for moving
+        // the objects on the surface and the surface is translated.
+        mouseController.attach(surfaceView, surfaceController);
+        mouseController.attach(surfaceView, objectsController);
+        mouseController.attach(toolboxSurfaceView, toolboxSurfaceController);
+
+        var toolboxModel = new Model();
+        var toolboxView = new ToolboxView(toolbox, toolboxModel);
+        toolboxGroupController = new ToolboxGroupController(mouseController, toolboxView, toolboxModel);
+        // mouseController.attach(toolboxView, toolboxController);
+
+        surfaceModel.resizeGrid(100, 100, 20, 20);
+
+        // Example of creating a shape programmatically:
+        /*
+        var rectEl = Helpers.createElement('rect', { x: 240, y: 100, width: 60, height: 60, fill: "#FFFFFF", stroke: "black", "stroke-width": 1 });
+        var rectModel = new RectangleModel();
+        rectModel._x = 240;
+        rectModel._y = 100;
+        rectModel._width = 60;
+        rectModel._height = 60;
+        var rectView = new ShapeView(rectEl, rectModel);
+        var rectController = new RectangleController(mouseController, rectView, rectModel);
+        Helpers.getElement(Constants.SVG_OBJECTS_ID).appendChild(rectEl);
+        mouseController.attach(rectView, rectController);
+        // Most shapes also need an anchor controller
+        mouseController.attach(rectView, anchorGroupController);
+        */
+
+        // Create Toolbox Model-View-Controllers and register with mouse controller.
+        registerToolboxItem(mouseController, Constants.TOOLBOX_RECTANGLE_ID, (mc, view, model) => new ToolboxRectangleController(mc, view, model));
+        registerToolboxItem(mouseController, Constants.TOOLBOX_CIRCLE_ID, (mc, view, model) => new ToolboxCircleController(mc, view, model));
+        registerToolboxItem(mouseController, Constants.TOOLBOX_DIAMOND_ID, (mc, view, model) => new ToolboxDiamondController(mc, view, model));
+        registerToolboxItem(mouseController, Constants.TOOLBOX_LINE_ID, (mc, view, model) => new ToolboxLineController(mc, view, model));
+        registerToolboxItem(mouseController, Constants.TOOLBOX_LINE_WITH_START_ID, (mc, view, model) => new ToolboxLineWithStartController(mc, view, model));
+        registerToolboxItem(mouseController, Constants.TOOLBOX_LINE_WITH_START_END_ID, (mc, view, model) => new ToolboxLineWithStartEndController(mc, view, model));
+        registerToolboxItem(mouseController, Constants.TOOLBOX_TEXT_ID, (mc, view, model) => new ToolboxTextController(mc, view, model));
+    })();
+
+</script>
+<!--
+    mousedown example:
+    https://stackoverflow.com/questions/2753732/how-to-access-svg-elements-with-javascript
+
+    why preventDefault()
+    https://stackoverflow.com/questions/12624745/svg-mousemove-events-stop-firing-in-firefox-after-a-few-mousedowns
+
+    transform -> translate
+    https://stackoverflow.com/questions/13281586/svg-animate-rectangle-along-path-center-of-rect-always-on-the-path
+
+    SVG Paths:
+    https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Paths
+
+    Transforms:
+    https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/transform
+
+    Working with defs programmatically:
+    https://stackoverflow.com/questions/17776641/fill-rect-with-pattern
+
+    // The same thing:
+    <path d="M 8 0 L 0 0 0 8" />
+    <path d="M 8 0 H 0 V 8" />
+
+    Event listeners inside a class:
+    https://stackoverflow.com/questions/43727516/javascript-how-adding-event-handler-inside-a-class-with-a-class-method-as-the-c
+    https://stackoverflow.com/questions/20279484/how-to-access-the-correct-this-inside-a-callback
+
+    // Lightweight library for manipulating svg:
+    http://svgjs.com/ 
+
+    // Download doesn't work in edge
+    // See StephenKitely's response.
+    // This is insane, and registry paths aren't there on W10
+    // https://answers.microsoft.com/en-us/ie/forum/ie11-iewindows_10/microsoft-edge-wont-download-any-files/82fafcf9-4264-4593-bc7b-33bd569a276f
+    // And more insanity
+    // https://www.tenforums.com/browsers-email/57077-edge-wont-save-anything-i-broke.html
+
+    // Saving files locally, but doesn't work in Edge:
+    https://stackoverflow.com/questions/21012580/is-it-possible-to-write-data-to-file-using-only-javascript
+
+    // Explanations of why not to use arguments.callee.name to get the name of the function being called.
+    // https://stackoverflow.com/questions/29572466/how-do-you-find-out-the-caller-function-in-javascript-when-use-strict-is-enabled
+
+
+
+
+-->

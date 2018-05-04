@@ -10,7 +10,7 @@
 
 <p>FlowSharpWeb - Build a Prototype Web-Based Diagramming App with SVG and Javascript<br>
 Learning about to programmatically manipulate SVG in Javascript</p>
-<p><img border="0" src="screenshot1.png" width="577" height="348"></p>
+<p><img border="0" src="screenshot1.png" width="636" height="344"></p>
 <p><a href="https://jsfiddle.net/cliftonm/o2ve65c9/">jsfiddle of this code</a></p>
 <p><a href="https://github.com/cliftonm/FlowSharpWeb">On GitHub</a></p>
 <h2>Contents</h2><ul>
@@ -110,6 +110,8 @@ Learning about to programmatically manipulate SVG in Javascript</p>
 <li><a href="#DisconnectingConnections66">Disconnecting Connections</a></li>
 </ul>
 <li><a href="#RemovingAShape67">Removing A Shape</a></li>
+<li><a href="#LineArrows">Line Arrows</a></li>
+<li><a href="#Updates">Updates</a></li>
 <li><a href="#Conclusion68">Conclusion</a></li>
 </ul>
 
@@ -2821,6 +2823,50 @@ case Constants.KEY_DELETE:
   handled = true;
   break;
 ...</pre>
+<h2><a name="LineArrows">Line Arrows</a></h2>
+<p>
+<img border="0" src="linearrows.png" width="170" height="60"></p>
+<p>Line arrows are implemented using the <code>marker-start</code> and <code>marker-end</code> SVG tags:</p>
+<pre>&lt;g id=&quot;toolboxLineWithStart&quot;&gt;
+  &lt;rect id=&quot;lineHiddenSelectionArea&quot; x=&quot;65&quot; y=&quot;70&quot; width=&quot;40&quot; height=&quot;40&quot; stroke-opacity=&quot;0&quot; fill-opacity=&quot;0&quot; /&gt;
+  &lt;line id=&quot;line&quot; x1=&quot;65&quot; y1=&quot;70&quot; x2=&quot;105&quot; y2=&quot;110&quot; fill=&quot;#FFFFFF&quot; stroke=&quot;black&quot; stroke-width=&quot;1&quot; 
+        marker-start=&quot;url(#trianglestart)&quot; /&gt;
+&lt;/g&gt;
+  &lt;g id=&quot;toolboxLineWithStartEnd&quot;&gt;
+  &lt;rect id=&quot;lineHiddenSelectionArea&quot; x=&quot;120&quot; y=&quot;70&quot; width=&quot;40&quot; height=&quot;40&quot; stroke-opacity=&quot;0&quot; fill-opacity=&quot;0&quot; /&gt;
+  &lt;line id=&quot;line&quot; x1=&quot;120&quot; y1=&quot;70&quot; x2=&quot;160&quot; y2=&quot;110&quot; fill=&quot;#FFFFFF&quot; stroke=&quot;black&quot; stroke-width=&quot;1&quot; 
+        marker-start=&quot;url(#trianglestart)&quot; 
+        marker-end=&quot;url(#triangleend)&quot; /&gt;
+&lt;/g&gt;</pre>
+<p>These tags reference definitions in the <code>defs</code> section:</p>
+<pre>&lt;marker id=&quot;trianglestart&quot; viewBox=&quot;0 0 10 10&quot; refX=&quot;0&quot; refY=&quot;5&quot; markerWidth=&quot;8&quot; markerHeight=&quot;8&quot; orient=&quot;auto&quot;&gt;
+  &lt;!-- path looks like &lt; but closed --&gt;
+  &lt;path d=&quot;M 10 0 L 0 5 L 10 10 z&quot; /&gt;
+&lt;/marker&gt;
+&lt;marker id=&quot;triangleend&quot; viewBox=&quot;0 0 10 10&quot; refX=&quot;10&quot; refY=&quot;5&quot; markerWidth=&quot;8&quot; markerHeight=&quot;8&quot; orient=&quot;auto&quot;&gt;
+  &lt;!-- path looks like &gt; but closed --&gt;
+  &lt;path d=&quot;M 0 0 L 10 5 L 0 10 z&quot; /&gt;
+&lt;/marker&gt;</pre>
+<p>The &quot;trick&quot; here is to place set the <code>refX</code> and <code>refY</code> coordinates such that the 
+arrow tip is at the endpoint of the line.&nbsp; For example, we can disconnect 
+the arrow from the line like this:</p>
+<pre>refX=&quot;30&quot; refY=&quot;5&quot; </pre>
+<p>Resulting in:</p>
+<p><img border="0" src="linearrows2.png" width="178" height="106"></p>
+<p>The <code>markerWidth</code> and </code>markerHeight</code> control the size 
+of the arrow.&nbsp; For example:</p>
+<pre>&lt;marker id=&quot;trianglestart&quot; viewBox=&quot;0 0 10 10&quot; refX=&quot;0&quot; refY=&quot;5&quot; markerWidth=&quot;22&quot; markerHeight=&quot;22&quot; orient=&quot;auto&quot;&gt;
+  &lt;path d=&quot;M 10 0 L 0 5 L 10 10 z&quot; /&gt;
+&lt;/marker&gt;</pre>
+<p>Yields:</p>
+<p><img border="0" src="linearrows3.png" width="158" height="155"></p>
+<p>Because the orientation is &quot;auto&quot;, the arrowhead will rotate based on the 
+orientation of the line -- very cool, as you don't have to do anything to make 
+that work.</p>
+<p>The <code>viewBox</code> attribute changes the coordinate system so that it coordinates 
+specified in the path are relative to the <code>viewBox</code>.</p>
+<h2><a name="Updates">Updates</a></h2>
+5/4/2018 - Added Line Arrows</p>
 <h2><a name="Conclusion68">Conclusion</a></h2>
 <p>There's so much more to do!&nbsp; Undo/redo, zooming, rotations, a &quot;properties&quot; window 
 for setting colors and stroke widths, font and font sizes, arrow endpoints, 
