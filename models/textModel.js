@@ -1,6 +1,6 @@
 ﻿class TextModel extends ShapeModel {
     constructor() {
-        super();
+        super(Constants.SHAPE_TEXT);
         this._x = 0;
         this._y = 0;
         this._text = "";

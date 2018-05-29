@@ -37,6 +37,7 @@
     <Content Include="controllers\anchorGroupController.js" />
     <Content Include="controllers\circleController.js" />
     <Content Include="controllers\toolboxGroupController.js" />
+    <Content Include="models\AnchorModel.js" />
     <Content Include="models\diagramModel.js" />
     <Content Include="controllers\diamondController.js" />
     <Content Include="controllers\lineController.js" />
@@ -70,13 +71,14 @@
     <Content Include="views\anchorView.js" />
     <Content Include="views\lineView.js" />
     <Content Include="views\objectsView.js" />
+    <Content Include="views\propertyGridView.js" />
     <Content Include="views\shapeView.js" />
     <Content Include="views\surfaceView.js" />
     <Content Include="views\textView.js" />
     <Content Include="views\toolboxSurfaceView.js" />
     <Content Include="views\view.js" />
     <Content Include="point.js" />
-    <Content Include="svggrid8.html" />
+    <Content Include="FlowSharpWeb.html" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

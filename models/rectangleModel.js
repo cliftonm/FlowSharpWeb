@@ -1,6 +1,6 @@
 ﻿class RectangleModel extends ShapeModel {
     constructor() {
-        super();
+        super(Constants.SHAPE_RECTANGLE);
         this._x = 0;
         this._y = 0;
         this._width = 0;

@@ -1,5 +1,5 @@
 ﻿class ShapeModel extends Model {
-    constructor() {
-        super();
+    constructor(shapeName) {
+        super(shapeName);
     }
 }

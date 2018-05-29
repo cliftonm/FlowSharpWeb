@@ -1,6 +1,7 @@
 ﻿class Model {
-    constructor() {
+    constructor(shapeName) {
         this.eventPropertyChanged = null;
+        this.shapeName = shapeName;
 
         this._tx = 0;
         this._ty = 0;
@@ -13,21 +14,27 @@
         if (this.eventPropertyChanged != null) {
             this.eventPropertyChanged(propertyName, value);
         }
+
+        // Also update the property grid
+        // While we could use this.constructor.name and extract the model name ("RectangeleModel" becomes "Rectangle"),
+        // I think it's better to pass in the name of the object that corresponds to the model.
+        propertyGrid.propertyChanged(this, propertyName, value);
     }
 
     serialize() {
-        return { tx: this._tx, ty: this._ty };
+        return { tx: this._tx, ty: this._ty, shapeName: this.shapeName };
     }
 
     // Used to skip the ShapeModel's serializer in derived Line classes with start/end arrows.
     // Sort of annoying to have to do this.
     baseSerialize() {
-        return { tx: this._tx, ty: this._ty };
+        return { tx: this._tx, ty: this._ty, shapeName: this.shapeName };
     }
 
     deserialize(model, el) {
         this._tx = model.tx;
         this._ty = model.ty;
+        this.shapeName = model.shapeName;
         this.setTranslate(this._tx, this._ty);
     }
 

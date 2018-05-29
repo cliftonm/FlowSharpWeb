@@ -22,6 +22,7 @@
     <script type="text/javascript" src="models/diamondModel.js"></script>
     <script type="text/javascript" src="models/lineModel.js"></script>
     <script type="text/javascript" src="models/textModel.js"></script>
+    <script type="text/javascript" src="models/anchorModel.js"></script>
 
     <script type="text/javascript" src="views/view.js"></script>
     <script type="text/javascript" src="views/anchorView.js"></script>
@@ -31,6 +32,7 @@
     <script type="text/javascript" src="views/textView.js"></script>
     <script type="text/javascript" src="views/surfaceView.js"></script>
     <script type="text/javascript" src="views/toolboxView.js"></script>
+    <script type="text/javascript" src="views/propertyGridView.js"></script>
     <!--<script type="text/javascript" src="views/toolboxSurfaceView.js"></script>-->
 
     <script type="text/javascript" src="controllers/controller.js"></script>
@@ -59,80 +61,107 @@
     <style>
         text {cursor:default}
     </style>
-        <div>
-            <!-- https://stackoverflow.com/questions/1944267/how-to-change-the-button-text-of-input-type-file -->
-            <!-- creates a hidden file input on routes the button to clicking on that tag -->
-            <button onclick="clearSvg()">Clear</button>
-            <button onclick="saveSvg()">Save</button>
-            <button onclick="document.getElementById('fileInput').click();">Load</button>
-            <input type="file" id="fileInput" style="display:none;" />
-            &nbsp; Text:
-            <input id="text" type="text" onchange="setText()" />
-        </div>
-        <div>
-            <svg id="svg" width="801" height="481" xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                    <pattern id="smallGrid" width="8" height="8" patternUnits="userSpaceOnUse">
-                        <path id="smallGridPath" d="M 8 0 H 0 V 8" fill="none" stroke="gray" stroke-width="0.5" />
-                    </pattern>
-                    <pattern id="largeGrid" width="80" height="80" patternUnits="userSpaceOnUse">
-                        <rect id="largeGridRect" width="80" height="80" fill="url(#smallGrid)" />
-                        <!-- draw from upper right to upper left, then down to lower left -->
-                        <!-- This creates the appearance of an 80x80 grid when stacked -->
-                        <path id="largeGridPath" d="M 80 0 H 0 V 80" fill="none" stroke="gray" stroke-width="2" />
-                    </pattern>
-                    <marker id="trianglestart" viewBox="0 0 10 10" refX="0" refY="5" markerWidth="8" markerHeight="8" orient="auto">
-                        <!-- path looks like < but closed -->
-                        <path d="M 10 0 L 0 5 L 10 10 z" />
-                    </marker>
-                    <marker id="triangleend" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto">
-                        <!-- path looks like > but closed -->
-                        <path d="M 0 0 L 10 5 L 0 10 z" />
-                    </marker>
-                </defs>
+    <div>
+        <!-- https://stackoverflow.com/questions/1944267/how-to-change-the-button-text-of-input-type-file -->
+        <!-- creates a hidden file input on routes the button to clicking on that tag -->
+        <button onclick="clearSvg()">Clear</button>
+        <button onclick="saveSvg()">Save</button>
+        <button onclick="document.getElementById('fileInput').click();">Load</button>
+        <input type="file" id="fileInput" style="display:none;" />
+        &nbsp; Text:
+        <input id="text" type="text" onchange="setText()" />
+    </div>
+    <div style="display:inline-block; float:left;">
+        <svg id="svg" width="801" height="481" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <pattern id="smallGrid" width="8" height="8" patternUnits="userSpaceOnUse">
+                    <path id="smallGridPath" d="M 8 0 H 0 V 8" fill="none" stroke="gray" stroke-width="0.5" />
+                </pattern>
+                <pattern id="largeGrid" width="80" height="80" patternUnits="userSpaceOnUse">
+                    <rect id="largeGridRect" width="80" height="80" fill="url(#smallGrid)" />
+                    <!-- draw from upper right to upper left, then down to lower left -->
+                    <!-- This creates the appearance of an 80x80 grid when stacked -->
+                    <path id="largeGridPath" d="M 80 0 H 0 V 80" fill="none" stroke="gray" stroke-width="2" />
+                </pattern>
+                <marker id="trianglestart" viewBox="0 0 10 10" refX="0" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+                    <!-- path looks like < but closed -->
+                    <path d="M 10 0 L 0 5 L 10 10 z" />
+                </marker>
+                <marker id="triangleend" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+                    <!-- path looks like > but closed -->
+                    <path d="M 0 0 L 10 5 L 0 10 z" />
+                </marker>
+            </defs>
 
-                <!-- A trick from sprite animations is to extend the scrolling region beyond the viewport
-                    and use mod W/H to reset the position to simulate a virtual space. -->
-                <!-- Creating a group is structural only.  One would think that elements could
-                    be added to the group and they would be moved as the group is transformed.
-                    This is true, but when the mod operator resets the translation to (0, 0), any elements
-                    in this group will be reset to it's starting position as well. -->
-                <g id="surface" transform="translate(0, 0)" x="-80" y="-80" width="961" height="641">
-                    <rect id="grid" x="-80" y="-80" width="961" height="641" fill="url(#largeGrid)" />
+            <!-- A trick from sprite animations is to extend the scrolling region beyond the viewport
+                and use mod W/H to reset the position to simulate a virtual space. -->
+            <!-- Creating a group is structural only.  One would think that elements could
+                be added to the group and they would be moved as the group is transformed.
+                This is true, but when the mod operator resets the translation to (0, 0), any elements
+                in this group will be reset to it's starting position as well. -->
+            <g id="surface" transform="translate(0, 0)" x="-80" y="-80" width="961" height="641">
+                <rect id="grid" x="-80" y="-80" width="961" height="641" fill="url(#largeGrid)" />
+            </g>
+            <!-- Instead, create a group just for the objects and transform this group without any
+                modulus operation on the (x,y) position. -->
+            <!-- Also, we create an outer group so that on file load, we can remove
+                the "objectGroup" and replace it with what got loaded. -->
+            <g id="objectGroup">
+                <g id="objects" transform="translate(0, 0)"></g>
+            </g>
+            <!-- connection points are under anchor so that if we mouse up exactly
+                on a connection point line, it is the anchor object, being above,
+                that receives the mouse up event. -->
+            <g id="connectionPoints"></g>
+            <g id="anchors"></g>
+            <g id="toolbox" x="0" y="0">
+                <rect id="toolboxSurface" x="0" y="0" width="200" height="170" fill="#FFFFFF" stroke="black" stroke-width="0.5" />
+                <rect id="toolboxRectangle" x="10" y="10" width="40" height="40" stroke="black" stroke-width="1" fill="#FFFFFF" />
+                <circle id="toolboxCircle" cx="85" cy="29" r="21" stroke="black" stroke-width="1" fill="#FFFFFF" />
+                <path id="toolboxDiamond" d="M 140 10 L 115 30 L 140 50 L 165 30 Z" stroke="black" stroke-width="1" fill="#FFFFFF" />
+                <g id="toolboxLine">
+                    <rect id="lineHiddenSelectionArea" x="10" y="70" width="40" height="40" stroke-opacity="0" fill-opacity="0" />
+                    <line id="line" x1="10" y1="70" x2="50" y2="110" fill="#FFFFFF" stroke="black" stroke-width="1" />
                 </g>
-                <!-- Instead, create a group just for the objects and transform this group without any
-                    modulus operation on the (x,y) position. -->
-                <!-- Also, we create an outer group so that on file load, we can remove
-                    the "objectGroup" and replace it with what got loaded. -->
-                <g id="objectGroup">
-                    <g id="objects" transform="translate(0, 0)"></g>
+                <g id="toolboxLineWithStart">
+                    <rect id="lineHiddenSelectionArea" x="65" y="70" width="40" height="40" stroke-opacity="0" fill-opacity="0" />
+                    <line id="line" x1="65" y1="70" x2="105" y2="110" fill="#FFFFFF" stroke="black" stroke-width="1" marker-start="url(#trianglestart)" />
                 </g>
-                <!-- connection points are under anchor so that if we mouse up exactly
-                    on a connection point line, it is the anchor object, being above,
-                    that receives the mouse up event. -->
-                <g id="connectionPoints"></g>
-                <g id="anchors"></g>
-                <g id="toolbox" x="0" y="0">
-                    <rect id="toolboxSurface" x="0" y="0" width="200" height="170" fill="#FFFFFF" stroke="black" stroke-width="0.5" />
-                    <rect id="toolboxRectangle" x="10" y="10" width="40" height="40" stroke="black" stroke-width="1" fill="#FFFFFF" />
-                    <circle id="toolboxCircle" cx="85" cy="29" r="21" stroke="black" stroke-width="1" fill="#FFFFFF" />
-                    <path id="toolboxDiamond" d="M 140 10 L 115 30 L 140 50 L 165 30 Z" stroke="black" stroke-width="1" fill="#FFFFFF" />
-                    <g id="toolboxLine">
-                        <rect id="lineHiddenSelectionArea" x="10" y="70" width="40" height="40" stroke-opacity="0" fill-opacity="0" />
-                        <line id="line" x1="10" y1="70" x2="50" y2="110" fill="#FFFFFF" stroke="black" stroke-width="1" />
-                    </g>
-                    <g id="toolboxLineWithStart">
-                        <rect id="lineHiddenSelectionArea" x="65" y="70" width="40" height="40" stroke-opacity="0" fill-opacity="0" />
-                        <line id="line" x1="65" y1="70" x2="105" y2="110" fill="#FFFFFF" stroke="black" stroke-width="1" marker-start="url(#trianglestart)" />
-                    </g>
-                    <g id="toolboxLineWithStartEnd">
-                        <rect id="lineHiddenSelectionArea" x="120" y="70" width="40" height="40" stroke-opacity="0" fill-opacity="0" />
-                        <line id="line" x1="120" y1="70" x2="160" y2="110" fill="#FFFFFF" stroke="black" stroke-width="1" marker-start="url(#trianglestart)" marker-end="url(#triangleend)" />
-                    </g>
-                    <text id="toolboxText" x="20" y="150" font-size="32" font-family="Verdana">A</text>
+                <g id="toolboxLineWithStartEnd">
+                    <rect id="lineHiddenSelectionArea" x="120" y="70" width="40" height="40" stroke-opacity="0" fill-opacity="0" />
+                    <line id="line" x1="120" y1="70" x2="160" y2="110" fill="#FFFFFF" stroke="black" stroke-width="1" marker-start="url(#trianglestart)" marker-end="url(#triangleend)" />
                 </g>
-            </svg>
+                <text id="toolboxText" x="20" y="150" font-size="32" font-family="Verdana">A</text>
+            </g>
+        </svg>
+    </div>
+    <div style="margin-left:10px; display:inline-block; float:left; width:400px; height:480px; border:1px solid black;">
+        <div style="margin-left:10px">
+            Properties:
+            <table style="margin-top:20px">
+                <tr>
+                    <td>X:</td>
+                    <td><input id="propertyX" style="width:70px" /></td>
+                    <td style="padding-left:50px">W:</td>
+                    <td><input id="propertyW" style="width:70px" /></td>
+                </tr>
+                <tr>
+                    <td>Y:</td>
+                    <td><input id="propertyY" style="width:70px" /></td>
+                    <td style="padding-left:50px">H:</td>
+                    <td><input id="propertyH" style="width:70px" /></td>
+                </tr>
+            </table>
+            <table style="margin-top:20px">
+                <tr>
+                    <td>Line Width:</td>
+                    <td><input  id="propertyLineWidth"style="width:70px" /></td>
+                    <td style="padding-left:50px">Line Color:</td>
+                    <td><input id="propertyLineColor" style="width:70px" /></td>
+                </tr>
+            </table>
         </div>
+    </div>    
 </body>
 </html>
 <script type="text/javascript">
@@ -165,6 +194,12 @@
         KEY_LEFT: 37,
         KEY_DOWN: 40,
         KEY_DELETE: 46,
+
+        SHAPE_CIRCLE: "circle",
+        SHAPE_DIAMOND: "diamond",
+        SHAPE_LINE: "line",
+        SHAPE_RECTANGLE: "rectangle",
+        SHAPE_TEXT: "text",
     };
 
     const START_OF_DIAGRAM_TAG = "<diagram>";
@@ -191,6 +226,18 @@
 
     // Global so we can move the toolbox around.
     var toolboxGroupController = null;
+
+    // Global so the model can notify the property grid of property changes.
+    var propertyGrid = new PropertyGridView();
+
+    // Map of property names to property grid controls that display the value.
+    // Property Name Property Control : "pnpc"
+    var pnpcMap = {
+        x: "propertyX",
+        y: "propertyY",
+        width: "propertyW",
+        height: "propertyH"
+    };
 
     document.getElementById(Constants.FILE_INPUT).addEventListener('change', readSingleFile, false);
     document.onkeydown = onKeyDown;

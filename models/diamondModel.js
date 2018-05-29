@@ -1,6 +1,6 @@
 ﻿class DiamondModel extends PathModel {
     constructor() {
-        super();
+        super(Constants.SHAPE_DIAMOND);
     }
 
     serialize() {

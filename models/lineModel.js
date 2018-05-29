@@ -1,6 +1,6 @@
 ﻿class LineModel extends ShapeModel {
     constructor() {
-        super();
+        super(Constants.SHAPE_LINE);
         this._x1 = 0;
         this._y1 = 0;
         this._x2 = 0;

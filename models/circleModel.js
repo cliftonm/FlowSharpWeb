@@ -1,6 +1,6 @@
 ﻿class CircleModel extends ShapeModel {
     constructor() {
-        super();
+        super(Constants.SHAPE_CIRCLE);
         this._cx = 0;
         this._cy = 0;
         this._r = 0;

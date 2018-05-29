@@ -40,7 +40,7 @@
         this.anchors.map(anchorDefinition => {
             var anchor = anchorDefinition.anchor;
 
-            var model = new RectangleModel();
+            var model = new AnchorModel();
             model._x = anchor.x - 5;
             model._y = anchor.y - 5;
             model._width = 10;
