@@ -4,11 +4,11 @@
     }
 
     // Custom handling for property "text"
-    onPropertyChange(property, value) {
-        if (property == "text") {
-            this.actualElement.innerHTML = value;
+    onPropertyChange(sender, args) {
+        if (args.propertyName == "text") {
+            this.actualElement.innerHTML = args.value;
         } else {
-            super.onPropertyChange(property, value);
+            super.onPropertyChange(args.propertyName, args.value);
         }
     }
 }

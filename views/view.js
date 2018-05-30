@@ -1,7 +1,7 @@
 ﻿class View {
     constructor(svgElement, model) {
         this.svgElement = svgElement;
-        model.eventPropertyChanged = this.onPropertyChange.bind(this);
+        model.eventPropertyChanged.attach(this.onPropertyChange.bind(this));
     }
 
     get id() {
@@ -22,12 +22,12 @@
         return this.svgElement.firstElementChild == null ? this.svgElement : this.svgElement.firstElementChild;
     }
 
-    onPropertyChange(property, value) {
+    onPropertyChange(sender, args) {
         // Every shape is grouped, so we want to update the property of the first child in the group.
         // This behavior is overridden by specific views -- surface and objects, for example.
         // firstElementChild ignores text and comment nodes.
         // this.svgElement.firstElementChild.setAttribute(property, value);
 
-        this.actualElement.setAttribute(property, value);
+        this.actualElement.setAttribute(args.propertyName, args.value);
     }
 }

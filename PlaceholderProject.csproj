@@ -37,6 +37,7 @@
     <Content Include="controllers\anchorGroupController.js" />
     <Content Include="controllers\circleController.js" />
     <Content Include="controllers\toolboxGroupController.js" />
+    <Content Include="event.js" />
     <Content Include="models\AnchorModel.js" />
     <Content Include="models\diagramModel.js" />
     <Content Include="controllers\diamondController.js" />
@@ -78,7 +79,7 @@
     <Content Include="views\toolboxSurfaceView.js" />
     <Content Include="views\view.js" />
     <Content Include="point.js" />
-    <Content Include="FlowSharpWeb.html" />
+    <Content Include="flowSharpWeb.html" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

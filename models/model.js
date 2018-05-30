@@ -1,6 +1,6 @@
 ﻿class Model {
     constructor(shapeName) {
-        this.eventPropertyChanged = null;
+        this.eventPropertyChanged = new Event();
         this.shapeName = shapeName;
 
         this._tx = 0;
@@ -11,9 +11,10 @@
     get ty() { return this._ty; }
 
     propertyChanged(propertyName, value) {
-        if (this.eventPropertyChanged != null) {
-            this.eventPropertyChanged(propertyName, value);
-        }
+        this.eventPropertyChanged.fire(this, {propertyName : propertyName, value : value})
+        //if (this.eventPropertyChanged != null) {
+        //    this.eventPropertyChanged(propertyName, value);
+        // }
 
         // Also update the property grid
         // While we could use this.constructor.name and extract the model name ("RectangeleModel" becomes "Rectangle"),
