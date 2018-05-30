@@ -3,6 +3,8 @@
         super(mouseController, view, model);
     }
 
+    get shapeName() { return "circle"; }
+
     createElementAt(x, y) {
         var group = Helpers.createElement("g", {}, false);
         var el = Helpers.createElement('circle', { cx: x, cy: y, r:30, fill: "#FFFFFF", stroke: "black", "stroke-width": 1 });

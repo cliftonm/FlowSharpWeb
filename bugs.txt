@@ -1,3 +1,11 @@
+Dragging the toolbox surface causes an offset in the location of a toolbox shape when the shape drag & drop is initiated.
+
+
+
+
+
+// ========================================
+
 Sometimes an anchor (or two) disappears in when sizing the rectangle.
 
 -width & -height results in no rectangle appearing.

@@ -38,7 +38,7 @@
     <Content Include="controllers\circleController.js" />
     <Content Include="controllers\toolboxGroupController.js" />
     <Content Include="event.js" />
-    <Content Include="models\AnchorModel.js" />
+    <Content Include="models\anchorModel.js" />
     <Content Include="models\diagramModel.js" />
     <Content Include="controllers\diamondController.js" />
     <Content Include="controllers\lineController.js" />

@@ -6,6 +6,8 @@
         this._r = 0;
     }
 
+    get isShape() { return true; }
+
     serialize() {
         var model = super.serialize();
         model.cx = this._cx;

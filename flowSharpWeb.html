@@ -138,7 +138,7 @@
     </div>
     <div style="margin-left:10px; display:inline-block; float:left; width:400px; height:480px; border:1px solid black;">
         <div style="margin-left:10px">
-            Properties:
+            <p id="shapeId">&nbsp;</p>
             <table style="margin-top:20px">
                 <tr>
                     <td>X:</td>
@@ -196,11 +196,13 @@
         KEY_DOWN: 40,
         KEY_DELETE: 46,
 
+        SHAPE_ID: "shapeId",
         SHAPE_CIRCLE: "circle",
         SHAPE_DIAMOND: "diamond",
         SHAPE_LINE: "line",
         SHAPE_RECTANGLE: "rectangle",
         SHAPE_TEXT: "text",
+        SHAPE_SURFACE: "surface",
     };
 
     const START_OF_DIAGRAM_TAG = "<diagram>";
@@ -228,8 +230,8 @@
     // Global so we can move the toolbox around.
     var toolboxGroupController = null;
 
-    // Global so the model can notify the property grid of property changes.
-    var propertyGrid = new PropertyGridView();
+    // May not need to be global
+    var propertyGridView = null;
 
     // Map of property names to property grid controls that display the value.
     // Property Name Property Control : "pnpc"
@@ -312,6 +314,7 @@
 
     (function initialize() {
         mouseController = new MouseController();
+        propertyGridView = new PropertyGridView(mouseController)
         diagramModel = new DiagramModel(mouseController);
         var svgSurface = Helpers.getElement(Constants.SVG_SURFACE_ID);
         var svgObjects = Helpers.getElement(Constants.SVG_OBJECTS_ID);

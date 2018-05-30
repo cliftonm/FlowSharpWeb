@@ -6,6 +6,8 @@
         this._text = "";
     }
 
+    get isShape() { return true; }
+
     serialize() {
         var model = super.serialize();
         model.x = this._x;

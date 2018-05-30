@@ -3,6 +3,8 @@
         super(mouseController, view, model);
     }
 
+    get shapeName() { return "line"; }
+
     // For drag and drop
     createElementAt(x, y) {
         var x1 = x - 30;

@@ -7,6 +7,8 @@
         this._y2 = 0;
     }
 
+    get isShape() { return true; }
+
     serialize() {
         var model = super.serialize();
         model.x1 = this._x1;

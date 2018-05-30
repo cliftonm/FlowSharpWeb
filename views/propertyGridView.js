@@ -1,4 +1,15 @@
 ﻿class PropertyGridView {
+    constructor(mouseController) {
+        this.mouseController = mouseController;
+        mouseController.eventShapeSelected.attach(this.onShapeSelected.bind(this));
+    }
+
+    onShapeSelected(sender, args) {
+        document.getElementById(Constants.SHAPE_ID).innerHTML = args.shapeId;
+    }
+
+    //             console.log("Entering " + shapeController.model.shapeId);
+
     propertyChanged(model, propertyName, value) {
 
         if (model.shapeName !== undefined && value != null) {

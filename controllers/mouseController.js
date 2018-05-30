@@ -12,6 +12,9 @@ class MouseController {
         this.selectedControllers = null;
         this.selectedShapeId = null;
         this.hoverShapeId = null;
+        this.actualModel = null;
+
+        this.eventShapeSelected = new Event();
 
         // We really can't use movementX and movementY of the event because
         // when the user moves the mouse quickly, the move events switch from
@@ -146,6 +149,21 @@ class MouseController {
             this.x = evt.clientX;
             this.y = evt.clientY;
             this.activeControllers.map(c => c.onMouseDown());
+
+            // A bit annoying -- if this is a toolbox shape user clicked on, we need to use the
+            // toolbox model until the user drops the control on the surface and the real shape
+            // is created.
+            if (this.activeControllers.any(ctrl => ctrl.isToolboxShapeController)) {
+                // Here we assume the toolbox controller we want is the first controller.
+                this.eventShapeSelected.fire(this, { model: this.activeControllers[0].model, shapeId: this.activeControllers[0].shapeName });
+            } else {
+                // Here we also handle the user clicking on the surface instead of a shape.
+                if (this.activeControllers[0].isSurfaceController) {
+                    this.eventShapeSelected.fire(this, { model: this.activeControllers[0].model, shapeId: this.activeControllers[0].shapeName });
+                } else {
+                    this.eventShapeSelected.fire(this, { model: this.actualModel, shapeId: this.actualModel.shapeId })
+                }
+            }
         }
     }
 
@@ -188,13 +206,14 @@ class MouseController {
         evt.preventDefault();
         var id = evt.currentTarget.getAttribute("id");
         this.hoverShapeId = id;
+        this.updateActualModelBeingEntered(id);
 
         if (this.mouseDown) {
             // Doing a drag operation, so ignore shapes we enter and leave so
             // that even if the mouse moves over another shape, we keep track
             // of the shape we're dragging.
         } else {
-            // Hover management.
+            // Hover management.  We're usually always leaving some shape, including the surface.
             if (this.leavingId != -1) {
                 console.log("Leaving " + this.leavingId);
 
@@ -216,6 +235,15 @@ class MouseController {
         evt.preventDefault();
         this.leavingId = evt.currentTarget.getAttribute("id");
         this.hoverShapeId = null;
+    }
+
+    // Update the actual model being entered.  It must be an actual shape model.
+    updateActualModelBeingEntered(id) {
+        var shapeController = this.controllers[id].find(ctrl => ctrl.model.isShape);
+
+        if (shapeController !== undefined) {
+            this.actualModel = shapeController.model;
+        }
     }
 
     // Returns the controllers associated with the SVG element.

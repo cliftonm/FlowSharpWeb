@@ -3,6 +3,8 @@
         super(mouseController, view, model);
     }
 
+    get shapeName() { return "rectangle"; }
+
     createElementAt(x, y) {
         var group = Helpers.createElement("g", {}, false);
         var el = Helpers.createElement('rect', { x: x - 30, y: y - 30, width: 60, height: 60, fill: "#FFFFFF", stroke: "black", "stroke-width": 1 });

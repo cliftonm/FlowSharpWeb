@@ -1,6 +1,6 @@
 ﻿class PathModel extends ShapeModel {
-    constructor() {
-        super();
+    constructor(shapeName) {
+        super(shapeName);
         this._d = null;
     }
 

@@ -3,6 +3,8 @@
         super(mouseController, view, model);
     }
 
+    get shapeName() { return "text"; }
+
     createElementAt(x, y) {
         var group = Helpers.createElement("g", {}, false);
         var el = Helpers.createElement('text', { x: x, y: y, "font-size": 12, "font-family": "Verdana" });

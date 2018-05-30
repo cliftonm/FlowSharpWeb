@@ -3,6 +3,8 @@
         super(mouseController, view, model);
     }
 
+    get shapeName() { return "diamond"; }
+
     // For drag and drop
     createElementAt(x, y) {
         var points = [{ cmd: "M", x: x - 15, y: y - 30 }, { cmd: "L", x: x - 45, y: y }, { cmd: "L", x: x - 15, y: y + 30 }, { cmd: "L", x: x + 15, y: y }];

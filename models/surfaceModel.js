@@ -1,6 +1,6 @@
 ﻿class SurfaceModel extends Model {
     constructor() {
-        super();
+        super(Constants.SHAPE_SURFACE);
         this.gridCellW = 80;
         this.gridCellH = 80;
         this.cellW = 8;

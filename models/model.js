@@ -1,35 +1,38 @@
 ﻿class Model {
     constructor(shapeName) {
         this.eventPropertyChanged = new Event();
-        this.shapeName = shapeName;
+
+        // Certain shapes (like anchors, surface, etc.) are temporary so we don't want to increment the model ID.
+        if (shapeName != null) {
+            this._shapeName = shapeName;
+            this._shapeId = shapeName + '.' + Model.idCount;
+            Model.idCount += 1;
+        }
 
         this._tx = 0;
         this._ty = 0;
     }
 
+    // By default, we assume the model is not actually a shape.  Only circle, diamond, line, rectangle, text, and other "shapes" are shapes.
+    get isShape() { return false;}
+
     get tx() { return this._tx; }
     get ty() { return this._ty; }
+    get shapeName() { return this._shapeName; }
+    get shapeId() { return this._shapeId; }
 
     propertyChanged(propertyName, value) {
         this.eventPropertyChanged.fire(this, {propertyName : propertyName, value : value})
-        //if (this.eventPropertyChanged != null) {
-        //    this.eventPropertyChanged(propertyName, value);
-        // }
-
-        // Also update the property grid
-        // While we could use this.constructor.name and extract the model name ("RectangeleModel" becomes "Rectangle"),
-        // I think it's better to pass in the name of the object that corresponds to the model.
-        propertyGrid.propertyChanged(this, propertyName, value);
     }
 
     serialize() {
-        return { tx: this._tx, ty: this._ty, shapeName: this.shapeName };
+        return { tx: this._tx, ty: this._ty, shapeName: this._shapeName, shapeId: this._shapeId };
     }
 
     // Used to skip the ShapeModel's serializer in derived Line classes with start/end arrows.
     // Sort of annoying to have to do this.
     baseSerialize() {
-        return { tx: this._tx, ty: this._ty, shapeName: this.shapeName };
+        return { tx: this._tx, ty: this._ty, shapeName: this._shapeName, shapeId: this._shapeId };
     }
 
     deserialize(model, el) {
@@ -91,3 +94,5 @@
         this.transform = this.translation;
     }
 }
+
+Model.idCount = 0;

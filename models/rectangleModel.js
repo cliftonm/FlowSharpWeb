@@ -1,11 +1,13 @@
 ﻿class RectangleModel extends ShapeModel {
-    constructor() {
-        super(Constants.SHAPE_RECTANGLE);
+    constructor(shapeName = Constants.SHAPE_RECTANGLE) {
+        super(shapeName);
         this._x = 0;
         this._y = 0;
         this._width = 0;
         this._height = 0;
     }
+
+    get isShape() { return true; }
 
     serialize() {
         var model = super.serialize();

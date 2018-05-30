@@ -3,6 +3,8 @@ class SurfaceController extends Controller {
         super(mouseController, surfaceView, surfaceModel);
     }
 
+    get shapeName() { return "surface"; }
+
     get isSurfaceController() {
         return true;
     }
