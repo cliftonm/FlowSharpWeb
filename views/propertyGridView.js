@@ -4,6 +4,7 @@
         mouseController.eventShapeSelected.attach(this.onShapeSelected.bind(this));
     }
 
+    // Show the shape ID on the property grid.
     onShapeSelected(sender, args) {
         document.getElementById(Constants.SHAPE_ID).innerHTML = args.shapeId;
     }
