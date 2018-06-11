@@ -139,28 +139,7 @@
     <div style="margin-left:10px; display:inline-block; float:left; width:400px; height:480px; border:1px solid black;">
         <div style="margin-left:10px">
             <p id="shapeId">&nbsp;</p>
-            <table style="margin-top:20px">
-                <tr>
-                    <td>X:</td>
-                    <td><input id="propertyX" style="width:70px" /></td>
-                    <td style="padding-left:50px">W:</td>
-                    <td><input id="propertyW" style="width:70px" /></td>
-                </tr>
-                <tr>
-                    <td>Y:</td>
-                    <td><input id="propertyY" style="width:70px" /></td>
-                    <td style="padding-left:50px">H:</td>
-                    <td><input id="propertyH" style="width:70px" /></td>
-                </tr>
-            </table>
-            <table style="margin-top:20px">
-                <tr>
-                    <td>Line Width:</td>
-                    <td><input  id="propertyLineWidth"style="width:70px" /></td>
-                    <td style="padding-left:50px">Line Color:</td>
-                    <td><input id="propertyLineColor" style="width:70px" /></td>
-                </tr>
-            </table>
+            <table id="propertyGrid" style="margin-top:20px"></table>
         </div>
     </div>    
 </body>
@@ -203,6 +182,9 @@
         SHAPE_RECTANGLE: "rectangle",
         SHAPE_TEXT: "text",
         SHAPE_SURFACE: "surface",
+
+        PROPERTY_GRID_ID: 'propertyGrid',
+        PROPERTY_GRID_LISTENER_KEY: "pgv",
     };
 
     const START_OF_DIAGRAM_TAG = "<diagram>";
@@ -232,15 +214,6 @@
 
     // May not need to be global
     var propertyGridView = null;
-
-    // Map of property names to property grid controls that display the value.
-    // Property Name Property Control : "pnpc"
-    var pnpcMap = {
-        x: "propertyX",
-        y: "propertyY",
-        width: "propertyW",
-        height: "propertyH"
-    };
 
     document.getElementById(Constants.FILE_INPUT).addEventListener('change', readSingleFile, false);
     document.onkeydown = onKeyDown;

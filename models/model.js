@@ -25,6 +25,10 @@
         this.eventPropertyChanged.fire(this, {propertyName : propertyName, value : value})
     }
 
+    getProperties() {
+        return [];
+    }
+
     serialize() {
         return { tx: this._tx, ty: this._ty, shapeName: this._shapeName, shapeId: this._shapeId };
     }
@@ -45,6 +49,8 @@
     translate(x, y) {
         this._tx += x;
         this._ty += y;
+        this.propertyChanged("tx", this._tx);
+        this.propertyChanged("ty", this._ty);
         this.setTranslate(this._tx, this._ty);
     }
 
@@ -52,6 +58,8 @@
     setTranslation(x, y) {
         this._tx = x;
         this._ty = y;
+        this.propertyChanged("tx", this._tx);
+        this.propertyChanged("ty", this._ty);
         this.setTranslate(x, y);
     }
 
@@ -62,6 +70,8 @@
     updateTranslation(dx, dy) {
         this._tx += dx;
         this._ty += dy;
+        this.propertyChanged("tx", this._tx);
+        this.propertyChanged("ty", this._ty);
     }
 
     // Sets the "translate" portion of the "transform" property.
@@ -84,12 +94,14 @@
 
     set tx(value) {
         this._tx = value;
+        this.propertyChanged("tx", value);
         this.translation = "translate(" + this._tx + "," + this._ty + ")";
         this.transform = this.translation;
     }
 
     set ty(value) {
         this._ty = value;
+        this.propertyChanged("ty", value);
         this.translation = "translate(" + this._tx + "," + this._ty + ")";
         this.transform = this.translation;
     }

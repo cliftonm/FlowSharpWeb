@@ -27,6 +27,17 @@
         this.height = model.height;
     }
 
+    getProperties() {
+        return [
+            { propertyName: 'x',         label: 'X',             column: 0,  row: 0,    getter: () => this.x + this.tx},
+            { propertyName: 'y',         label: 'Y',             column: 1,  row: 0,    getter: () => this.y + this.ty},
+            { propertyName: 'width',     label: 'Width',         column: 0,  row: 1,    getter: () => this.width },
+            { propertyName: 'height',    label: 'Height',        column: 1,  row: 1,    getter: () => this.height },
+            { propertyName: 'tx', alias: 'x', getter: () => this.x + this.tx },
+            { propertyName: 'ty', alias: 'y', getter: () => this.y + this.ty },
+        ];
+    }
+
     get x() { return this._x; }
     get y() { return this._y; }
     get width() { return this._width; }
