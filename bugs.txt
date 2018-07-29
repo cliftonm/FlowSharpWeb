@@ -1,5 +1,8 @@
 Dragging the toolbox surface causes an offset in the location of a toolbox shape when the shape drag & drop is initiated.
 
+Circle shouldn't have an empty edit box in the property grid in the second column after the radius.
+Line, where tx/ty has to recompute x1/x2 and y1/y2 for property grid
+
 
 
 

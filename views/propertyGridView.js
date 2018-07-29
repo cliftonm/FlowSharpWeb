@@ -2,8 +2,8 @@
     constructor(mouseController) {
         this.mouseController = mouseController;
         this.currentModel = undefined;
-        this.pnpcMap = {};
-        this.aliases = {};
+        this.pnpcMap = {};              // Property-Name : Property-Control map
+        this.aliases = [];              // Array of key-value pairs, because some shapes, like lines, have multiple getters for a single property, like "tx"
         mouseController.eventShapeSelected.attach(this.onShapeSelected.bind(this));
     }
 
@@ -29,13 +29,26 @@
 
             let gridControlId = this.pnpcMap[propertyName];
 
+            // If we don't have a grid control, then we probably have a property that is an alias to an existing property.
+            // An example is where the translation (tx,ty) is actually an alias for (cx,cy) - circle or (x,y) - rectangle or (x1/x2, y1/y2) - line.
             if (gridControlId === undefined) {
-                let alias = this.aliases[propertyName];
-                gridControlId = this.pnpcMap[alias];
-            }
+                // We allow for multiple aliasing, so for a line, updates tx adjusts x1 and x2 together.
+                this.aliases.filter(a => a.pname == propertyName).forEach(a => {
+                    let alias = a.palias;
+                    gridControlId = this.pnpcMap[alias];
 
-            if (gridControlId !== undefined) {
-                document.getElementById(gridControlId).value = value;
+                    if (gridControlId !== undefined) {
+                        let getter = model.getProperties().filter(p => p.propertyName == a.pname && p.alias == alias)[0].getter;
+                        let computedValue = getter();
+                        // console.log("pname = " + a.pname + ", alias = " + a.palias + ", ID = " + gridControlId + ", Value = " + computedValue);
+                        document.getElementById(gridControlId).value = computedValue;
+                    }
+                });
+            } else {
+                // We don't necessarily want to use the value of the property that got changed, particular with regards to (x, y) and (tx, ty).
+                // Instead, we always want to use the value returned by the getter method.
+                let computedValue = model.getProperties().filter(p => p.propertyName === propertyName)[0].getter();
+                document.getElementById(gridControlId).value = computedValue;
             } 
         }
     }
@@ -69,7 +82,7 @@
             let col = p.column;
             let row = p.row;
             let rowHtml = '';
-            let newRow = row > rowNum;
+            // let newRow = row > rowNum;
 
             // Allow for empty rows as visual spacing
             while (row > rowNum) {
@@ -99,7 +112,7 @@
         });
 
         // Setup aliases
-        this.aliases = {};
-        model.getProperties().filter(p => p.alias !== undefined).forEach(p => this.aliases[p.propertyName] = p.alias);
+        this.aliases = [];
+        model.getProperties().filter(p => p.alias !== undefined).forEach(p => this.aliases.push({ pname: p.propertyName, palias : p.alias }));
     }
 }

@@ -27,6 +27,19 @@
         this.y2 = model.y2;
     }
 
+    getProperties() {
+        return [
+            { propertyName: 'x1', label: 'X1', column: 0, row: 0, getter: () => this.x1 + this.tx },
+            { propertyName: 'y1', label: 'Y1', column: 1, row: 0, getter: () => this.y1 + this.ty },
+            { propertyName: 'x2', label: 'X2', column: 0, row: 1, getter: () => this.x2 + this.tx },
+            { propertyName: 'y2', label: 'Y2', column: 1, row: 1, getter: () => this.y2 + this.ty },
+            { propertyName: 'tx', alias: 'x1', getter: () => this.x1 + this.tx },
+            { propertyName: 'ty', alias: 'y1', getter: () => this.y1 + this.ty },
+            { propertyName: 'tx', alias: 'x2', getter: () => this.x2 + this.tx },
+            { propertyName: 'ty', alias: 'y2', getter: () => this.y2 + this.ty },
+        ];
+    }
+
     get x1() { return this._x1; }
     get y1() { return this._y1; }
     get x2() { return this._x2; }

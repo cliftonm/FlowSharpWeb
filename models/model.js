@@ -1,4 +1,7 @@
-﻿class Model {
+﻿// See static initializer at bottom of class definition! 
+// Model.idCount = 0;
+
+class Model {
     constructor(shapeName) {
         this.eventPropertyChanged = new Event();
 
@@ -22,6 +25,7 @@
     get shapeId() { return this._shapeId; }
 
     propertyChanged(propertyName, value) {
+        // console.log(propertyName + " = " + value);
         this.eventPropertyChanged.fire(this, {propertyName : propertyName, value : value})
     }
 

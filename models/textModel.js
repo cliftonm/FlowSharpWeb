@@ -24,6 +24,16 @@
         this.text = model.text;
     }
 
+    getProperties() {
+        return [
+            { propertyName: 'x', label: 'X', column: 0, row: 0, getter: () => this.x + this.tx },
+            { propertyName: 'y', label: 'Y', column: 1, row: 0, getter: () => this.y + this.ty },
+            { propertyName: 'text', label: 'Text', column: 0, row: 1, getter: () => this.text },
+            { propertyName: 'tx', alias: 'x', getter: () => this.x + this.tx },
+            { propertyName: 'ty', alias: 'y', getter: () => this.y + this.ty },
+        ];
+    }
+
     get x() { return this._x; }
     get y() { return this._y; }
     get text() { return this._text; }

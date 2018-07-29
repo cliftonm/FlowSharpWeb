@@ -24,6 +24,16 @@
         this.r = model.r;
     }
 
+    getProperties() {
+        return [
+            { propertyName: 'cx', label: 'CX', column: 0, row: 0, getter: () => this.cx + this.tx },
+            { propertyName: 'cy', label: 'CY', column: 1, row: 0, getter: () => this.cy + this.ty },
+            { propertyName: 'r', label: 'Radius', column: 0, row: 1, getter: () => this.r },
+            { propertyName: 'tx', alias: 'cx', getter: () => this.cx + this.tx },
+            { propertyName: 'ty', alias: 'cy', getter: () => this.cy + this.ty },
+        ];
+    }
+
     get cx() { return this._cx; }
     get cy() { return this._cy; }
     get r() { return this._r; }
