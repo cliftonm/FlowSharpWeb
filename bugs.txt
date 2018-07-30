@@ -1,11 +1,14 @@
 Dragging the toolbox surface causes an offset in the location of a toolbox shape when the shape drag & drop is initiated.
 
 Circle shouldn't have an empty edit box in the property grid in the second column after the radius.
-Line, where tx/ty has to recompute x1/x2 and y1/y2 for property grid
+	Same with Text
 
+FIXED:Dragging text shape doesn't work!
+	Issue was that the onPropertyChanged event call in textView.js was using the old style call rather than a dictionary format for parameters.
 
+Dragging shape from toolbox needs to immediately wire up the property grid.
 
-
+Properties for shapes that are paths, like diamonds.
 
 // ========================================
 
@@ -15,8 +18,6 @@ Sometimes an anchor (or two) disappears in when sizing the rectangle.
 
 keyboard l/r/u/d movement sort of works, until shape leaves mouse area and connection points appear in the wrong place after moving a line, so
 there's all sorts of weird side effects going on.
-
-
 
 ==========================
 

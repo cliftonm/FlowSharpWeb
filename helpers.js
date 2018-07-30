@@ -47,6 +47,11 @@ class Helpers {
         // Add the attributes to the element.
         Object.entries(attributes).map(([key, val]) => el.setAttributeNS(null, key, val));
 
+        //Object.entries(attributes).map(([key, val]) => {
+        //    console.log("ATTR: " + key);
+        //    el.setAttributeNS(null, key, val);
+        //});
+
         return el;
     }
 

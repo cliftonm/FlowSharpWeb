@@ -8,7 +8,7 @@
         if (args.propertyName == "text") {
             this.actualElement.innerHTML = args.value;
         } else {
-            super.onPropertyChange(args.propertyName, args.value);
+            super.onPropertyChange(sender, args);
         }
     }
 }
