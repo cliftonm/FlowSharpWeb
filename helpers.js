@@ -45,7 +45,14 @@ class Helpers {
         }
 
         // Add the attributes to the element.
-        Object.entries(attributes).map(([key, val]) => el.setAttributeNS(null, key, val));
+        Object.entries(attributes).map(([key, val]) => {
+            if (key == "href") {
+                el.setAttributeNS("http://www.w3.org/1999/xlink", key, val);
+
+            } else {
+                el.setAttributeNS(null, key, val);
+            }
+        });
 
         //Object.entries(attributes).map(([key, val]) => {
         //    console.log("ATTR: " + key);

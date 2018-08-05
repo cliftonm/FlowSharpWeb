@@ -18,6 +18,7 @@
     <script type="text/javascript" src="models/shapeModel.js"></script>
     <script type="text/javascript" src="models/surfaceModel.js"></script>
     <script type="text/javascript" src="models/rectangleModel.js"></script>
+    <script type="text/javascript" src="models/imageModel.js"></script>
     <script type="text/javascript" src="models/circleModel.js"></script>
     <script type="text/javascript" src="models/pathModel.js"></script>
     <script type="text/javascript" src="models/diamondModel.js"></script>
@@ -48,11 +49,13 @@
     <script type="text/javascript" src="controllers/toolboxSurfaceController.js"></script>
 
     <script type="text/javascript" src="controllers/rectangleController.js"></script>
+    <script type="text/javascript" src="controllers/imageController.js"></script>
     <script type="text/javascript" src="controllers/circleController.js"></script>
     <script type="text/javascript" src="controllers/diamondController.js"></script>
     <script type="text/javascript" src="controllers/lineController.js"></script>
     <script type="text/javascript" src="controllers/textController.js"></script>
     <script type="text/javascript" src="controllers/toolboxRectangleController.js"></script>
+    <script type="text/javascript" src="controllers/toolboxImageController.js"></script>
     <script type="text/javascript" src="controllers/toolboxCircleController.js"></script>
     <script type="text/javascript" src="controllers/toolboxDiamondController.js"></script>
     <script type="text/javascript" src="controllers/toolboxLineController.js"></script>
@@ -133,6 +136,7 @@
                     <line id="line" x1="120" y1="70" x2="160" y2="110" fill="#FFFFFF" stroke="black" stroke-width="1" marker-start="url(#trianglestart)" marker-end="url(#triangleend)" />
                 </g>
                 <text id="toolboxText" x="20" y="150" font-size="32" font-family="Verdana">A</text>
+                <image id="toolboxImage" x="65" y="120" width="40" height="40" xlink:href="file://C:/projects/FlowSharpWeb/DefaultImage.png" />
             </g>
         </svg>
     </div>
@@ -160,6 +164,7 @@
         OBJECT_GROUP_ID: "objectGroup",
         FILENAME: "diagram.json",
         TOOLBOX_RECTANGLE_ID: "toolboxRectangle",
+        TOOLBOX_IMAGE_ID: "toolboxImage",
         TOOLBOX_CIRCLE_ID: "toolboxCircle",
         TOOLBOX_DIAMOND_ID: "toolboxDiamond",
         TOOLBOX_LINE_ID: "toolboxLine",
@@ -167,6 +172,7 @@
         TOOLBOX_LINE_WITH_START_END_ID: "toolboxLineWithStartEnd",
         TOOLBOX_TEXT_ID: "toolboxText",
         DEFAULT_TEXT: "[text]",
+        DEFAULT_IMAGE_HREF: "file://C:/projects/FlowSharpWeb/DefaultImage.png",
         NEARBY_DELTA: 40,
         MAX_CP_NEAR: 6,    // anchor must be +/- this value to a connection point to connect.
         KEY_RIGHT: 39,
@@ -180,6 +186,7 @@
         SHAPE_DIAMOND: "diamond",
         SHAPE_LINE: "line",
         SHAPE_RECTANGLE: "rectangle",
+        SHAPE_IMAGE: "image",
         SHAPE_TEXT: "text",
         SHAPE_SURFACE: "surface",
 
@@ -352,6 +359,7 @@
         registerToolboxItem(mouseController, Constants.TOOLBOX_LINE_WITH_START_ID, (mc, view, model) => new ToolboxLineWithStartController(mc, view, model));
         registerToolboxItem(mouseController, Constants.TOOLBOX_LINE_WITH_START_END_ID, (mc, view, model) => new ToolboxLineWithStartEndController(mc, view, model));
         registerToolboxItem(mouseController, Constants.TOOLBOX_TEXT_ID, (mc, view, model) => new ToolboxTextController(mc, view, model));
+        registerToolboxItem(mouseController, Constants.TOOLBOX_IMAGE_ID, (mc, view, model) => new ToolboxImageController(mc, view, model));
     })();
 
 </script>

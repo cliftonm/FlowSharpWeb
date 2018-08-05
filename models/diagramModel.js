@@ -10,6 +10,7 @@
             LineWithStart: { model: LineModelWithStart, view: LineView, controller: LineController, creator: () => this.createLineWithStartElement() },
             LineWithStartEnd: { model: LineModelWithStartEnd, view: LineView, controller: LineController, creator: () => this.createLineWithStartEndElement() },
             Text: { model: TextModel, view: TextView, controller: TextController, creator: () => this.createTextElement() },
+            Image: { model: ImageModel, view: ShapeView, controller: ImageController, creator: () => this.createImageElement() },
         };
 
         // For the moment we'll use array indices into the shape's connection points.
@@ -57,6 +58,14 @@
         var group = Helpers.createElement("g", {});
         var el = Helpers.createElement('text', { "font-size": 12, "font-family": "Verdana" });
         el.innerHTML = Constants.DEFAULT_TEXT;
+        group.appendChild(el);
+
+        return group;
+    }
+
+    createImageElement() {
+        var group = Helpers.createElement("g", {});
+        var el = Helpers.createElement('image', {});
         group.appendChild(el);
 
         return group;

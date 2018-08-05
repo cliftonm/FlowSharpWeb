@@ -46,7 +46,7 @@ class Model {
     deserialize(model, el) {
         this._tx = model.tx;
         this._ty = model.ty;
-        this.shapeName = model.shapeName;
+        this._shapeName = model.shapeName;
         this.setTranslate(this._tx, this._ty);
     }
 

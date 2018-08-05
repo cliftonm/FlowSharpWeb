@@ -36,7 +36,9 @@
     <Content Include="controllers\anchorController.js" />
     <Content Include="controllers\anchorGroupController.js" />
     <Content Include="controllers\circleController.js" />
+    <Content Include="controllers\imageController.js" />
     <Content Include="controllers\toolboxGroupController.js" />
+    <Content Include="controllers\toolboxImageController.js" />
     <Content Include="event.js" />
     <Content Include="models\anchorModel.js" />
     <Content Include="models\diagramModel.js" />
@@ -56,6 +58,7 @@
     <Content Include="helpers.js" />
     <Content Include="models\circleModel.js" />
     <Content Include="models\diamondModel.js" />
+    <Content Include="models\imageModel.js" />
     <Content Include="models\lineModel.js" />
     <Content Include="models\pathModel.js" />
     <Content Include="models\rectangleModel.js" />
