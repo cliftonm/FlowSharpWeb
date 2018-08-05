@@ -1,5 +1,45 @@
 ﻿<!DOCTYPE html>
 
+<!--
+
+Adding a toolbox item:
+
+Add the [yourShape]Model.js to the "models" folder:
+    Use one of the existing models as a template or derive from an existing model.
+    Add additional properties to the constructor initializer.
+    Update serialize() and deserialize() with your additional properties.
+    Add getters and setters as required.
+    Add your additional properties to the getProperties() collection that is returned.
+
+Add the [yourShape]Controller.js to the "controllers" folder:
+    Using one of the other shapes as a template:
+        Update where the corners and anchors are.
+        Update where the connection points are located.
+        Provide any custom handling of anchors.
+
+Add the toolbox[yourShape]Controller.js to the "controllers" folder:
+    Using one of the other shapes as a template, fixup "Helpers.createElement" to set the properties your shape requires.
+    Add any property initialization for your shape.
+
+Add a [yourShape]View.js to the "views" folder if you need a custom view.
+
+In flowSharpWeb.html:
+    Add the necessary (there should be at least 3) <script ... src=/> tags to pull in your new files.
+    In the <svg> tag, add your shape (grouped or not) to the toolbox shapes.
+    Add a constant for the toolbox shape ID
+    Add any other constants your shape initializes with.
+    Add a "SHAPE_[yourShapeName]" constant.
+    At the end of the script, add a "registerToolboxItem".
+
+In diagramModel.js:
+    Add the "mvc" item for your shape.
+    Add a custom "create[yourShape]Element if necessary, otherwise just use "createElement"
+
+Helpers.js:
+    Any custom namespace handling of attributes gets added in the createElement function.
+
+-->
+
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <meta charset="utf-8" />
@@ -63,7 +103,9 @@
 </head>
 <body>
     <style>
-        text {cursor:default}
+        text {
+            cursor: default
+        }
     </style>
     <div>
         <!-- https://stackoverflow.com/questions/1944267/how-to-change-the-button-text-of-input-type-file -->
@@ -145,7 +187,7 @@
             <p id="shapeId">&nbsp;</p>
             <table id="propertyGrid" style="margin-top:20px"></table>
         </div>
-    </div>    
+    </div>
 </body>
 </html>
 <script type="text/javascript">
@@ -252,7 +294,7 @@
     function loadComplete(e) {
         var contents = e.target.result;
         // If we don't do this, it adds the elements, but they have to have unique ID's
-        clearSvg();         
+        clearSvg();
         diagramModel.deserialize(contents);
     }
 
@@ -321,7 +363,7 @@
         // onDrag because the toolbox can't be moved around.  TODO: At least, not at the moment.
         var toolboxSurfaceController = new ToolboxSurfaceController(mouseController, toolboxSurfaceView, toolboxSurfaceModel);
 
-        // Attach both the surface and objects controller to the surface view so that events from the 
+        // Attach both the surface and objects controller to the surface view so that events from the
         // surface view are routed to both controllers, one for dealing with the grid, one for moving
         // the objects on the surface and the surface is translated.
         mouseController.attach(surfaceView, surfaceController);
@@ -391,7 +433,7 @@
     https://stackoverflow.com/questions/20279484/how-to-access-the-correct-this-inside-a-callback
 
     // Lightweight library for manipulating svg:
-    http://svgjs.com/ 
+    http://svgjs.com/
 
     // Download doesn't work in edge
     // See StephenKitely's response.
